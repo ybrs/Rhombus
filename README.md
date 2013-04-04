@@ -5,9 +5,11 @@ An api layer for Visitor information.
 
 to install:
 
-(1) Clone this repository
+(1) Clone the repository
 
-(2) Be sure maven in installed
+	git clone git@github.com:Pardot/analytics-service.git
+
+(2) install maven
 
 	brew install maven
 
