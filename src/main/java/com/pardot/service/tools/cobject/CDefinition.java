@@ -19,6 +19,9 @@ public class CDefinition {
 	public ArrayList<CField> fields;
 	public ArrayList<CIndex> indexes;
 
+	public CDefinition(){
+	}
+
 	public CDefinition(String json) throws CObjectParseException{
 		try{
 			parseJson(json);
