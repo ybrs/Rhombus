@@ -1,4 +1,4 @@
-package com.pardot.service.tools.CassandraObj;
+package com.pardot.service.tools.cobject.filters;
 
 import java.util.HashMap;
 
