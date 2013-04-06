@@ -22,8 +22,7 @@ public class CDefinitionTest extends TestCase{
 	public class Subject extends CDefinition {
 
 		public void testGenerateFields(){
-			String json = TestHelpers.readFileToString(this.getClass(),"CFieldsTestData.json");
-			System.out.print("THE JSON IS: "+json);
+			String json = TestHelpers.readFileToString(this.getClass(),"CFieldsTestData.js");
 			assertTrue("Invalid Test File", !json.equals(""));
 			try{
 				java.net.URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
@@ -31,8 +30,7 @@ public class CDefinitionTest extends TestCase{
 				ObjectMapper mapper = new ObjectMapper();
 				JsonNode j =  mapper.readTree(json);
 				ArrayList<CField> result = this.generateFields(j);
-				assertTrue("Should have multiple fields in result", result.size() > 0);
-
+				assertTrue("Should have 5 fields in result", result.size() == 5);
 			}
 			catch(Exception e){
 				assertTrue(e.toString(), false);

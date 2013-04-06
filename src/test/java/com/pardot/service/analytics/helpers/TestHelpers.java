@@ -1,6 +1,4 @@
 package com.pardot.service.analytics.helpers;
-
-import junit.framework.Test;
 import org.apache.commons.io.IOUtils;
 
 import java.io.FileInputStream;
@@ -30,9 +28,7 @@ public class TestHelpers {
 
 	public static String getFullResourceLocation(Class testclass, String filename){
 		java.net.URL location = testclass.getProtectionDomain().getCodeSource().getLocation();
-		System.out.println("The location is: ");
-		String ret = location.getFile()+"/com/pardot/service/analytics/resources/"+filename;
-		System.out.println(ret);
+		String ret = location.getFile()+"../../test-resources/"+filename;
 		return ret;
 	}
 
