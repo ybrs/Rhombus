@@ -9,5 +9,5 @@ import java.util.HashMap;
  */
 public interface CIndexFilter {
 
-	public boolean isIncluded(HashMap obj);
+	public boolean isIncluded(HashMap<String,String> obj);
 }
