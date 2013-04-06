@@ -19,7 +19,7 @@ public class CField {
 		BIGINT {
 			@Override
 			public String toString(){
-				return "bingint";
+				return "bigint";
 			}
 		},
 		BLOB {

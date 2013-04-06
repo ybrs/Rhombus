@@ -30,7 +30,13 @@ public class CDefinitionTest extends TestCase{
 				ObjectMapper mapper = new ObjectMapper();
 				JsonNode j =  mapper.readTree(json);
 				ArrayList<CField> result = this.generateFields(j);
-				assertTrue("Should have 5 fields in result", result.size() == 5);
+				assertTrue("Should have 3 fields in result", result.size() == 3);
+				assertTrue("First name should be accountId",result.get(0).name.equals("accountId"));
+				assertTrue("First type should be bigint",result.get(0).type == CField.CDataType.BIGINT);
+				assertTrue("Second name should be accountId",result.get(1).name.equals("fieldAsTime"));
+				assertTrue("Second type should be bigint",result.get(1).type == CField.CDataType.TIMEUUID);
+				assertTrue("Third name should be accountId",result.get(2).name.equals("fieldWithInvalidType"));
+				assertTrue("Third type should be bigint",result.get(2).type == CField.CDataType.VARCHAR);
 			}
 			catch(Exception e){
 				assertTrue(e.toString(), false);
