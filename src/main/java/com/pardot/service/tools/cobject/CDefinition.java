@@ -3,6 +3,7 @@ package com.pardot.service.tools.cobject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pardot.service.tools.cobject.filters.CIndexFilter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public class CDefinition {
 		return true;
 	}
 
-	protected void parseJson(String json) throws java.io.IOException{
+	protected void parseJson(String json) throws java.io.IOException, CObjectParseException{
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode j =  mapper.readTree(json);
 		this.name = j.get("name").asText();
@@ -55,12 +56,44 @@ public class CDefinition {
 		return ret;
 	}
 
-	protected ArrayList<CIndex> generateIndexes(JsonNode dict){
+	protected ArrayList<CIndex> generateIndexes(JsonNode dict) throws CObjectParseException{
 		ArrayList<CIndex> ret = new ArrayList<CIndex>();
-
-
-
+		Iterator<String> keys = dict.fieldNames();
+		while(keys.hasNext()){
+			String name = keys.next();
+			String key = dict.get(name).get("key").asText();
+			CIndex toadd = new CIndex(name, key);
+			toadd.filters = this.makeFilterList(dict.get(name).get("filters"));
+			ret.add(toadd);
+		}
 		return ret;
+	}
+
+	protected ArrayList<CIndexFilter> makeFilterList(JsonNode jn) throws CObjectParseException{
+		try{
+			ArrayList<CIndexFilter> ret = new ArrayList<CIndexFilter>();
+			Iterator<JsonNode> it = jn.iterator();
+			while(it.hasNext()){
+				JsonNode item = it.next();
+				String TheClassName = item.asText();
+				Class c = Class.forName("com.pardot.service.tools.cobject.filters."+TheClassName);
+				CIndexFilter toadd = (CIndexFilter)c.newInstance();
+				ret.add(toadd);
+			}
+			return ret;
+		}
+		catch (ClassNotFoundException ce){
+			System.out.println("Could not find class given by filter list");
+			throw new CObjectParseException();
+		}
+		catch (InstantiationException ie){
+			System.out.println("Could not instantiate filter class");
+			throw new CObjectParseException();
+		}
+		catch (Exception e){
+			System.out.println(e);
+			throw new CObjectParseException();
+		}
 	}
 
 }

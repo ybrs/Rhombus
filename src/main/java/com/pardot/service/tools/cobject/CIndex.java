@@ -18,6 +18,11 @@ public class CIndex {
 	private ArrayList<String> keylist;
 	public ArrayList<CIndexFilter> filters;
 
+	public CIndex(String name, String key){
+		this.name = name;
+		this.key = key;
+	}
+
 	public String createIndexKey(HashMap obj){
 		//loop through the keylist and contruct the actual index key
 		return "test:test:test";

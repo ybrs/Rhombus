@@ -1,14 +1,10 @@
 {
 	"account": {
 		"key": "accountId:uuid",
-		"filter": ["FilterInclueAll"]
+		"filters": ["CIndexFilterIncludeAll"]
 	},
 	"account_filtered":  {
 		"key": "accountId:uuid",
-		"filter": ["FilterIncludeFiltered"]
-	},
-	"account": {
-		"key": "accountId:uuid",
-		"filter": ["FilterInclueAll"]
+		"filters": ["CIndexFilterExcludeFiltered","CIndexFilterIncludeAll"]
 	}
 }

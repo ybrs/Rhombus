@@ -7,7 +7,7 @@ import java.util.HashMap;
  * User: robrighter
  * Date: 4/6/13
  */
-public class CIndexFilterIncludeAll {
+public class CIndexFilterIncludeAll implements CIndexFilter {
 
 	public boolean isIncluded(HashMap<String,String> obj){
 		return true;
