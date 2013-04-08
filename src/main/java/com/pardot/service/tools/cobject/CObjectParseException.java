@@ -7,4 +7,8 @@ package com.pardot.service.tools.cobject;
  */
 public class CObjectParseException extends Exception {
 
+
+	public CObjectParseException(String message){
+		super(message);
+	}
 }

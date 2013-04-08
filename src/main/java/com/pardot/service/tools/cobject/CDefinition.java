@@ -28,8 +28,7 @@ public class CDefinition {
 			parseJson(json);
 		}
 		catch(Exception e){
-			System.out.println(e.toString());
-			throw new CObjectParseException();
+			throw new CObjectParseException(e.toString());
 		}
 	}
 
@@ -83,16 +82,13 @@ public class CDefinition {
 			return ret;
 		}
 		catch (ClassNotFoundException ce){
-			System.out.println("Could not find class given by filter list");
-			throw new CObjectParseException();
+			throw new CObjectParseException("Could not find class given by filter list");
 		}
 		catch (InstantiationException ie){
-			System.out.println("Could not instantiate filter class");
-			throw new CObjectParseException();
+			throw new CObjectParseException("Could not instantiate filter class");
 		}
 		catch (Exception e){
-			System.out.println(e);
-			throw new CObjectParseException();
+			throw new CObjectParseException(e.toString());
 		}
 	}
 

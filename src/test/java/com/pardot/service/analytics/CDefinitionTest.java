@@ -70,6 +70,20 @@ public class CDefinitionTest extends TestCase{
 			}
 		}
 
+		public void testParseJson(){
+			String json = TestHelpers.readFileToString(this.getClass(),"CDefinitionTestData.js");
+			assertTrue("Invalid Test File", !json.equals(""));
+			try{
+				this.parseJson(json);
+				assertEquals("Should parse proper object name", "testdefinition", this.name);
+				assertEquals("Should parse the right number of fields", 5, this.fields.size());
+				assertEquals("Should parse the right number of indexes" , 2, this.indexes.size());
+			}
+			catch(Exception e){
+				assertTrue(e.toString(), false);
+			}
+		}
+
 	}
 
 	/**
@@ -96,6 +110,11 @@ public class CDefinitionTest extends TestCase{
 	public void testGenerateIndexes() {
 		Subject s = new Subject();
 		s.testGenerateIndexes();
+	}
+
+	public void testParseJson() {
+		Subject s = new Subject();
+		s.testParseJson();
 	}
 }
 
