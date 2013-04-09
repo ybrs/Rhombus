@@ -30,6 +30,9 @@ public class CObjectCQLGenerator {
 	protected static ArrayList<String> makeCQLforCreate(CDefinition def){
 		ArrayList<String> ret = new ArrayList<String>();
 		ret.add(makeStaticTableCreate(def));
+		for(CIndex i : def.indexes){
+			ret.add(makeWideTableCreate(def, i));
+		}
 		return ret;
 	}
 
@@ -74,19 +77,38 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static String makeStaticTableCreate(CDefinition def){
-		return String.format(TEMPLATE_STATIC_CREATE, def.name, makeFieldList(def.fields));
+		return String.format(
+			TEMPLATE_STATIC_CREATE,
+			def.name,
+			makeFieldList(def.fields, true));
 	}
 
 	protected static String makeWideTableCreate(CDefinition def, CIndex index){
-		return String.format(TEMPLATE_WIDE_CREATE, def.name+":"+index.name, makeFieldList(def.fields), "PUT COMPOSITE KEY FIELDS HERE");
+		return String.format(
+			TEMPLATE_WIDE_CREATE,
+			def.name+":"+index.name,
+			makeFieldList(def.fields, true),
+			makeCommaList(index.compositeKeyList));
 	}
 
-	protected static String makeFieldList(ArrayList<CField> fields){
+	protected static String makeCommaList(ArrayList<String> strings){
+		Iterator<String> it = strings.iterator();
+		String ret = "";
+		while(it.hasNext()){
+			String s = it.next();
+			ret = ret + s +(it.hasNext() ? ", " : "");
+		}
+		return ret;
+	}
+
+	protected static String makeFieldList(ArrayList<CField> fields, boolean withType){
 		Iterator<CField> it = fields.iterator();
 		String ret = "";
 		while(it.hasNext()){
 			CField f = it.next();
-			ret = ret + f.name + " " + f.type + (it.hasNext() ? "," : "");
+			ret = ret + f.name +
+				(withType ? " " + f.type : "") +
+				(it.hasNext() ? "," : "");
 		}
 		return ret;
 	}

@@ -3,6 +3,7 @@ package com.pardot.service.tools.cobject;
 import com.pardot.service.tools.cobject.filters.CIndexFilter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -15,12 +16,13 @@ public class CIndex {
 
 	public String name;
 	public String key;
-	private ArrayList<String> keylist;
+	public ArrayList<String> compositeKeyList;
 	public ArrayList<CIndexFilter> filters;
 
 	public CIndex(String name, String key){
 		this.name = name;
 		this.key = key;
+		this.compositeKeyList = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
 	}
 
 	public String createIndexKey(HashMap obj){
