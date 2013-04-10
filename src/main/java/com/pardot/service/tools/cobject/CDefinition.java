@@ -17,8 +17,8 @@ import java.util.Iterator;
 public class CDefinition {
 
 	public String name;
-	public ArrayList<CField> fields;
-	public ArrayList<CIndex> indexes;
+	public HashMap<String, CField> fields;
+	public HashMap<String, CIndex> indexes;
 
 	public CDefinition(){
 	}
@@ -44,26 +44,26 @@ public class CDefinition {
 		this.indexes = this.generateIndexes(j.get("indexes"));
 	}
 
-	protected ArrayList<CField> generateFields(JsonNode dict){
-		ArrayList<CField> ret = new ArrayList<CField>();
+	protected HashMap<String, CField> generateFields(JsonNode dict){
+		HashMap<String, CField> ret = new HashMap<String, CField>();
 		Iterator<String> keys = dict.fieldNames();
 		while(keys.hasNext()){
 			String key = keys.next();
 			String type = dict.get(key).asText();
-			ret.add(new CField(key, CField.getCDataTypeFromString(type)));
+			ret.put(key, new CField(key, CField.getCDataTypeFromString(type)));
 		}
 		return ret;
 	}
 
-	protected ArrayList<CIndex> generateIndexes(JsonNode dict) throws CObjectParseException{
-		ArrayList<CIndex> ret = new ArrayList<CIndex>();
+	protected HashMap<String,CIndex> generateIndexes(JsonNode dict) throws CObjectParseException{
+		HashMap<String, CIndex> ret = new HashMap<String, CIndex>();
 		Iterator<String> keys = dict.fieldNames();
 		while(keys.hasNext()){
 			String name = keys.next();
 			String key = dict.get(name).get("key").asText();
 			CIndex toadd = new CIndex(name, key);
 			toadd.filters = this.makeFilterList(dict.get(name).get("filters"));
-			ret.add(toadd);
+			ret.put(name,toadd);
 		}
 		return ret;
 	}

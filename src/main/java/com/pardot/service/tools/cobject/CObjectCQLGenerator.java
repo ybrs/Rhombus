@@ -3,6 +3,7 @@ package com.pardot.service.tools.cobject;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -30,7 +31,7 @@ public class CObjectCQLGenerator {
 	protected static ArrayList<String> makeCQLforCreate(CDefinition def){
 		ArrayList<String> ret = new ArrayList<String>();
 		ret.add(makeStaticTableCreate(def));
-		for(CIndex i : def.indexes){
+		for(CIndex i : def.indexes.values()){
 			ret.add(makeWideTableCreate(def, i));
 		}
 		return ret;
@@ -80,14 +81,14 @@ public class CObjectCQLGenerator {
 		return String.format(
 			TEMPLATE_STATIC_CREATE,
 			def.name,
-			makeFieldList(def.fields, true));
+			makeFieldList(def.fields.values(), true));
 	}
 
 	protected static String makeWideTableCreate(CDefinition def, CIndex index){
 		return String.format(
 			TEMPLATE_WIDE_CREATE,
 			def.name+"__"+index.name,
-			makeFieldList(def.fields, true),
+			makeFieldList(def.fields.values(), true),
 			makeCommaList(index.compositeKeyList));
 	}
 
@@ -101,7 +102,7 @@ public class CObjectCQLGenerator {
 		return ret;
 	}
 
-	protected static String makeFieldList(ArrayList<CField> fields, boolean withType){
+	protected static String makeFieldList(Collection<CField> fields, boolean withType){
 		Iterator<CField> it = fields.iterator();
 		String ret = "";
 		while(it.hasNext()){

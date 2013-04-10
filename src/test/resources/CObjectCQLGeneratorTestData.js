@@ -19,7 +19,7 @@
 			"filters": ["CIndexFilterIncludeAll"]
 		},
 		"foreign_instance":  {
-			"key": "foreign:type:instance",
+			"key": "foreignid:type:instance",
 			"filters": ["CIndexFilterIncludeAll"]
 		}
 	}

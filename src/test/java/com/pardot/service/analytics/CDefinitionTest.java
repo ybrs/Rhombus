@@ -12,6 +12,7 @@ import com.pardot.service.tools.cobject.CDefinition;
 import org.apache.commons.io.*;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Pardot, An ExactTarget Company
@@ -30,14 +31,14 @@ public class CDefinitionTest extends TestCase{
 				System.out.println(location.getFile());
 				ObjectMapper mapper = new ObjectMapper();
 				JsonNode j =  mapper.readTree(json);
-				ArrayList<CField> result = this.generateFields(j);
+				HashMap<String, CField> result = this.generateFields(j);
 				assertTrue("Should have 3 fields in result", result.size() == 3);
-				assertTrue("First name should be accountId",result.get(0).name.equals("accountId"));
-				assertTrue("First type should be bigint",result.get(0).type == CField.CDataType.BIGINT);
-				assertTrue("Second name should be accountId",result.get(1).name.equals("fieldAsTime"));
-				assertTrue("Second type should be bigint",result.get(1).type == CField.CDataType.TIMEUUID);
-				assertTrue("Third name should be accountId",result.get(2).name.equals("fieldWithInvalidType"));
-				assertTrue("Third type should be bigint",result.get(2).type == CField.CDataType.VARCHAR);
+				assertTrue("First name should be accountId",result.get("accountId").name.equals("accountId"));
+				assertTrue("First type should be bigint",result.get("accountId").type == CField.CDataType.BIGINT);
+				assertTrue("Second name should be accountId",result.get("fieldAsTime").name.equals("fieldAsTime"));
+				assertTrue("Second type should be bigint",result.get("fieldAsTime").type == CField.CDataType.TIMEUUID);
+				assertTrue("Third name should be accountId",result.get("fieldWithInvalidType").name.equals("fieldWithInvalidType"));
+				assertTrue("Third type should be bigint",result.get("fieldWithInvalidType").type == CField.CDataType.VARCHAR);
 			}
 			catch(Exception e){
 				assertTrue(e.toString(), false);
@@ -52,18 +53,18 @@ public class CDefinitionTest extends TestCase{
 				System.out.println(location.getFile());
 				ObjectMapper mapper = new ObjectMapper();
 				JsonNode j =  mapper.readTree(json);
-				ArrayList<CIndex> result = this.generateIndexes(j);
+				HashMap<String,CIndex> result = this.generateIndexes(j);
 				assertTrue("Should have 2 fields in result", result.size() == 2);
-				assertEquals("First item's name should be account", "account",result.get(0).name);
-				assertEquals("First item's key should be accountId:uuid", "accountId:uuid",result.get(0).key);
-				assertEquals("Second item's name should be account_filtered", "account_filtered", result.get(1).name);
-				assertEquals("Second item's key should be accountId:uuid", "accountId:uuid",result.get(1).key);
+				assertEquals("First item's name should be account", "account",result.get("account").name);
+				assertEquals("First item's key should be accountId:uuid", "accountId:uuid",result.get("account").key);
+				assertEquals("Second item's name should be account_filtered", "account_filtered", result.get("account_filtered").name);
+				assertEquals("Second item's key should be accountId:uuid", "accountId:uuid",result.get("account_filtered").key);
 				//verify the filters
-				assertEquals("first item's filter list length should be 1", 1, result.get(0).filters.size());
-				assertEquals("Filter classname should be as given in json file", "com.pardot.service.tools.cobject.filters.CIndexFilterIncludeAll" , result.get(0).filters.get(0).getClass().getName());
-				assertEquals("second item's filter list length should be 1", 2, result.get(1).filters.size());
-				assertEquals("Filter classname should be as given in json file", "com.pardot.service.tools.cobject.filters.CIndexFilterExcludeFiltered" , result.get(1).filters.get(0).getClass().getName());
-				assertEquals("Filter classname should be as given in json file", "com.pardot.service.tools.cobject.filters.CIndexFilterIncludeAll" , result.get(1).filters.get(1).getClass().getName());
+				assertEquals("first item's filter list length should be 1", 1, result.get("account").filters.size());
+				assertEquals("Filter classname should be as given in json file", "com.pardot.service.tools.cobject.filters.CIndexFilterIncludeAll" , result.get("account").filters.get(0).getClass().getName());
+				assertEquals("second item's filter list length should be 1", 2, result.get("account_filtered").filters.size());
+				assertEquals("Filter classname should be as given in json file", "com.pardot.service.tools.cobject.filters.CIndexFilterExcludeFiltered" , result.get("account_filtered").filters.get(0).getClass().getName());
+				assertEquals("Filter classname should be as given in json file", "com.pardot.service.tools.cobject.filters.CIndexFilterIncludeAll" , result.get("account_filtered").filters.get(1).getClass().getName());
 			}
 			catch(Exception e){
 				assertTrue(e.toString(), false);
