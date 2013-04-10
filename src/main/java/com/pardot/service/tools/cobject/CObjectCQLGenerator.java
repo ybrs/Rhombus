@@ -86,7 +86,7 @@ public class CObjectCQLGenerator {
 	protected static String makeWideTableCreate(CDefinition def, CIndex index){
 		return String.format(
 			TEMPLATE_WIDE_CREATE,
-			def.name+":"+index.name,
+			def.name+"__"+index.name,
 			makeFieldList(def.fields, true),
 			makeCommaList(index.compositeKeyList));
 	}

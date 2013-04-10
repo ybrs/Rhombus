@@ -23,6 +23,18 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals(expected, cql);
 		}
 
+		public void testMakeWideTableCreate() throws CObjectParseException{
+			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
+			CDefinition def = new CDefinition(json);
+			String cql1 = Subject.makeWideTableCreate(def, def.indexes.get(0)); //TODO Turn Indexes in to a HASHMAP!
+			String expected1 = "CREATE TABLE testtype__foreign (id timeuuid, foreignid bigint,type int,instance bigint,filtered int,data1 varchar,data2 varchar,data3 varchar, PRIMARY KEY ((foreignid),id) );";
+			assertEquals(expected1, cql1);
+
+			String cql2 = Subject.makeWideTableCreate(def, def.indexes.get(1)); //TODO Turn Indexes in to a HASHMAP!
+			String expected2 = "";
+			assertEquals(expected2, cql2);
+		}
+
 
 	}
 
@@ -45,6 +57,11 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 	public void testMakeStaticTableCreate() throws CObjectParseException{
 		Subject s = new Subject();
 		s.testMakeStaticTableCreate();
+	}
+
+	public void testMakeWideTableCreate() throws CObjectParseException {
+		Subject s = new Subject();
+		s.testMakeWideTableCreate();
 	}
 
 
