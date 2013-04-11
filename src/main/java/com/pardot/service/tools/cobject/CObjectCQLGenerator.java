@@ -169,7 +169,7 @@ public class CObjectCQLGenerator {
     protected static boolean validateData(CDefinition def, Map<String,String> data){
         Collection<CField> fields = def.getFields().values();
         for( CField f : fields){
-            if(!data.containsKey(f.getType().toString())){
+            if(!data.containsKey(f.getName())){
                 return false;
             }
         }
