@@ -25,9 +25,13 @@ public class CIndex {
 		this.compositeKeyList = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
 	}
 
-	public String createIndexKey(HashMap obj){
-		//loop through the keylist and contruct the actual index key
-		return "test:test:test";
+	public boolean passesAllFilters(HashMap<String,String> data){
+		for(CIndexFilter f : this.filters){
+			if(!f.isIncluded(data)){
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

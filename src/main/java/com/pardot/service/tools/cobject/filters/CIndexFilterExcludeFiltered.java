@@ -10,6 +10,6 @@ import java.util.HashMap;
 public class CIndexFilterExcludeFiltered implements CIndexFilter{
 
 	public boolean isIncluded(HashMap<String,String> obj){
-		return obj.get("filtered").equals("1") ? true : false;
+		return obj.get("filtered").equals("1") ? false : true;
 	}
 }

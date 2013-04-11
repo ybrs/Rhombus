@@ -21,6 +21,11 @@
 		"foreign_instance":  {
 			"key": "foreignid:type:instance",
 			"filters": ["CIndexFilterIncludeAll"]
+		},
+		"unfiltered_Instance":  {
+			"key": "type:instance",
+			"filters": ["CIndexFilterExcludeFiltered"]
 		}
+
 	}
 }
