@@ -38,6 +38,7 @@ public class CObjectCQLGenerator {
 		return ret;
 	}
 
+	//TODO: TIMESTAMPS AND CONSISTENCY
 	protected static ArrayList<String> makeCQLforInsert(CDefinition def, HashMap<String,String> data) throws CQLGenerationException{
 		ArrayList<String> ret = new ArrayList<String>();
 		if(!validateData(def, data)){
