@@ -22,39 +22,39 @@ public class CDefinition {
 
 	private String name;
 	private Map<String, CField> fields;
-    private Map<String, CIndex> indexes;
+	private Map<String, CIndex> indexes;
 
 	public CDefinition(){
 	}
 
-    public static CDefinition fromJsonString(String json) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, CDefinition.class);
-    }
+	public static CDefinition fromJsonString(String json) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.readValue(json, CDefinition.class);
+	}
 
-    //Getters and setters for Jackson
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public Map<String, CField> getFields() {
-        return fields;
-    }
-    public void setFields(List<CField> fields) {
-        this.fields = Maps.newHashMap();
-        for(CField field : fields) {
-            this.fields.put(field.getName(), field);
-        }
-    }
-    public Map<String, CIndex> getIndexes() {
-        return indexes;
-    }
-    public void setIndexes(List<CIndex> indexes) {
-        this.indexes = Maps.newHashMap();
-        for(CIndex index : indexes) {
-            this.indexes.put(index.getName(), index);
-        }
-    }
+	//Getters and setters for Jackson
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public Map<String, CField> getFields() {
+		return fields;
+	}
+	public void setFields(List<CField> fields) {
+		this.fields = Maps.newHashMap();
+		for(CField field : fields) {
+			this.fields.put(field.getName(), field);
+		}
+	}
+	public Map<String, CIndex> getIndexes() {
+		return indexes;
+	}
+	public void setIndexes(List<CIndex> indexes) {
+		this.indexes = Maps.newHashMap();
+		for(CIndex index : indexes) {
+			this.indexes.put(index.getName(), index);
+		}
+	}
 }

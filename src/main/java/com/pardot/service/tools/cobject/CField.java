@@ -102,22 +102,22 @@ public class CField {
 		}
 	}
 
-    private String name;
-    private CDataType type;
+	private String name;
+	private CDataType type;
 
-    public CField() {
+	public CField() {
 
-    }
+	}
 
 	public CField(String name, CDataType type){
 		this.name = name;
 		this.type = type;
 	}
 
-    public CField(String name, String type) throws CObjectParseException {
-        this.name = name;
-        this.setType(type);
-    }
+	public CField(String name, String type) throws CObjectParseException {
+		this.name = name;
+		this.setType(type);
+	}
 
 	public static CDataType getCDataTypeFromString(String str) throws CObjectParseException {
 		for (CDataType t : CDataType.values()) {
@@ -128,16 +128,16 @@ public class CField {
 		throw new CObjectParseException("Invalid C* type provided in definition: " + str);
 	}
 
-    public CDataType getType() {
-        return type;
-    }
-    public void setType(String type) throws CObjectParseException {
-        this.type = getCDataTypeFromString(type);
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
+	public CDataType getType() {
+		return type;
+	}
+	public void setType(String type) throws CObjectParseException {
+		this.type = getCDataTypeFromString(type);
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 }

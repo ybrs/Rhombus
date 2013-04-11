@@ -19,9 +19,9 @@ public class CIndex {
 	public List<String> compositeKeyList;
 	public List<CIndexFilter> filters;
 
-    public CIndex() {
+	public CIndex() {
 
-    }
+	}
 
 	public CIndex(String name, String key){
 		this.name = name;
@@ -37,20 +37,20 @@ public class CIndex {
 		return true;
 	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public String getKey() {
-        return key;
-    }
+	public String getKey() {
+		return key;
+	}
 
-    public void setKey(String key) {
-        this.key = key;
-        this.compositeKeyList = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
-    }
+	public void setKey(String key) {
+		this.key = key;
+		this.compositeKeyList = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
+	}
 }
