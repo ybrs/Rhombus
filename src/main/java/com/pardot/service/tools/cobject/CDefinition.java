@@ -3,10 +3,10 @@ package com.pardot.service.tools.cobject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.pardot.service.tools.cobject.filters.CIndexFilter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
@@ -43,7 +43,7 @@ public class CDefinition {
 	}
 
 	protected Map<String, CField> generateFields(JsonNode dict){
-		Map<String, CField> ret = new HashMap<String, CField>();
+		Map<String, CField> ret = Maps.newHashMap();
 		Iterator<String> keys = dict.fieldNames();
 		while(keys.hasNext()){
 			String key = keys.next();
@@ -54,7 +54,7 @@ public class CDefinition {
 	}
 
 	protected Map<String,CIndex> generateIndexes(JsonNode dict) throws CObjectParseException{
-		Map<String, CIndex> ret = new HashMap<String, CIndex>();
+		Map<String, CIndex> ret = Maps.newHashMap();
 		Iterator<String> keys = dict.fieldNames();
 		while(keys.hasNext()){
 			String name = keys.next();
@@ -68,7 +68,7 @@ public class CDefinition {
 
 	protected List<CIndexFilter> makeFilterList(JsonNode jn) throws CObjectParseException{
 		try{
-			List<CIndexFilter> ret = new ArrayList<CIndexFilter>();
+			List<CIndexFilter> ret = Lists.newArrayList();
 			Iterator<JsonNode> it = jn.iterator();
 			while(it.hasNext()){
 				JsonNode item = it.next();

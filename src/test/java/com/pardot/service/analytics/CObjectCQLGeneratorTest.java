@@ -1,13 +1,11 @@
 package com.pardot.service.analytics;
 
+import com.google.common.collect.Maps;
 import com.pardot.service.analytics.helpers.TestHelpers;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import com.pardot.service.tools.cobject.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +45,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 		public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = new CDefinition(json);
-			Map<String,String> data = new HashMap<String, String>();
+			Map<String,String> data = Maps.newHashMap();
 			data.put("type","5");
 			data.put("instance", "222222");
 			data.put("filtered", "1");
@@ -61,7 +59,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			actual = Subject.makeCQLforInsert(def,data);
 			assertEquals("Should generate CQL statements for the static table plus all indexes including the filtered index", 5, actual.size());
 			//static table
-			assertEquals("INSERT INTO testtype (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (NOW(), 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777);",actual.get(0));
+			assertEquals("INSERT INTO testtype (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (NOW(), 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777);", actual.get(0));
 			//index 1
 			assertEquals("INSERT INTO testtype__foreign_instance (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (NOW(), 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777);", actual.get(1));
 			//index 2

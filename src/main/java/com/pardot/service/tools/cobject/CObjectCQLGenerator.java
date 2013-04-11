@@ -1,6 +1,8 @@
 package com.pardot.service.tools.cobject;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +26,7 @@ public class CObjectCQLGenerator {
 	protected Map<String, CDefinition> definitions;
 
 	public CObjectCQLGenerator(){
-		this.definitions = new HashMap<String, CDefinition>();
+		this.definitions = Maps.newHashMap();
 	}
 
 	public CObjectCQLGenerator(HashMap<String, CDefinition> objectDefinitions){
@@ -32,7 +34,7 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static List<String> makeCQLforCreate(CDefinition def){
-		List<String> ret = new ArrayList<String>();
+		List<String> ret = Lists.newArrayList();
 		ret.add(makeStaticTableCreate(def));
 		for(CIndex i : def.indexes.values()){
 			ret.add(makeWideTableCreate(def, i));
@@ -42,7 +44,7 @@ public class CObjectCQLGenerator {
 
 	//TODO: TIMESTAMPS AND CONSISTENCY
 	protected static List<String> makeCQLforInsert(CDefinition def, Map<String,String> data) throws CQLGenerationException{
-		List<String> ret = new ArrayList<String>();
+		List<String> ret = Lists.newArrayList();
 		if(!validateData(def, data)){
 			throw new CQLGenerationException("Invalid Insert Requested. Missing Field(s)");
 		}
@@ -77,7 +79,7 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static List<String> makeCQLforDelete(CDefinition def, String key){
-		ArrayList<String> ret = new ArrayList<String>();
+		ArrayList<String> ret = Lists.newArrayList();
 
 		return ret;
 	}
@@ -124,7 +126,7 @@ public class CObjectCQLGenerator {
 			fieldList.add(f.name);
 			valueList.add(getCQLValueString(f,data.get(f.name)));
 		}
-		Map<String,ArrayList<String>> ret = new HashMap<String, ArrayList<String>>();
+		Map<String,ArrayList<String>> ret = Maps.newHashMap();
 		ret.put("fields", fieldList);
 		ret.put("values", valueList);
 		return ret;
