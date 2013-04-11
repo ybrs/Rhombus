@@ -6,6 +6,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import com.pardot.service.tools.cobject.*;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -18,33 +20,33 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 
 	public class Subject extends CObjectCQLGenerator {
 
-		public void testMakeStaticTableCreate() throws CObjectParseException{
+		public void testMakeStaticTableCreate() throws CObjectParseException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
-			CDefinition def = new CDefinition(json);
+			CDefinition def = CDefinition.fromJsonString(json);
 			String cql = Subject.makeStaticTableCreate(def);
 			String expected = "CREATE TABLE testtype (id timeuuid PRIMARY KEY, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint);";
 			assertEquals(expected, cql);
 		}
 
-		public void testMakeWideTableCreate() throws CObjectParseException{
+		public void testMakeWideTableCreate() throws CObjectParseException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
-			CDefinition def = new CDefinition(json);
-			String cql1 = Subject.makeWideTableCreate(def, def.indexes.get("foreign"));
+			CDefinition def = CDefinition.fromJsonString(json);
+			String cql1 = Subject.makeWideTableCreate(def, def.getIndexes().get("foreign"));
 			String expected1 = "CREATE TABLE testtype__foreign (id timeuuid, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint, PRIMARY KEY ((foreignid),id) );";
 			assertEquals(expected1, cql1);
 
-			String cql2 = Subject.makeWideTableCreate(def, def.indexes.get("instance"));
+			String cql2 = Subject.makeWideTableCreate(def, def.getIndexes().get("instance"));
 			String expected2 = "CREATE TABLE testtype__instance (id timeuuid, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint, PRIMARY KEY ((type, instance),id) );";
 			assertEquals(expected2, cql2);
 
-			String cql3 = Subject.makeWideTableCreate(def, def.indexes.get("foreign_instance"));
+			String cql3 = Subject.makeWideTableCreate(def, def.getIndexes().get("foreign_instance"));
 			String expected3 = "CREATE TABLE testtype__foreign_instance (id timeuuid, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint, PRIMARY KEY ((foreignid, type, instance),id) );";
 			assertEquals(expected3, cql3);
 		}
 
-		public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException {
+		public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
-			CDefinition def = new CDefinition(json);
+			CDefinition def = CDefinition.fromJsonString(json);
 			Map<String,String> data = Maps.newHashMap();
 			data.put("type","5");
 			data.put("instance", "222222");
@@ -70,9 +72,9 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals("INSERT INTO testtype__unfiltered_Instance (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (NOW(), 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777);",actual.get(4));
 		}
 
-		public void testMakeCQLforCreate() throws CObjectParseException {
+		public void testMakeCQLforCreate() throws CObjectParseException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
-			CDefinition def = new CDefinition(json);
+			CDefinition def = CDefinition.fromJsonString(json);
 			List<String> actual = Subject.makeCQLforCreate(def);
 			assertEquals("Should generate CQL statements for the static table plus all indexes", 5, actual.size());
 		}
@@ -96,22 +98,22 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 		return new TestSuite( CObjectCQLGeneratorTest.class );
 	}
 
-	public void testMakeStaticTableCreate() throws CObjectParseException{
+	public void testMakeStaticTableCreate() throws CObjectParseException, IOException {
 		Subject s = new Subject();
 		s.testMakeStaticTableCreate();
 	}
 
-	public void testMakeWideTableCreate() throws CObjectParseException {
+	public void testMakeWideTableCreate() throws CObjectParseException, IOException {
 		Subject s = new Subject();
 		s.testMakeWideTableCreate();
 	}
 
-	public void testMakeCQLforCreate() throws CObjectParseException {
+	public void testMakeCQLforCreate() throws CObjectParseException, IOException {
 		Subject s = new Subject();
 		s.testMakeCQLforCreate();
 	}
 
-	public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException {
+	public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException, IOException {
 		Subject s = new Subject();
 		s.testMakeCQLforInsert();
 	}

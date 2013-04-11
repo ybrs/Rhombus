@@ -7,7 +7,7 @@ import java.util.Map;
  * User: robrighter
  * Date: 4/6/13
  */
-public class CIndexFilterExcludeFiltered implements CIndexFilter{
+public class CIndexFilterExcludeFiltered extends CIndexFilter{
 
 	public boolean isIncluded(Map<String,String> obj){
 		return obj.get("filtered").equals("1") ? false : true;

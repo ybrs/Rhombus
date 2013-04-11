@@ -1,5 +1,8 @@
 package com.pardot.service.tools.cobject.filters;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.Map;
 
 /**
@@ -7,7 +10,17 @@ import java.util.Map;
  * User: robrighter
  * Date: 4/4/13
  */
-public interface CIndexFilter {
 
-	public boolean isIncluded(Map<String,String> obj);
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CIndexFilterExcludeFiltered.class, name = "CIndexFilterExcludeFiltered"),
+        @JsonSubTypes.Type(value = CIndexFilterIncludeAll.class, name = "CIndexFilterIncludeAll")
+})
+public abstract class CIndexFilter {
+
+	public abstract boolean isIncluded(Map<String,String> obj);
+
 }

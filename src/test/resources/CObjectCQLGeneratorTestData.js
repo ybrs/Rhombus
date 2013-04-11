@@ -1,31 +1,34 @@
 {
 	"name": "testtype",
-	"fields": {
-		"foreignid": "bigint",
-		"type": "int",
-		"instance": "bigint",
-		"filtered": "int",
-		"data1": "varchar",
-		"data2": "varchar",
-		"data3": "varchar"
-	},
-	"indexes" : {
-		"foreign": {
-			"key": "foreignid",
-			"filters": ["CIndexFilterIncludeAll"]
-		},
-		"instance":  {
-			"key": "type:instance",
-			"filters": ["CIndexFilterIncludeAll"]
-		},
-		"foreign_instance":  {
-			"key": "foreignid:type:instance",
-			"filters": ["CIndexFilterIncludeAll"]
-		},
-		"unfiltered_Instance":  {
-			"key": "type:instance",
-			"filters": ["CIndexFilterExcludeFiltered"]
-		}
-
-	}
+	"fields": [
+		{"name": "foreignid", "type": "bigint"},
+		{"name": "type", "type": "int"},
+		{"name": "instance", "type": "bigint"},
+		{"name": "filtered", "type": "int"},
+		{"name": "data1", "type": "varchar"},
+		{"name": "data2", "type": "varchar"},
+		{"name": "data3", "type": "varchar"}
+	],
+	"indexes" : [
+	    {
+            "name": "foreign",
+            "key": "foreignid",
+            "filters" : [{"type": "CIndexFilterIncludeAll"}]
+	    },
+        {
+            "name": "instance",
+            "key": "type:instance",
+            "filters" : [{"type": "CIndexFilterIncludeAll"}]
+        },
+        {
+            "name": "foreign_instance",
+            "key": "foreignid:type:instance",
+            "filters" : [{"type": "CIndexFilterIncludeAll"}]
+        },
+        {
+            "name": "unfiltered_Instance",
+            "key": "type:instance",
+            "filters" : [{"type": "CIndexFilterExcludeFiltered"}]
+        }
+	]
 }

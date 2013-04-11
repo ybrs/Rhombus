@@ -14,15 +14,18 @@ import java.util.List;
  */
 public class CIndex {
 
-	public String name;
-	public String key;
+	private String name;
+	private String key;
 	public List<String> compositeKeyList;
 	public List<CIndexFilter> filters;
 
+    public CIndex() {
+
+    }
+
 	public CIndex(String name, String key){
 		this.name = name;
-		this.key = key;
-		this.compositeKeyList = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
+		this.setKey(key);
 	}
 
 	public boolean passesAllFilters(Map<String,String> data){
@@ -34,4 +37,20 @@ public class CIndex {
 		return true;
 	}
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+        this.compositeKeyList = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
+    }
 }

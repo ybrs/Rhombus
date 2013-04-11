@@ -36,7 +36,7 @@ public class CObjectCQLGenerator {
 	protected static List<String> makeCQLforCreate(CDefinition def){
 		List<String> ret = Lists.newArrayList();
 		ret.add(makeStaticTableCreate(def));
-		for(CIndex i : def.indexes.values()){
+		for(CIndex i : def.getIndexes().values()){
 			ret.add(makeWideTableCreate(def, i));
 		}
 		return ret;
@@ -52,16 +52,16 @@ public class CObjectCQLGenerator {
 		//Static Table
 		ret.add(String.format(
 				TEMPLATE_INSERT,
-				def.name,
+				def.getName(),
 				makeCommaList(fieldsAndValues.get("fields")),
 				makeCommaList(fieldsAndValues.get("values"))
 		));
 		//Index Tables
-		for(CIndex i : def.indexes.values()){
+		for(CIndex i : def.getIndexes().values()){
 			if(i.passesAllFilters(data)){
 				ret.add(String.format(
 						TEMPLATE_INSERT,
-						def.name+"__"+i.name,
+						def.getName()+"__"+i.getName(),
 						makeCommaList(fieldsAndValues.get("fields")),
 						makeCommaList(fieldsAndValues.get("values"))
 				));
@@ -107,24 +107,24 @@ public class CObjectCQLGenerator {
 	protected static String makeStaticTableCreate(CDefinition def){
 		return String.format(
 			TEMPLATE_STATIC_CREATE,
-			def.name,
-			makeFieldList(def.fields.values(), true));
+			def.getName(),
+			makeFieldList(def.getFields().values(), true));
 	}
 
 	protected static String makeWideTableCreate(CDefinition def, CIndex index){
 		return String.format(
 			TEMPLATE_WIDE_CREATE,
-			def.name+"__"+index.name,
-			makeFieldList(def.fields.values(), true),
+			def.getName()+"__"+index.getName(),
+			makeFieldList(def.getFields().values(), true),
 			makeCommaList(index.compositeKeyList));
 	}
 
 	protected static Map<String,ArrayList<String>> makeFieldAndValueList(CDefinition def, Map<String,String> data){
-		ArrayList<String> fieldList = new ArrayList<String>(def.fields.size());
-		ArrayList<String> valueList = new ArrayList<String>(def.fields.size());
-		for(CField f : def.fields.values()){
-			fieldList.add(f.name);
-			valueList.add(getCQLValueString(f,data.get(f.name)));
+		ArrayList<String> fieldList = new ArrayList<String>(def.getFields().size());
+		ArrayList<String> valueList = new ArrayList<String>(def.getFields().size());
+		for(CField f : def.getFields().values()){
+			fieldList.add(f.getName());
+			valueList.add(getCQLValueString(f,data.get(f.getName())));
 		}
 		Map<String,ArrayList<String>> ret = Maps.newHashMap();
 		ret.put("fields", fieldList);
@@ -133,9 +133,9 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static boolean validateData(CDefinition def, Map<String,String> data){
-		Collection<CField> fields = def.fields.values();
+		Collection<CField> fields = def.getFields().values();
 		for( CField f : fields){
-			if(!data.containsKey(f.name)){
+			if(!data.containsKey(f.getName())){
 				return false;
 			}
 		}
@@ -144,7 +144,7 @@ public class CObjectCQLGenerator {
 
 	protected static String getCQLValueString(CField f, String value){
 		String strTemplate = "'%s'";
-		switch (f.type){
+		switch (f.getType()){
 			case ASCII:
 			case TEXT:
 			case TIMESTAMP:
@@ -170,8 +170,8 @@ public class CObjectCQLGenerator {
 		String ret = "";
 		while(it.hasNext()){
 			CField f = it.next();
-			ret = ret + f.name +
-				(withType ? " " + f.type : "") +
+			ret = ret + f.getName() +
+				(withType ? " " + f.getType() : "") +
 				(it.hasNext() ? "," : "");
 		}
 		return ret;
