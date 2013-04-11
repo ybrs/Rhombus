@@ -10,6 +10,7 @@ import com.pardot.service.tools.cobject.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Pardot, An ExactTarget Company
@@ -58,18 +59,25 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			List<String> actual = Subject.makeCQLforInsert(def,data);
 			assertEquals("Should generate CQL statements for the static table plus all indexes except the filtered index", 4, actual.size());
 			data.put("filtered", "0");
-			actual = Subject.makeCQLforInsert(def,data);
+			UUID uuid = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
+			actual = Subject.makeCQLforInsert(def,data,uuid,1,0);
 			assertEquals("Should generate CQL statements for the static table plus all indexes including the filtered index", 5, actual.size());
 			//static table
-			assertEquals("INSERT INTO testtype (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (NOW(), 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777);", actual.get(0));
+			assertEquals("INSERT INTO testtype (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(0));
 			//index 1
-			assertEquals("INSERT INTO testtype__foreign_instance (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (NOW(), 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777);", actual.get(1));
+			assertEquals("INSERT INTO testtype__foreign_instance (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(1));
 			//index 2
-			assertEquals("INSERT INTO testtype__instance (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (NOW(), 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777);",actual.get(2));
+			assertEquals("INSERT INTO testtype__instance (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(2));
 			//index 3
-			assertEquals("INSERT INTO testtype__foreign (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (NOW(), 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777);",actual.get(3));
+			assertEquals("INSERT INTO testtype__foreign (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(3));
 			//index 4
-			assertEquals("INSERT INTO testtype__unfiltered_Instance (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (NOW(), 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777);",actual.get(4));
+			assertEquals("INSERT INTO testtype__unfiltered_Instance (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(4));
+
+			//test with ttl
+			actual = Subject.makeCQLforInsert(def,data,uuid,1,20);
+			assertEquals("INSERT INTO testtype (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1 AND TTL 20;", actual.get(0));
+
+
 		}
 
 		public void testMakeCQLforCreate() throws CObjectParseException, IOException {
