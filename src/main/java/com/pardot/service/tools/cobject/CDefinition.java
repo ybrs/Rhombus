@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pardot.service.tools.cobject.filters.CIndexFilter;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
@@ -25,7 +26,7 @@ public class CDefinition {
 	public CDefinition(){
 	}
 
-	public CDefinition(String json) throws CObjectParseException{
+	public CDefinition(@NotNull String json) throws CObjectParseException{
 		try{
 			parseJson(json);
 		}
@@ -34,7 +35,7 @@ public class CDefinition {
 		}
 	}
 
-	protected void parseJson(String json) throws java.io.IOException, CObjectParseException{
+	protected void parseJson(@NotNull String json) throws java.io.IOException, CObjectParseException{
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode j =  mapper.readTree(json);
 		this.name = j.get("name").asText();
@@ -42,7 +43,8 @@ public class CDefinition {
 		this.indexes = this.generateIndexes(j.get("indexes"));
 	}
 
-	protected Map<String, CField> generateFields(JsonNode dict) throws CObjectParseException {
+	@NotNull
+	protected Map<String, CField> generateFields(@NotNull JsonNode dict) throws CObjectParseException {
 		Map<String, CField> ret = Maps.newHashMap();
 		Iterator<String> keys = dict.fieldNames();
 		while(keys.hasNext()){
@@ -53,7 +55,8 @@ public class CDefinition {
 		return ret;
 	}
 
-	protected Map<String,CIndex> generateIndexes(JsonNode dict) throws CObjectParseException{
+	@NotNull
+	protected Map<String,CIndex> generateIndexes(@NotNull JsonNode dict) throws CObjectParseException{
 		Map<String, CIndex> ret = Maps.newHashMap();
 		Iterator<String> keys = dict.fieldNames();
 		while(keys.hasNext()){
@@ -66,7 +69,8 @@ public class CDefinition {
 		return ret;
 	}
 
-	protected List<CIndexFilter> makeFilterList(JsonNode jn) throws CObjectParseException{
+	@NotNull
+	protected List<CIndexFilter> makeFilterList(@NotNull JsonNode jn) throws CObjectParseException{
 		try{
 			List<CIndexFilter> ret = Lists.newArrayList();
 			Iterator<JsonNode> it = jn.iterator();

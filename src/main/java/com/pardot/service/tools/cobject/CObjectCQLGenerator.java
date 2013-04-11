@@ -1,15 +1,18 @@
 package com.pardot.service.tools.cobject;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Pardot, An ExactTarget Company
@@ -20,8 +23,7 @@ public class CObjectCQLGenerator {
 
 	protected static final String TEMPLATE_STATIC_CREATE = "CREATE TABLE %s (id timeuuid PRIMARY KEY, %s);";
 	protected static final String TEMPLATE_WIDE_CREATE = "CREATE TABLE %s (id timeuuid, %s, PRIMARY KEY ((%s),id) );";
-
-	protected static final String TEMPLATE_INSERT = "INSERT INTO %s (id, %s) VALUES (NOW(), %s);";
+	protected static final String TEMPLATE_INSERT = "INSERT INTO %s (id, %s) VALUES (%s, %s) USING TIMESTAMP %s%s;";
 
 	protected Map<String, CDefinition> definitions;
 
@@ -33,6 +35,7 @@ public class CObjectCQLGenerator {
 		this.definitions = objectDefinitions;
 	}
 
+
 	protected static List<String> makeCQLforCreate(CDefinition def){
 		List<String> ret = Lists.newArrayList();
 		ret.add(makeStaticTableCreate(def));
@@ -42,28 +45,54 @@ public class CObjectCQLGenerator {
 		return ret;
 	}
 
-	//TODO: TIMESTAMPS AND CONSISTENCY
-	protected static List<String> makeCQLforInsert(CDefinition def, Map<String,String> data) throws CQLGenerationException{
+
+	protected static String makeInsertStatement(String table, String fields, String values, UUID uuid, long timestamp, int ttl){
+		return String.format(
+				TEMPLATE_INSERT,
+				table,
+				fields,
+				uuid.toString(),
+				values,
+				timestamp+"",
+				(ttl == 0) ? "" : (" AND TTL "+ ttl)
+		);
+	}
+
+	protected static List<String> makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,String> data) throws CQLGenerationException{
+		return makeCQLforInsert(def,data,null,0,0);
+	}
+
+	protected static List<String> makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,String> data, @Nullable UUID uuid, long timestamp, int ttl) throws CQLGenerationException{
 		List<String> ret = Lists.newArrayList();
+		if(uuid == null){
+			uuid = UUIDs.timeBased();
+		}
+		if(timestamp == 0){
+			timestamp = UUIDs.unixTimestamp(uuid);
+		}
 		if(!validateData(def, data)){
 			throw new CQLGenerationException("Invalid Insert Requested. Missing Field(s)");
 		}
 		Map<String,ArrayList<String>> fieldsAndValues = makeFieldAndValueList(def,data);
 		//Static Table
-		ret.add(String.format(
-				TEMPLATE_INSERT,
+		ret.add(makeInsertStatement(
 				def.name,
 				makeCommaList(fieldsAndValues.get("fields")),
-				makeCommaList(fieldsAndValues.get("values"))
+				makeCommaList(fieldsAndValues.get("values")),
+				uuid,
+				timestamp,
+				ttl
 		));
 		//Index Tables
 		for(CIndex i : def.indexes.values()){
 			if(i.passesAllFilters(data)){
-				ret.add(String.format(
-						TEMPLATE_INSERT,
+				ret.add(makeInsertStatement(
 						def.name+"__"+i.name,
 						makeCommaList(fieldsAndValues.get("fields")),
-						makeCommaList(fieldsAndValues.get("values"))
+						makeCommaList(fieldsAndValues.get("values")),
+						uuid,
+						timestamp,
+						ttl
 				));
 			}
 		}
@@ -84,22 +113,27 @@ public class CObjectCQLGenerator {
 		return ret;
 	}
 
+	@NotNull
 	public List<String> makeCQLforCreate(String objType){
 		return makeCQLforCreate(this.definitions.get(objType));
 	}
 
+	@NotNull
 	public List<String> makeCQLforInsert(String objType, Map<String,String> data) throws CQLGenerationException {
 		return makeCQLforInsert(this.definitions.get(objType), data);
 	}
 
+	@NotNull
 	public String makeCQLforGet(String objType, String key){
 		return makeCQLforGet(this.definitions.get(objType), key);
 	}
 
+	@NotNull
 	public String makeCQLforGet(String objType, String index, String[] keys){
 	 	return makeCQLforGet(this.definitions.get(objType), index, keys);
 	}
 
+	@NotNull
 	public List<String> makeCQLforDelete(String objType, String key){
 		return makeCQLforDelete(this.definitions.get(objType), key);
 	}

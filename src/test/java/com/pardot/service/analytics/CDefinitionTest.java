@@ -23,7 +23,6 @@ public class CDefinitionTest extends TestCase{
 			String json = TestHelpers.readFileToString(this.getClass(),"CFieldsTestData.js");
 			assertTrue("Invalid Test File", !json.equals(""));
 			try{
-				java.net.URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
 				ObjectMapper mapper = new ObjectMapper();
 				JsonNode j =  mapper.readTree(json);
 				Map<String, CField> result = this.generateFields(j);
