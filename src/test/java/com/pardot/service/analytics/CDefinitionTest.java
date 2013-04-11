@@ -3,12 +3,11 @@ package com.pardot.service.analytics;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pardot.service.analytics.helpers.TestHelpers;
-import com.pardot.service.tools.cobject.CField;
-import com.pardot.service.tools.cobject.CIndex;
+import com.pardot.service.tools.cobject.*;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import com.pardot.service.tools.cobject.CDefinition;
+
 import java.util.Map;
 
 /**
@@ -25,20 +24,31 @@ public class CDefinitionTest extends TestCase{
 			assertTrue("Invalid Test File", !json.equals(""));
 			try{
 				java.net.URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
-				System.out.println(location.getFile());
 				ObjectMapper mapper = new ObjectMapper();
 				JsonNode j =  mapper.readTree(json);
 				Map<String, CField> result = this.generateFields(j);
-				assertTrue("Should have 3 fields in result", result.size() == 3);
+				assertTrue("Should have 3 fields in result", result.size() == 2);
 				assertTrue("First name should be accountId",result.get("accountId").name.equals("accountId"));
 				assertTrue("First type should be bigint",result.get("accountId").type == CField.CDataType.BIGINT);
 				assertTrue("Second name should be accountId",result.get("fieldAsTime").name.equals("fieldAsTime"));
 				assertTrue("Second type should be bigint",result.get("fieldAsTime").type == CField.CDataType.TIMEUUID);
-				assertTrue("Third name should be accountId",result.get("fieldWithInvalidType").name.equals("fieldWithInvalidType"));
-				assertTrue("Third type should be bigint",result.get("fieldWithInvalidType").type == CField.CDataType.VARCHAR);
 			}
 			catch(Exception e){
 				assertTrue(e.toString(), false);
+			}
+
+			//Now try with invalid field type included
+			json = TestHelpers.readFileToString(this.getClass(),"CFieldsTestDataInvalid.js");
+			assertTrue("Invalid Test File", !json.equals(""));
+			try{
+				java.net.URL location = Test.class.getProtectionDomain().getCodeSource().getLocation();
+				ObjectMapper mapper = new ObjectMapper();
+				JsonNode j =  mapper.readTree(json);
+				this.generateFields(j);
+				assertTrue("Should have thrown exception by this point", false);
+			}
+			catch(Exception e){
+				assertTrue("Should throw CObjectParseException for invalid field type", e instanceof CObjectParseException);
 			}
 		}
 

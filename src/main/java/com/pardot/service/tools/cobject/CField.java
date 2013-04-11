@@ -110,13 +110,13 @@ public class CField {
 		this.type = type;
 	}
 
-	public static CDataType getCDataTypeFromString(String str){
+	public static CDataType getCDataTypeFromString(String str) throws CObjectParseException {
 		for (CDataType t : CDataType.values()) {
 			if(t.toString().equals(str)){
 				return t;
 			}
 		}
-		return CDataType.VARCHAR;
+		throw new CObjectParseException("Invalid C* type provided in definition: " + str);
 	}
 
 

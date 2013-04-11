@@ -1,5 +1,4 @@
 {
 	"accountId": "bigint",
-	"fieldAsTime": "timeuuid",
-	"fieldWithInvalidType": "notvalid"
+	"fieldAsTime": "timeuuid"
 }

@@ -42,7 +42,7 @@ public class CDefinition {
 		this.indexes = this.generateIndexes(j.get("indexes"));
 	}
 
-	protected Map<String, CField> generateFields(JsonNode dict){
+	protected Map<String, CField> generateFields(JsonNode dict) throws CObjectParseException {
 		Map<String, CField> ret = Maps.newHashMap();
 		Iterator<String> keys = dict.fieldNames();
 		while(keys.hasNext()){
