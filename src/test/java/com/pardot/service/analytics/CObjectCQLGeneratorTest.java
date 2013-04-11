@@ -8,6 +8,8 @@ import com.pardot.service.tools.cobject.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Pardot, An ExactTarget Company
@@ -45,7 +47,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 		public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = new CDefinition(json);
-			HashMap<String,String> data = new HashMap<String, String>();
+			Map<String,String> data = new HashMap<String, String>();
 			data.put("type","5");
 			data.put("instance", "222222");
 			data.put("filtered", "1");
@@ -53,7 +55,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			data.put("data1","This is data one");
 			data.put("data2","This is data two");
 			data.put("data3","This is data three");
-			ArrayList<String> actual = Subject.makeCQLforInsert(def,data);
+			List<String> actual = Subject.makeCQLforInsert(def,data);
 			assertEquals("Should generate CQL statements for the static table plus all indexes except the filtered index", 4, actual.size());
 			data.put("filtered", "0");
 			actual = Subject.makeCQLforInsert(def,data);
@@ -73,7 +75,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 		public void testMakeCQLforCreate() throws CObjectParseException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = new CDefinition(json);
-			ArrayList<String> actual = Subject.makeCQLforCreate(def);
+			List<String> actual = Subject.makeCQLforCreate(def);
 			assertEquals("Should generate CQL statements for the static table plus all indexes", 5, actual.size());
 		}
 

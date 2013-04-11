@@ -13,6 +13,8 @@ import org.apache.commons.io.*;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Pardot, An ExactTarget Company
@@ -31,7 +33,7 @@ public class CDefinitionTest extends TestCase{
 				System.out.println(location.getFile());
 				ObjectMapper mapper = new ObjectMapper();
 				JsonNode j =  mapper.readTree(json);
-				HashMap<String, CField> result = this.generateFields(j);
+				Map<String, CField> result = this.generateFields(j);
 				assertTrue("Should have 3 fields in result", result.size() == 3);
 				assertTrue("First name should be accountId",result.get("accountId").name.equals("accountId"));
 				assertTrue("First type should be bigint",result.get("accountId").type == CField.CDataType.BIGINT);
@@ -53,7 +55,7 @@ public class CDefinitionTest extends TestCase{
 				System.out.println(location.getFile());
 				ObjectMapper mapper = new ObjectMapper();
 				JsonNode j =  mapper.readTree(json);
-				HashMap<String,CIndex> result = this.generateIndexes(j);
+				Map<String,CIndex> result = this.generateIndexes(j);
 				assertTrue("Should have 2 fields in result", result.size() == 2);
 				assertEquals("First item's name should be account", "account",result.get("account").name);
 				assertEquals("First item's key should be accountId:uuid", "accountId:uuid",result.get("account").key);

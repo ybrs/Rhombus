@@ -1,6 +1,6 @@
 package com.pardot.service.tools.cobject.filters;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Pardot, An ExactTarget Company
@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 public class CIndexFilterExcludeFiltered implements CIndexFilter{
 
-	public boolean isIncluded(HashMap<String,String> obj){
+	public boolean isIncluded(Map<String,String> obj){
 		return obj.get("filtered").equals("1") ? false : true;
 	}
 }

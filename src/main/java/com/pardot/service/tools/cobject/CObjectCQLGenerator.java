@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Pardot, An ExactTarget Company
@@ -19,7 +21,7 @@ public class CObjectCQLGenerator {
 
 	protected static final String TEMPLATE_INSERT = "INSERT INTO %s (id, %s) VALUES (NOW(), %s);";
 
-	protected HashMap<String, CDefinition> definitions;
+	protected Map<String, CDefinition> definitions;
 
 	public CObjectCQLGenerator(){
 		this.definitions = new HashMap<String, CDefinition>();
@@ -29,8 +31,8 @@ public class CObjectCQLGenerator {
 		this.definitions = objectDefinitions;
 	}
 
-	protected static ArrayList<String> makeCQLforCreate(CDefinition def){
-		ArrayList<String> ret = new ArrayList<String>();
+	protected static List<String> makeCQLforCreate(CDefinition def){
+		List<String> ret = new ArrayList<String>();
 		ret.add(makeStaticTableCreate(def));
 		for(CIndex i : def.indexes.values()){
 			ret.add(makeWideTableCreate(def, i));
@@ -39,12 +41,12 @@ public class CObjectCQLGenerator {
 	}
 
 	//TODO: TIMESTAMPS AND CONSISTENCY
-	protected static ArrayList<String> makeCQLforInsert(CDefinition def, HashMap<String,String> data) throws CQLGenerationException{
-		ArrayList<String> ret = new ArrayList<String>();
+	protected static List<String> makeCQLforInsert(CDefinition def, Map<String,String> data) throws CQLGenerationException{
+		List<String> ret = new ArrayList<String>();
 		if(!validateData(def, data)){
 			throw new CQLGenerationException("Invalid Insert Requested. Missing Field(s)");
 		}
-		HashMap<String,ArrayList<String>> fieldsAndValues = makeFieldAndValueList(def,data);
+		Map<String,ArrayList<String>> fieldsAndValues = makeFieldAndValueList(def,data);
 		//Static Table
 		ret.add(String.format(
 				TEMPLATE_INSERT,
@@ -74,17 +76,17 @@ public class CObjectCQLGenerator {
 		return "";
 	}
 
-	protected static ArrayList<String> makeCQLforDelete(CDefinition def, String key){
+	protected static List<String> makeCQLforDelete(CDefinition def, String key){
 		ArrayList<String> ret = new ArrayList<String>();
 
 		return ret;
 	}
 
-	public ArrayList<String> makeCQLforCreate(String objType){
+	public List<String> makeCQLforCreate(String objType){
 		return makeCQLforCreate(this.definitions.get(objType));
 	}
 
-	public ArrayList<String> makeCQLforInsert(String objType, HashMap<String,String> data) throws CQLGenerationException {
+	public List<String> makeCQLforInsert(String objType, Map<String,String> data) throws CQLGenerationException {
 		return makeCQLforInsert(this.definitions.get(objType), data);
 	}
 
@@ -96,7 +98,7 @@ public class CObjectCQLGenerator {
 	 	return makeCQLforGet(this.definitions.get(objType), index, keys);
 	}
 
-	public ArrayList<String> makeCQLforDelete(String objType, String key){
+	public List<String> makeCQLforDelete(String objType, String key){
 		return makeCQLforDelete(this.definitions.get(objType), key);
 	}
 
@@ -115,20 +117,20 @@ public class CObjectCQLGenerator {
 			makeCommaList(index.compositeKeyList));
 	}
 
-	protected static HashMap<String,ArrayList<String>> makeFieldAndValueList(CDefinition def, HashMap<String,String> data){
+	protected static Map<String,ArrayList<String>> makeFieldAndValueList(CDefinition def, Map<String,String> data){
 		ArrayList<String> fieldList = new ArrayList<String>(def.fields.size());
 		ArrayList<String> valueList = new ArrayList<String>(def.fields.size());
 		for(CField f : def.fields.values()){
 			fieldList.add(f.name);
 			valueList.add(getCQLValueString(f,data.get(f.name)));
 		}
-		HashMap<String,ArrayList<String>> ret = new HashMap<String, ArrayList<String>>();
+		Map<String,ArrayList<String>> ret = new HashMap<String, ArrayList<String>>();
 		ret.put("fields", fieldList);
 		ret.put("values", valueList);
 		return ret;
 	}
 
-	protected static boolean validateData(CDefinition def, HashMap<String,String> data){
+	protected static boolean validateData(CDefinition def, Map<String,String> data){
 		Collection<CField> fields = def.fields.values();
 		for( CField f : fields){
 			if(!data.containsKey(f.name)){
@@ -151,7 +153,7 @@ public class CObjectCQLGenerator {
 		}
 	}
 
-	protected static String makeCommaList(ArrayList<String> strings){
+	protected static String makeCommaList(List<String> strings){
 		Iterator<String> it = strings.iterator();
 		String ret = "";
 		while(it.hasNext()){

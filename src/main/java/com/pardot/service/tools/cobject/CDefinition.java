@@ -7,6 +7,8 @@ import com.pardot.service.tools.cobject.filters.CIndexFilter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Iterator;
 
 /**
@@ -17,8 +19,8 @@ import java.util.Iterator;
 public class CDefinition {
 
 	public String name;
-	public HashMap<String, CField> fields;
-	public HashMap<String, CIndex> indexes;
+	public Map<String, CField> fields;
+	public Map<String, CIndex> indexes;
 
 	public CDefinition(){
 	}
@@ -32,10 +34,6 @@ public class CDefinition {
 		}
 	}
 
-	public boolean validateData(HashMap data){
-		return true;
-	}
-
 	protected void parseJson(String json) throws java.io.IOException, CObjectParseException{
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode j =  mapper.readTree(json);
@@ -44,8 +42,8 @@ public class CDefinition {
 		this.indexes = this.generateIndexes(j.get("indexes"));
 	}
 
-	protected HashMap<String, CField> generateFields(JsonNode dict){
-		HashMap<String, CField> ret = new HashMap<String, CField>();
+	protected Map<String, CField> generateFields(JsonNode dict){
+		Map<String, CField> ret = new HashMap<String, CField>();
 		Iterator<String> keys = dict.fieldNames();
 		while(keys.hasNext()){
 			String key = keys.next();
@@ -55,8 +53,8 @@ public class CDefinition {
 		return ret;
 	}
 
-	protected HashMap<String,CIndex> generateIndexes(JsonNode dict) throws CObjectParseException{
-		HashMap<String, CIndex> ret = new HashMap<String, CIndex>();
+	protected Map<String,CIndex> generateIndexes(JsonNode dict) throws CObjectParseException{
+		Map<String, CIndex> ret = new HashMap<String, CIndex>();
 		Iterator<String> keys = dict.fieldNames();
 		while(keys.hasNext()){
 			String name = keys.next();
@@ -68,9 +66,9 @@ public class CDefinition {
 		return ret;
 	}
 
-	protected ArrayList<CIndexFilter> makeFilterList(JsonNode jn) throws CObjectParseException{
+	protected List<CIndexFilter> makeFilterList(JsonNode jn) throws CObjectParseException{
 		try{
-			ArrayList<CIndexFilter> ret = new ArrayList<CIndexFilter>();
+			List<CIndexFilter> ret = new ArrayList<CIndexFilter>();
 			Iterator<JsonNode> it = jn.iterator();
 			while(it.hasNext()){
 				JsonNode item = it.next();

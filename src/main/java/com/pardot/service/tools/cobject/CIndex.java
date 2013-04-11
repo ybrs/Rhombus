@@ -4,8 +4,8 @@ import com.pardot.service.tools.cobject.filters.CIndexFilter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Vector;
+import java.util.Map;
+import java.util.List;
 
 /**
  * Pardot, An ExactTarget Company.
@@ -16,8 +16,8 @@ public class CIndex {
 
 	public String name;
 	public String key;
-	public ArrayList<String> compositeKeyList;
-	public ArrayList<CIndexFilter> filters;
+	public List<String> compositeKeyList;
+	public List<CIndexFilter> filters;
 
 	public CIndex(String name, String key){
 		this.name = name;
@@ -25,7 +25,7 @@ public class CIndex {
 		this.compositeKeyList = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
 	}
 
-	public boolean passesAllFilters(HashMap<String,String> data){
+	public boolean passesAllFilters(Map<String,String> data){
 		for(CIndexFilter f : this.filters){
 			if(!f.isIncluded(data)){
 				return false;
