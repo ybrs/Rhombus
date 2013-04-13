@@ -37,6 +37,26 @@ public class CIndex {
 		return true;
 	}
 
+	/**
+	 * Determine if the keys provided can be constructed
+	 * to form a composite key for this index. In other words
+	 * this method answers the question "Can I query this index
+	 * using this criteria"
+	 * @return boolean - true if it is queryable
+	 */
+	public boolean validateIndexKeys(Map<String,String> keys){
+		if(keys.size() != compositeKeyList.size()){
+			//optimized return if we have a size mismatch
+			return false;
+		}
+		for(String s : compositeKeyList){
+			if(keys.get(s) == null){
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public String getName() {
 		return name;
 	}

@@ -87,6 +87,41 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals("Should generate CQL statements for the static table plus all indexes", 5, actual.size());
 		}
 
+		public void testMakeCQLforGet() throws CObjectParseException,CObjectParseException, CQLGenerationException, IOException {
+			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
+			CDefinition def = CDefinition.fromJsonString(json);
+
+			//Static Table Get
+			String actual = Subject.makeCQLforGet(def,UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"));
+			String expected = "SELECT * FROM testtype WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43;";
+			assertEquals("Should generate proper CQL for static table get by ID",expected,actual);
+
+			//Wide table simple
+			Map<String,String> indexkeys = Maps.newHashMap();
+			indexkeys.put("foreignid","777");
+			indexkeys.put("type", "5");
+			indexkeys.put("instance", "222222");
+			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys, 10);
+			expected = "SELECT * FROM testtype__foreign_instance WHERE instance = 222222 AND type = 5 AND foreignid = 777 ORDER BY id ASC LIMIT 10 ALLOW FILTERING;";
+			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual);
+
+			//Wide table exclusive slice
+			indexkeys = Maps.newHashMap();
+			indexkeys.put("foreignid","777");
+			indexkeys.put("type", "5");
+			indexkeys.put("instance", "222222");
+			UUID start = UUID.fromString("a8a2abe0-a251-11e2-bcbb-adf1a79a327f");
+			UUID stop = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
+			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys,COrdering.DESCENDING, start, stop,10, false);
+			expected = "SELECT * FROM testtype__foreign_instance WHERE instance = 222222 AND type = 5 AND foreignid = 777 AND id > a8a2abe0-a251-11e2-bcbb-adf1a79a327f AND id < ada375b0-a2d9-11e2-99a3-3f36d3955e43 ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
+			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual);
+
+			//wide table inclusive slice
+			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys,COrdering.ASCENDING, start, stop,10, true);
+			expected = "SELECT * FROM testtype__foreign_instance WHERE instance = 222222 AND type = 5 AND foreignid = 777 AND id >= a8a2abe0-a251-11e2-bcbb-adf1a79a327f AND id <= ada375b0-a2d9-11e2-99a3-3f36d3955e43 ORDER BY id ASC LIMIT 10 ALLOW FILTERING;";
+			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual);
+		}
+
 
 	}
 
@@ -124,6 +159,11 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 	public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException, IOException {
 		Subject s = new Subject();
 		s.testMakeCQLforInsert();
+	}
+
+	public void testMakeCQLforGet() throws CQLGenerationException, CObjectParseException, IOException {
+		Subject s = new Subject();
+		s.testMakeCQLforGet();
 	}
 
 
