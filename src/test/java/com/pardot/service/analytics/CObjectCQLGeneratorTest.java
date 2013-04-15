@@ -108,17 +108,20 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys, 10);
 			assertEquals("Should be unbounded query list", false, actual.isBounded());
 
-//
-//			//Wide table exclusive slice
-//			indexkeys = Maps.newHashMap();
-//			indexkeys.put("foreignid","777");
-//			indexkeys.put("type", "5");
-//			indexkeys.put("instance", "222222");
-//			UUID start = UUID.fromString("a8a2abe0-a251-11e2-bcbb-adf1a79a327f");
-//			UUID stop = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
-//			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys,CObjectOrdering.DESCENDING, start, stop,10, false);
-//			expected = "SELECT * FROM testtype__foreign_instance WHERE instance = 222222 AND type = 5 AND foreignid = 777 AND id > a8a2abe0-a251-11e2-bcbb-adf1a79a327f AND id < ada375b0-a2d9-11e2-99a3-3f36d3955e43 ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
-//			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual);
+
+			//Wide table exclusive slice
+			indexkeys = Maps.newHashMap();
+			indexkeys.put("foreignid","777");
+			indexkeys.put("type", "5");
+			indexkeys.put("instance", "222222");
+			UUID start = UUID.fromString("a8a2abe0-a251-11e2-bcbb-adf1a79a327f");
+			UUID stop = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
+			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys,CObjectOrdering.DESCENDING, start, stop,10, false);
+			expected = "SELECT * FROM testtype__foreign_instance WHERE shardid = 160 AND instance = 222222 AND type = 5 AND foreignid = 777 AND id > a8a2abe0-a251-11e2-bcbb-adf1a79a327f AND id < ada375b0-a2d9-11e2-99a3-3f36d3955e43 ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
+			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
+			assertTrue("Should be bounded query iterator", actual.isBounded());
+			assertTrue("Should be none remaining in the iterator", !actual.hasNext());
+
 //
 //			//wide table inclusive slice
 //			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys,CObjectOrdering.ASCENDING, start, stop,10, true);
