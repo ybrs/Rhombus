@@ -49,31 +49,32 @@ public abstract class TimebasedShardingStrategy {
 		this.offset = offset;
 	}
 
-	public Range<Long> getShardKeyRange(long timestampStart, long timestampEnd, boolean inclusive) throws ShardStrategyException {
-		long start = getShardKey(timestampStart);
-		long end = getShardKey(timestampEnd);
+	public Range<Long> getShardKeyRange(long timestampStart, long timestampEnd) throws ShardStrategyException {
 
-		if(start == 0){
+		if(timestampStart == 0){
 			//unbounded start
-			if(end == 0){
+			if(timestampEnd == 0){
 				//unbounded start and unbounded end
 				//THIS IS NOT ALLOWED. Throw an exception here
 				throw new ShardStrategyException("Time range must have either an upper or lower bound");
 			}
 			else{
 				//unbounded start and bounded end
-				return inclusive ? Range.atMost(end) : Range.lessThan(end);
+				long end = getShardKey(timestampEnd);
+				return Range.atMost(end);
 			}
 		}
 		else{
+			long start = getShardKey(timestampStart);
 			//bounded start
-			if(end == 0){
+			if(timestampEnd == 0){
 				//bounded start and unbounded end
-				return inclusive ? Range.atLeast(start) : Range.greaterThan(start);
+				return Range.atLeast(start);
 			}
 			else{
+				long end = getShardKey(timestampEnd);
 				//bounded start and bounded end
-				return inclusive ? Range.closed(start,end) : Range.open(start, end);
+				return Range.closed(start,end);
 			}
 		}
 	}

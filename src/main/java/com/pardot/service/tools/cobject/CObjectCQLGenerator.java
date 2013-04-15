@@ -30,7 +30,7 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO %s (id, %s) VALUES (%s, %s) USING TIMESTAMP %s%s;";
 	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO %s (id, shardid, %s) VALUES (%s, %s, %s) USING TIMESTAMP %s%s;";
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM %s WHERE %s;";
-	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM %s WHERE %s ORDER BY id %s %s ALLOW FILTERING;";
+	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM %s WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
 
 	protected Map<String, CDefinition> definitions;
 
@@ -250,12 +250,14 @@ public class CObjectCQLGenerator {
 		if(end != null){
 			whereCQL += " AND id <"+(inclusive ? "= ":" ") + end;
 		}
-		String limitCQL = (limit > 0)? "LIMIT %u" : "";
+		String limitCQL = (limit > 0)? "LIMIT %d" : "";
 
 		Range<Long> shardIdRange;
 
+		long starttime = (long)((start == null) ? 0 : UUIDs.unixTimestamp(start));
+		long endtime = (long) ((end == null) ? 0 : UUIDs.unixTimestamp(end) );
 		try{
-			shardIdRange = i.getShardingStrategy().getShardKeyRange(UUIDs.unixTimestamp(start),UUIDs.unixTimestamp(end),inclusive);
+			shardIdRange = i.getShardingStrategy().getShardKeyRange(starttime,endtime);
 		}
 		catch(ShardStrategyException e){
 			throw new CQLGenerationException(e.getMessage());
@@ -263,6 +265,7 @@ public class CObjectCQLGenerator {
 		String CQLTemplate = String.format(
 			TEMPLATE_SELECT_WIDE,
 			makeTableName(def.getName(),i.getName()),
+			"%d",
 			whereCQL,
 			ordering,
 			limitCQL);
@@ -271,7 +274,7 @@ public class CObjectCQLGenerator {
 
 	protected static CQLStatementIterator makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, long limit) throws CQLGenerationException {
 		DateTime now = new DateTime(DateTimeZone.UTC);
-		long unixtimestamp = (long)(now.getMillis()/1000);
+		long unixtimestamp = (long)now.getMillis();
 		return makeCQLforGet(def,index,indexvalues,CObjectOrdering.DESCENDING,null,UUIDs.endOf(unixtimestamp), limit, false);
 	}
 
