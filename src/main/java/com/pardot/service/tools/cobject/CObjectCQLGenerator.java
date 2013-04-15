@@ -27,21 +27,6 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM %s WHERE %s;";
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM %s WHERE %s ORDER BY id %s %s ALLOW FILTERING;";
 
-	public static enum COrdering{
-		ASCENDING {
-			@Override
-			public String toString(){
-				return "ASC";
-			}
-		},
-		DESCENDING {
-			@Override
-			public String toString(){
-				return "DESC";
-			}
-		}
-	}
-
 	protected Map<String, CDefinition> definitions;
 
 	/**
@@ -107,7 +92,7 @@ public class CObjectCQLGenerator {
 	 * @param objType - The name of the Object type aka CDefinition.name
 	 * @param index - The name of the index on the object to query aka CIndex.name
 	 * @param indexkeys - A map of fieldnames to values representing the where clause of the index query
-	 * @param ordering - COrdering.ASCENDING or COrdering.DESCENDING
+	 * @param ordering - CObjectOrdering.ASCENDING or CObjectOrdering.DESCENDING
 	 * @param start - UUID of the item before the first result
 	 * @param end - UUID of the item after the first result (Assuming the limit doesnt override it)
 	 * @param limit - The maximum number of results
@@ -115,7 +100,7 @@ public class CObjectCQLGenerator {
 	 * @throws CQLGenerationException
 	 */
 	@NotNull
-	public String makeCQLforGet(String objType, String index, Map<String,String> indexkeys,COrdering ordering,@Nullable UUID start, @Nullable UUID end, long limit) throws CQLGenerationException {
+	public String makeCQLforGet(String objType, String index, Map<String,String> indexkeys,CObjectOrdering ordering,@Nullable UUID start, @Nullable UUID end, long limit) throws CQLGenerationException {
 		return makeCQLforGet(this.definitions.get(objType),index, indexkeys,ordering,start,end,limit, false);
 	}
 
@@ -137,14 +122,14 @@ public class CObjectCQLGenerator {
 	 * @param objType - The name of the Object type aka CDefinition.name
 	 * @param index - The name of the index on the object to query aka CIndex.name
 	 * @param indexkeys - A map of fieldnames to values representing the where clause of the index query
-	 * @param ordering - COrdering.ASCENDING or COrdering.DESCENDING
+	 * @param ordering - CObjectOrdering.ASCENDING or CObjectOrdering.DESCENDING
 	 * @param starttimestamp - Return results equal to or after this timestamp
 	 * @param endtimestamp - Return results equal to or before this timestamp
 	 * @param limit - The maximum number of results
 	 * @return A single CQL statement that needs to be executed for this task.
 	 * @throws CQLGenerationException
 	 */
-	public String makeCQLforGet(String objType, String index, Map<String,String> indexkeys,COrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
+	public String makeCQLforGet(String objType, String index, Map<String,String> indexkeys,CObjectOrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
 		return makeCQLforGet(this.definitions.get(objType),index, indexkeys,ordering, starttimestamp, endtimestamp, limit);
 	}
 
@@ -231,7 +216,7 @@ public class CObjectCQLGenerator {
 	}
 
 	@NotNull
-	protected static String makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, COrdering ordering,@Nullable UUID start, @Nullable UUID end, long limit, boolean inclusive) throws CQLGenerationException {
+	protected static String makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, CObjectOrdering ordering,@Nullable UUID start, @Nullable UUID end, long limit, boolean inclusive) throws CQLGenerationException {
 		CIndex i = def.getIndexes().get(index);
 		if(i == null){
 			throw new CQLGenerationException(String.format("Could not find specified index %s on CDefinition %s",index,def.getName()));
@@ -256,10 +241,10 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static String makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, long limit) throws CQLGenerationException {
-		return makeCQLforGet(def,index,indexvalues,COrdering.ASCENDING,null,null,limit, false);
+		return makeCQLforGet(def,index,indexvalues,CObjectOrdering.ASCENDING,null,null,limit, false);
 	}
 
-	protected static String makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, COrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
+	protected static String makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, CObjectOrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
 		return makeCQLforGet(def,index,indexvalues,ordering,UUIDs.startOf(starttimestamp),UUIDs.endOf(endtimestamp),limit, true);
 	}
 

@@ -1,7 +1,6 @@
 package com.pardot.service.tools.cobject;
 
 import java.util.Iterator;
-import com.pardot.service.tools.cobject.shardingstrategy.LazyShardKeyList;
 
 /**
  * Pardot, An ExactTarget Company

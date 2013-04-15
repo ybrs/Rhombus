@@ -112,12 +112,12 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			indexkeys.put("instance", "222222");
 			UUID start = UUID.fromString("a8a2abe0-a251-11e2-bcbb-adf1a79a327f");
 			UUID stop = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
-			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys,COrdering.DESCENDING, start, stop,10, false);
+			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys,CObjectOrdering.DESCENDING, start, stop,10, false);
 			expected = "SELECT * FROM testtype__foreign_instance WHERE instance = 222222 AND type = 5 AND foreignid = 777 AND id > a8a2abe0-a251-11e2-bcbb-adf1a79a327f AND id < ada375b0-a2d9-11e2-99a3-3f36d3955e43 ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual);
 
 			//wide table inclusive slice
-			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys,COrdering.ASCENDING, start, stop,10, true);
+			actual = Subject.makeCQLforGet(def,"foreign_instance", indexkeys,CObjectOrdering.ASCENDING, start, stop,10, true);
 			expected = "SELECT * FROM testtype__foreign_instance WHERE instance = 222222 AND type = 5 AND foreignid = 777 AND id >= a8a2abe0-a251-11e2-bcbb-adf1a79a327f AND id <= ada375b0-a2d9-11e2-99a3-3f36d3955e43 ORDER BY id ASC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual);
 		}

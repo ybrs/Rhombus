@@ -1,6 +1,9 @@
 package com.pardot.service.tools.cobject;
 
-import com.pardot.service.tools.cobject.shardingstrategy.LazyShardKeyList;
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Range;
+import java.util.Iterator;
 
 /**
  * Pardot, An ExactTarget Company
@@ -10,29 +13,31 @@ import com.pardot.service.tools.cobject.shardingstrategy.LazyShardKeyList;
 public class GetIndexCQLStatementIterator implements CQLStatementIterator {
 
 
-	private long count = 0;
 	private long limit = 0;
+	private long numberRemaining = 0;
+	private long size = 0;
 	private String CQLTemplate = null;
+	private Range<Long> keyRange;
+	private Iterator<Long> keyIterator = null;
 
-	private LazyShardKeyList shardKeyList = null;
 
-
-	//TODO: figure out what to do with ASC ordering
-	public GetIndexCQLStatementIterator(LazyShardKeyList shardKeyList, long limit, String CQLTemplate ){
-		this.shardKeyList = shardKeyList;
+	public GetIndexCQLStatementIterator(Range<Long> shardKeyList, long limit, CObjectOrdering ordering ,String CQLTemplate ){
+		this.keyRange = shardKeyList;
+		ContiguousSet<Long> set = ContiguousSet.create(shardKeyList, DiscreteDomain.longs());
+		this.keyIterator = (ordering == CObjectOrdering.ASCENDING) ? set.iterator() : set.descendingIterator();
+		this.size = (long)set.size();
 		this.limit = limit;
+		this.numberRemaining = this.limit;
 		this.CQLTemplate = CQLTemplate;
 	}
 
 	@Override
 	public boolean hasNext() {
-		if(!shardKeyList.isBounded()){
-			return true;
-		}
-		return (count < shardKeyList.size());
+		return keyIterator.hasNext();
 	}
 
 	public boolean hasNext(long currentResultCount){
+		numberRemaining = limit - currentResultCount;
 		if( (this.limit != 0) && (currentResultCount >= this.limit) ){
 			return false;
 		}
@@ -41,17 +46,15 @@ public class GetIndexCQLStatementIterator implements CQLStatementIterator {
 
 	@Override
 	public String next() {
-		String ret = String.format( this.CQLTemplate, shardKeyList.get(count) );
-		count++;
-		return ret;
+		return String.format( CQLTemplate, keyIterator.next().longValue(), numberRemaining);
 	}
 
 	public boolean isBounded(){
-		return shardKeyList.isBounded();
+		return (keyRange.hasLowerBound() && keyRange.hasUpperBound());
 	}
 
 	public long size(){
-		return shardKeyList.size();
+		return size;
 	}
 
 	@Override
