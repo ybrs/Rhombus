@@ -15,8 +15,8 @@ import java.util.UUID;
  */
 public class ShardingStrategyMonthly extends TimebasedShardingStrategy {
 
-	public ShardingStrategyMonthly(long start, long end){
-		super(start,end);
+	public ShardingStrategyMonthly(long start, long end, long offset){
+		super(start,end, offset);
 	}
 
 	public long getShardKey(long timestamp){
@@ -27,7 +27,7 @@ public class ShardingStrategyMonthly extends TimebasedShardingStrategy {
 		Date t = new Date(timestamp*1000);
 		long year = Long.parseLong(utcYear.format(t),10);
 		long month = Long.parseLong(utcMonth.format(t),10);
-		long ret = ((year - START_YEAR)*12)+month;
+		long ret = this.offset + ((year - START_YEAR)*12)+month;
 		return ret;
 	}
 }

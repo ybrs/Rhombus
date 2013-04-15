@@ -18,10 +18,12 @@ public abstract class TimebasedShardingStrategy {
 	public static long START_YEAR = 2000;
 	private long start = 0; //number of months at start time
 	private long end = 0;   //number of months at end time
+	protected long offset = 0;
 
-	public TimebasedShardingStrategy(long start, long end){
+	public TimebasedShardingStrategy(long start, long end, long offset){
 		this.start = getShardKey(start);
 		this.end = getShardKey(end);
+		this.offset = offset;
 	}
 
 	public long getShardKey(UUID uuid){
