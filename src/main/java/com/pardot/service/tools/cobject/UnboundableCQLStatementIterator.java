@@ -5,12 +5,13 @@ import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import java.util.Iterator;
 
+
 /**
  * Pardot, An ExactTarget Company
  * User: robrighter
  * Date: 4/13/13
  */
-public class GetIndexCQLStatementIterator implements CQLStatementIterator {
+public class UnboundableCQLStatementIterator implements CQLStatementIterator {
 
 
 	private long limit = 0;
@@ -21,7 +22,7 @@ public class GetIndexCQLStatementIterator implements CQLStatementIterator {
 	private Iterator<Long> keyIterator = null;
 
 
-	public GetIndexCQLStatementIterator(Range<Long> shardKeyList, long limit, CObjectOrdering ordering ,String CQLTemplate ){
+	public UnboundableCQLStatementIterator(Range<Long> shardKeyList, long limit, CObjectOrdering ordering, String CQLTemplate){
 		this.keyRange = shardKeyList;
 		ContiguousSet<Long> set = ContiguousSet.create(shardKeyList, DiscreteDomain.longs());
 		this.keyIterator = (ordering == CObjectOrdering.ASCENDING) ? set.iterator() : set.descendingIterator();
