@@ -13,22 +13,26 @@
 		{
 			"name": "foreign",
 			"key": "foreignid",
-			"filters" : [{"type": "CIndexFilterIncludeAll"}]
+			"filters" : [{"type": "CIndexFilterIncludeAll"}],
+			"shardingStrategy": {"type": "ShardingStrategyNone"}
 		},
 		{
 			"name": "instance",
 			"key": "type:instance",
-			"filters" : [{"type": "CIndexFilterIncludeAll"}]
+			"filters" : [{"type": "CIndexFilterIncludeAll"}],
+			"shardingStrategy": {"type": "ShardingStrategyMonthly"}
 		},
 		{
 			"name": "foreign_instance",
 			"key": "foreignid:type:instance",
-			"filters" : [{"type": "CIndexFilterIncludeAll"}]
+			"filters" : [{"type": "CIndexFilterIncludeAll"}],
+			"shardingStrategy": {"type": "ShardingStrategyMonthly"}
 		},
 		{
 			"name": "unfiltered_Instance",
 			"key": "type:instance",
-			"filters" : [{"type": "CIndexFilterExcludeFiltered"}]
+			"filters" : [{"type": "CIndexFilterExcludeFiltered"}],
+			"shardingStrategy": {"type": "ShardingStrategyMonthly"}
 		}
 	]
 }

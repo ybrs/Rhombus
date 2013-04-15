@@ -2,6 +2,8 @@ package com.pardot.service.tools.cobject.shardingstrategy;
 
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Range;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -15,19 +17,13 @@ import java.util.UUID;
  */
 public class ShardingStrategyMonthly extends TimebasedShardingStrategy {
 
-	public ShardingStrategyMonthly(long start, long end, long offset){
-		super(start,end, offset);
+	public ShardingStrategyMonthly(){
 	}
 
 	public long getShardKey(long timestamp){
-		SimpleDateFormat utcYear = new SimpleDateFormat("yyyy");
-		SimpleDateFormat utcMonth = new SimpleDateFormat("mm");
-		utcYear.setTimeZone(TimeZone.getTimeZone("UTC"));
-		utcMonth.setTimeZone(TimeZone.getTimeZone("UTC"));
-		Date t = new Date(timestamp*1000);
-		long year = Long.parseLong(utcYear.format(t),10);
-		long month = Long.parseLong(utcMonth.format(t),10);
-		long ret = this.offset + ((year - START_YEAR)*12)+month;
-		return ret;
+		DateTime d = new DateTime(timestamp, DateTimeZone.UTC);
+		long year = (long)d.getYear();
+		long month = (long)d.getMonthOfYear();
+		return this.offset + ((year - START_YEAR)*12)+month;
 	}
 }

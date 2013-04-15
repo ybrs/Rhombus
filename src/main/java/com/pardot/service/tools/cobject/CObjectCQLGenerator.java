@@ -3,6 +3,10 @@ package com.pardot.service.tools.cobject;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
+import com.pardot.service.tools.cobject.shardingstrategy.ShardStrategyException;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -21,9 +25,10 @@ import java.util.UUID;
  */
 public class CObjectCQLGenerator {
 
-	protected static final String TEMPLATE_STATIC_CREATE = "CREATE TABLE %s (id timeuuid PRIMARY KEY, %s);";
-	protected static final String TEMPLATE_WIDE_CREATE = "CREATE TABLE %s (id timeuuid, %s, PRIMARY KEY ((%s),id) );";
-	protected static final String TEMPLATE_INSERT = "INSERT INTO %s (id, %s) VALUES (%s, %s) USING TIMESTAMP %s%s;";
+	protected static final String TEMPLATE_CREATE_STATIC = "CREATE TABLE %s (id timeuuid PRIMARY KEY, %s);";
+	protected static final String TEMPLATE_CREATE_WIDE = "CREATE TABLE %s (id timeuuid, shardid bigint, %s, PRIMARY KEY ((shardid, %s),id) );";
+	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO %s (id, %s) VALUES (%s, %s) USING TIMESTAMP %s%s;";
+	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO %s (id, shardid, %s) VALUES (%s, %s, %s) USING TIMESTAMP %s%s;";
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM %s WHERE %s;";
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM %s WHERE %s ORDER BY id %s %s ALLOW FILTERING;";
 
@@ -58,9 +63,9 @@ public class CObjectCQLGenerator {
 	/**
 	 *
 	 * @param objType - The name of the Object type aka CDefinition.name
-	 * @return List of CQL statements that need to be executed for this task.
+	 * @return Iterator of CQL statements that need to be executed for this task.
 	 */
-	public List<String> makeCQLforCreate(String objType){
+	public CQLStatementIterator makeCQLforCreate(String objType){
 		return makeCQLforCreate(this.definitions.get(objType));
 	}
 
@@ -68,11 +73,11 @@ public class CObjectCQLGenerator {
 	 *
 	 * @param objType - The name of the Object type aka CDefinition.name
 	 * @param data - A map of fieldnames to values representing the data to insert
-	 * @return List of CQL statements that need to be executed for this task.
+	 * @return Iterator of CQL statements that need to be executed for this task.
 	 * @throws CQLGenerationException
 	 */
 	@NotNull
-	public List<String> makeCQLforInsert(String objType, Map<String,String> data) throws CQLGenerationException {
+	public CQLStatementIterator makeCQLforInsert(String objType, Map<String,String> data) throws CQLGenerationException {
 		return makeCQLforInsert(this.definitions.get(objType), data);
 	}
 
@@ -80,10 +85,10 @@ public class CObjectCQLGenerator {
 	 *
 	 * @param objType - The name of the Object type aka CDefinition.name
 	 * @param key - The TimeUUID of the object to retrieve
-	 * @return A single CQL statement that needs to be executed for this task.
+	 * @return Iterator of CQL statements that need to be executed for this task. (Should have a length of 1 for this particular method)
 	 */
 	@NotNull
-	public String makeCQLforGet(String objType, UUID key){
+	public CQLStatementIterator makeCQLforGet(String objType, UUID key){
 		return makeCQLforGet(this.definitions.get(objType), key);
 	}
 
@@ -96,11 +101,11 @@ public class CObjectCQLGenerator {
 	 * @param start - UUID of the item before the first result
 	 * @param end - UUID of the item after the first result (Assuming the limit doesnt override it)
 	 * @param limit - The maximum number of results
-	 * @return A single CQL statement that needs to be executed for this task.
+	 * @return Iterator of CQL statements that need to be executed for this task.
 	 * @throws CQLGenerationException
 	 */
 	@NotNull
-	public String makeCQLforGet(String objType, String index, Map<String,String> indexkeys,CObjectOrdering ordering,@Nullable UUID start, @Nullable UUID end, long limit) throws CQLGenerationException {
+	public CQLStatementIterator makeCQLforGet(String objType, String index, Map<String,String> indexkeys,CObjectOrdering ordering,@Nullable UUID start, @Nullable UUID end, long limit) throws CQLGenerationException {
 		return makeCQLforGet(this.definitions.get(objType),index, indexkeys,ordering,start,end,limit, false);
 	}
 
@@ -110,10 +115,10 @@ public class CObjectCQLGenerator {
 	 * @param index - The name of the index on the object to query aka CIndex.name
 	 * @param indexkeys - A map of fieldnames to values representing the where clause of the index query
 	 * @param limit - The maximum number of results
-	 * @return A single CQL statement that needs to be executed for this task.
+	 * @return Iterator of CQL statements that need to be executed for this task.
 	 * @throws CQLGenerationException
 	 */
-	public String makeCQLforGet(String objType, String index, Map<String,String> indexkeys, long limit) throws CQLGenerationException {
+	public CQLStatementIterator makeCQLforGet(String objType, String index, Map<String,String> indexkeys, long limit) throws CQLGenerationException {
 		return makeCQLforGet(this.definitions.get(objType),index, indexkeys,limit);
 	}
 
@@ -126,10 +131,10 @@ public class CObjectCQLGenerator {
 	 * @param starttimestamp - Return results equal to or after this timestamp
 	 * @param endtimestamp - Return results equal to or before this timestamp
 	 * @param limit - The maximum number of results
-	 * @return A single CQL statement that needs to be executed for this task.
+	 * @return Iterator of CQL statements that need to be executed for this task.
 	 * @throws CQLGenerationException
 	 */
-	public String makeCQLforGet(String objType, String index, Map<String,String> indexkeys,CObjectOrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
+	public CQLStatementIterator makeCQLforGet(String objType, String index, Map<String,String> indexkeys,CObjectOrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
 		return makeCQLforGet(this.definitions.get(objType),index, indexkeys,ordering, starttimestamp, endtimestamp, limit);
 	}
 
@@ -137,28 +142,28 @@ public class CObjectCQLGenerator {
 	 * TODO: IMPLEMENT THIS
 	 * @param objType - The name of the Object type aka CDefinition.name
 	 * @param key - The TimeUUID of the object to delete
-	 * @return List of CQL statements that need to be executed for this task.
+	 * @return Iterator of CQL statements that need to be executed for this task.
 	 */
 	@NotNull
-	public List<String> makeCQLforDelete(String objType, String key){
+	public CQLStatementIterator makeCQLforDelete(String objType, String key){
 		return makeCQLforDelete(this.definitions.get(objType), key);
 	}
 
 
-	protected static List<String> makeCQLforCreate(CDefinition def){
+	protected static CQLStatementIterator makeCQLforCreate(CDefinition def){
 		List<String> ret = Lists.newArrayList();
 		ret.add(makeStaticTableCreate(def));
 		for(CIndex i : def.getIndexes().values()){
 			ret.add(makeWideTableCreate(def, i));
 		}
-		return ret;
+		return new BoundedCQLStatementIterator(ret);
 	}
 
 
-	protected static String makeInsertStatement(String table, String fields, String values, UUID uuid, long timestamp, int ttl){
+	protected static String makeInsertStatementStatic(String objectName, String fields, String values, UUID uuid, long timestamp, int ttl){
 		return String.format(
-				TEMPLATE_INSERT,
-				table,
+				TEMPLATE_INSERT_STATIC,
+				makeTableName(objectName,null),
 				fields,
 				uuid.toString(),
 				values,
@@ -167,11 +172,24 @@ public class CObjectCQLGenerator {
 		);
 	}
 
-	protected static List<String> makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,String> data) throws CQLGenerationException{
+	protected static String makeInsertStatementWide(String objectName, String fields, String values, UUID uuid, long shardid, long timestamp, int ttl){
+		return String.format(
+				TEMPLATE_INSERT_WIDE,
+				makeTableName(objectName,null),
+				fields,
+				uuid.toString(),
+				shardid,
+				values,
+				timestamp+"",
+				(ttl == 0) ? "" : (" AND TTL "+ ttl)
+		);
+	}
+
+	protected static CQLStatementIterator makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,String> data) throws CQLGenerationException{
 		return makeCQLforInsert(def,data,null,0,0);
 	}
 
-	protected static List<String> makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,String> data, @Nullable UUID uuid, long timestamp, int ttl) throws CQLGenerationException{
+	protected static CQLStatementIterator makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,String> data, @Nullable UUID uuid, long timestamp, int ttl) throws CQLGenerationException{
 		List<String> ret = Lists.newArrayList();
 		if(uuid == null){
 			uuid = UUIDs.timeBased();
@@ -184,7 +202,7 @@ public class CObjectCQLGenerator {
 		}
 		Map<String,ArrayList<String>> fieldsAndValues = makeFieldAndValueList(def,data);
 		//Static Table
-		ret.add(makeInsertStatement(
+		ret.add(makeInsertStatementStatic(
 				def.getName(),
 				makeCommaList(fieldsAndValues.get("fields")),
 				makeCommaList(fieldsAndValues.get("values")),
@@ -195,28 +213,29 @@ public class CObjectCQLGenerator {
 		//Index Tables
 		for(CIndex i : def.getIndexes().values()){
 			if(i.passesAllFilters(data)){
-				ret.add(makeInsertStatement(
-						def.getName()+"__"+i.getName(),
+				ret.add(makeInsertStatementWide(
+						makeTableName(def.getName(),i.getName()),
 						makeCommaList(fieldsAndValues.get("fields")),
 						makeCommaList(fieldsAndValues.get("values")),
 						uuid,
+						i.getShardingStrategy().getShardKey(uuid),
 						timestamp,
 						ttl
 				));
 			}
 		}
-		return ret;
+		return new BoundedCQLStatementIterator(ret);
 	}
 
-	protected static String makeCQLforGet(CDefinition def, UUID key){
-		return String.format(
+	protected static CQLStatementIterator makeCQLforGet(CDefinition def, UUID key){
+		return new BoundedCQLStatementIterator(Lists.newArrayList(String.format(
 			TEMPLATE_SELECT_STATIC,
 			def.getName(),
-			"id = "+key);
+			"id = "+key)));
 	}
 
 	@NotNull
-	protected static String makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, CObjectOrdering ordering,@Nullable UUID start, @Nullable UUID end, long limit, boolean inclusive) throws CQLGenerationException {
+	protected static CQLStatementIterator makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, CObjectOrdering ordering,@Nullable UUID start, @Nullable UUID end, long limit, boolean inclusive) throws CQLGenerationException {
 		CIndex i = def.getIndexes().get(index);
 		if(i == null){
 			throw new CQLGenerationException(String.format("Could not find specified index %s on CDefinition %s",index,def.getName()));
@@ -231,39 +250,51 @@ public class CObjectCQLGenerator {
 		if(end != null){
 			whereCQL += " AND id <"+(inclusive ? "= ":" ") + end;
 		}
-		String limitCQL = (limit > 0)? "LIMIT "+limit : "";
-		return String.format(
+		String limitCQL = (limit > 0)? "LIMIT %u" : "";
+
+		Range<Long> shardIdRange;
+
+		try{
+			shardIdRange = i.getShardingStrategy().getShardKeyRange(UUIDs.unixTimestamp(start),UUIDs.unixTimestamp(end),inclusive);
+		}
+		catch(ShardStrategyException e){
+			throw new CQLGenerationException(e.getMessage());
+		}
+		String CQLTemplate = String.format(
 			TEMPLATE_SELECT_WIDE,
-			def.getName()+"__"+i.getName(),
+			makeTableName(def.getName(),i.getName()),
 			whereCQL,
 			ordering,
 			limitCQL);
+		return new UnboundableCQLStatementIterator(shardIdRange,limit,ordering,CQLTemplate);
 	}
 
-	protected static String makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, long limit) throws CQLGenerationException {
-		return makeCQLforGet(def,index,indexvalues,CObjectOrdering.ASCENDING,null,null,limit, false);
+	protected static CQLStatementIterator makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, long limit) throws CQLGenerationException {
+		DateTime now = new DateTime(DateTimeZone.UTC);
+		long unixtimestamp = (long)(now.getMillis()/1000);
+		return makeCQLforGet(def,index,indexvalues,CObjectOrdering.DESCENDING,null,UUIDs.endOf(unixtimestamp), limit, false);
 	}
 
-	protected static String makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, CObjectOrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
+	protected static CQLStatementIterator makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, CObjectOrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
 		return makeCQLforGet(def,index,indexvalues,ordering,UUIDs.startOf(starttimestamp),UUIDs.endOf(endtimestamp),limit, true);
 	}
 
-	protected static List<String> makeCQLforDelete(CDefinition def, String key){
+	protected static CQLStatementIterator makeCQLforDelete(CDefinition def, String key){
 		ArrayList<String> ret = Lists.newArrayList();
 
-		return ret;
+		return new BoundedCQLStatementIterator(ret);
 	}
 
 	protected static String makeStaticTableCreate(CDefinition def){
 		return String.format(
-				TEMPLATE_STATIC_CREATE,
+				TEMPLATE_CREATE_STATIC,
 				def.getName(),
 				makeFieldList(def.getFields().values(), true));
 	}
 
 	protected static String makeWideTableCreate(CDefinition def, CIndex index){
 		return String.format(
-				TEMPLATE_WIDE_CREATE,
+				TEMPLATE_CREATE_WIDE,
 				def.getName()+"__"+index.getName(),
 				makeFieldList(def.getFields().values(), true),
 				makeCommaList(index.compositeKeyList));
@@ -338,6 +369,15 @@ public class CObjectCQLGenerator {
 					(it.hasNext() ? "," : "");
 		}
 		return ret;
+	}
+
+	protected static String makeTableName(String objName, @Nullable String indexName){
+		if(indexName == null){
+			return objName;
+		}
+		else{
+			return objName+"__"+indexName;
+		}
 	}
 
 }

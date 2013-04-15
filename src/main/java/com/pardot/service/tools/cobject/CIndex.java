@@ -1,6 +1,7 @@
 package com.pardot.service.tools.cobject;
 
 import com.pardot.service.tools.cobject.filters.CIndexFilter;
+import com.pardot.service.tools.cobject.shardingstrategy.TimebasedShardingStrategy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,14 +19,16 @@ public class CIndex {
 	private String key;
 	public List<String> compositeKeyList;
 	public List<CIndexFilter> filters;
+	private TimebasedShardingStrategy shardingStrategy;
 
 	public CIndex() {
 
 	}
 
-	public CIndex(String name, String key){
+	public CIndex(String name, String key, TimebasedShardingStrategy shardingStrategy){
 		this.name = name;
 		this.setKey(key);
+		this.shardingStrategy = shardingStrategy;
 	}
 
 	public boolean passesAllFilters(Map<String,String> data){
@@ -55,6 +58,14 @@ public class CIndex {
 			}
 		}
 		return true;
+	}
+
+	public TimebasedShardingStrategy getShardingStrategy(){
+		return shardingStrategy;
+	}
+
+	public void setShardingStrategy(TimebasedShardingStrategy shardingStrategy){
+		this.shardingStrategy = shardingStrategy;
 	}
 
 	public String getName() {

@@ -1,10 +1,10 @@
 package com.pardot.service.tools.cobject.shardingstrategy;
 
 import com.datastax.driver.core.utils.UUIDs;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Range;
-import com.pardot.service.tools.cobject.CQLStatementIterator;
 
-import java.util.Iterator;
 import java.util.UUID;
 
 /**
@@ -12,17 +12,26 @@ import java.util.UUID;
  * User: robrighter
  * Date: 4/13/13
  */
+
+@JsonTypeInfo(
+		use = JsonTypeInfo.Id.NAME,
+		include = JsonTypeInfo.As.PROPERTY,
+		property = "type")
+@JsonSubTypes({
+		@JsonSubTypes.Type(value = ShardingStrategyMonthly.class, name = "ShardingStrategyMonthly"),
+		@JsonSubTypes.Type(value = ShardingStrategyNone.class, name = "ShardingStrategyNone")
+})
 public abstract class TimebasedShardingStrategy {
 
 
 	public static long START_YEAR = 2000;
-	private long start = 0; //number of months at start time
-	private long end = 0;   //number of months at end time
+
 	protected long offset = 0;
 
-	public TimebasedShardingStrategy(long start, long end, long offset){
-		this.start = getShardKey(start);
-		this.end = getShardKey(end);
+	public TimebasedShardingStrategy(){
+	}
+
+	public TimebasedShardingStrategy(long offset){
 		this.offset = offset;
 	}
 
@@ -31,6 +40,14 @@ public abstract class TimebasedShardingStrategy {
 	}
 
 	public abstract long getShardKey(long timestamp);
+
+	public long getOffset() {
+		return offset;
+	}
+
+	public void setOffset(long offset) {
+		this.offset = offset;
+	}
 
 	public Range<Long> getShardKeyRange(long timestampStart, long timestampEnd, boolean inclusive) throws ShardStrategyException {
 		long start = getShardKey(timestampStart);
