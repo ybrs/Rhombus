@@ -4,10 +4,7 @@ package com.pardot.cassandra;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.google.common.collect.Maps;
-import com.pardot.service.tools.cobject.CDefinition;
-import com.pardot.service.tools.cobject.CKeyspaceDefinition;
-import com.pardot.service.tools.cobject.CObjectCQLGenerator;
-import com.pardot.service.tools.cobject.CQLStatementIterator;
+import com.pardot.service.tools.cobject.*;
 
 import java.util.Map;
 
@@ -40,6 +37,14 @@ public class ObjectMapper {
 				String cql = statementIterator.next();
 				session.execute(cql);
 			}
+		}
+	}
+
+	public void insert(String objectType, Map<String, String> values) throws CQLGenerationException {
+		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforInsert(objectType, values);
+		while(statementIterator.hasNext()) {
+			String cql = statementIterator.next();
+			session.execute(cql);
 		}
 	}
 

@@ -1,8 +1,13 @@
 package com.pardot.service.analytics.helpers;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -11,6 +16,8 @@ import java.util.Properties;
  * Date: 4/5/13
  */
 public class TestHelpers {
+
+	private static List<Map<String, String>> testObjects;
 
 	public static String readFileToString(Class testclass, String filename){
 		String ret = "";
@@ -33,5 +40,19 @@ public class TestHelpers {
 		properties.load(inputStream);
 		inputStream.close();
 		return properties;
+	}
+
+	public static Map<String, String> getTestObject(int index) {
+		if(testObjects == null) {
+			try {
+				ObjectMapper mapper = new ObjectMapper();
+				String json = TestHelpers.readFileToString(TestHelpers.class, "TestObjects.js");
+				List root = mapper.readValue(json, List.class);
+				testObjects = (List<Map<String, String>>)root;
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return testObjects.get(index);
 	}
 }
