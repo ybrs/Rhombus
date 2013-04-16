@@ -17,8 +17,8 @@ public class CIndex {
 
 	private String name;
 	private String key;
-	public List<String> compositeKeyList;
-	public List<CIndexFilter> filters;
+	private List<String> compositeKeyList;
+	private List<CIndexFilter> filters;
 	private TimebasedShardingStrategy shardingStrategy;
 
 	public CIndex() {
@@ -39,6 +39,7 @@ public class CIndex {
 		}
 		return true;
 	}
+
 
 	/**
 	 * Determine if the keys provided can be constructed
@@ -84,4 +85,17 @@ public class CIndex {
 		this.key = key;
 		this.compositeKeyList = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
 	}
+
+	public List<String> getCompositeKeyList() {
+		return compositeKeyList;
+	}
+
+	public List<CIndexFilter> getFilters() {
+		return filters;
+	}
+
+	public void setFilters(List<CIndexFilter> filters) {
+		this.filters = filters;
+	}
+
 }

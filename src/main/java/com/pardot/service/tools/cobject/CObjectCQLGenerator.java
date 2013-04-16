@@ -300,7 +300,7 @@ public class CObjectCQLGenerator {
 				TEMPLATE_CREATE_WIDE,
 				def.getName()+"__"+index.getName(),
 				makeFieldList(def.getFields().values(), true),
-				makeCommaList(index.compositeKeyList));
+				makeCommaList(index.getCompositeKeyList()));
 	}
 
 	protected static Map<String,ArrayList<String>> makeFieldAndValueList(CDefinition def, Map<String,String> data){
@@ -317,9 +317,9 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static boolean validateData(CDefinition def, Map<String,String> data){
-		Collection<CField> fields = def.getFields().values();
-		for( CField f : fields){
-			if(!data.containsKey(f.getName())){
+		Collection<String> fields = def.getRequiredFields();
+		for( String f : fields){
+			if(!data.containsKey(f)){
 				return false;
 			}
 		}
