@@ -32,7 +32,7 @@ public class ShardStrategyTests extends TestCase {
 		return new TestSuite( ShardStrategyTests.class );
 	}
 
-	public void testShardStrategyMonthly() throws ShardStrategyException {
+	public void testShardingStrategyMonthly() throws ShardStrategyException {
 		ShardingStrategyMonthly subject = new ShardingStrategyMonthly();
 		DateTime d = new DateTime(2013,2,22,1,0,0, DateTimeZone.UTC);
 		long actual = subject.getShardKey(d.getMillis());
