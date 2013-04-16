@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 import com.pardot.service.tools.cobject.filters.CIndexFilter;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
@@ -56,5 +57,15 @@ public class CDefinition {
 		for(CIndex index : indexes) {
 			this.indexes.put(index.getName(), index);
 		}
+	}
+
+	public Collection<String> getRequiredFields(){
+		Map<String,String> ret = Maps.newHashMap();
+		for( CIndex i : indexes.values()){
+			for(String key : i.getCompositeKeyList()){
+				ret.put(key,key);
+			}
+		}
+		return ret.values();
 	}
 }
