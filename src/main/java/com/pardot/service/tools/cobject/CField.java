@@ -79,7 +79,7 @@ public class CField {
 		UUID {
 			@Override
 			public String toString(){
-				return "counter";
+				return "uuid";
 			}
 		},
 		TIMEUUID {

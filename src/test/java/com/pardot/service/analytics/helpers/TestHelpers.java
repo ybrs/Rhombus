@@ -1,6 +1,7 @@
 package com.pardot.service.analytics.helpers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.pardot.cassandra.Criteria;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -18,6 +19,7 @@ import java.util.Properties;
 public class TestHelpers {
 
 	private static List<Map<String, String>> testObjects;
+	private static CriteriaHolder criteriaHolder;
 
 	public static String readFileToString(Class testclass, String filename){
 		String ret = "";
@@ -54,5 +56,30 @@ public class TestHelpers {
 			}
 		}
 		return testObjects.get(index);
+	}
+
+	public static Criteria getTestCriteria(int index) {
+		if(criteriaHolder == null) {
+			try {
+				ObjectMapper mapper = new ObjectMapper();
+				String json = TestHelpers.readFileToString(TestHelpers.class, "TestCriteria.js");
+				criteriaHolder = mapper.readValue(json, CriteriaHolder.class);
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return criteriaHolder.getCriteria().get(index);
+	}
+
+	static class CriteriaHolder {
+		private List<Criteria> criteria;
+
+		List<Criteria> getCriteria() {
+			return criteria;
+		}
+
+		void setCriteria(List<Criteria> criteria) {
+			this.criteria = criteria;
+		}
 	}
 }

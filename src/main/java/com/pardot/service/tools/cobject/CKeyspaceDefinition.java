@@ -1,15 +1,17 @@
 package com.pardot.service.tools.cobject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 
 public class CKeyspaceDefinition {
 	private String name;
 	private String replicationClass;
 	private int replicationFactor;
-	private Collection<CDefinition> definitions;
+	private Map<String, CDefinition> definitions;
 
 	public CKeyspaceDefinition() {
 
@@ -28,12 +30,15 @@ public class CKeyspaceDefinition {
 		this.name = name;
 	}
 
-	public Collection<CDefinition> getDefinitions() {
+	public Map<String, CDefinition> getDefinitions() {
 		return definitions;
 	}
 
 	public void setDefinitions(Collection<CDefinition> definitions) {
-		this.definitions = definitions;
+		this.definitions = Maps.newHashMap();
+		for(CDefinition def : definitions) {
+			this.definitions.put(def.getName(), def);
+		}
 	}
 
 	public String getReplicationClass() {

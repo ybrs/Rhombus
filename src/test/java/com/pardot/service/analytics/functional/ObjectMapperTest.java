@@ -1,21 +1,23 @@
 package com.pardot.service.analytics.functional;
 
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
 import com.pardot.cassandra.ConnectionManager;
+import com.pardot.cassandra.Criteria;
 import com.pardot.cassandra.ObjectMapper;
 import com.pardot.service.analytics.helpers.TestHelpers;
 import com.pardot.service.tools.cobject.CKeyspaceDefinition;
+import com.pardot.service.tools.cobject.CQLGenerationException;
+import junit.framework.TestCase;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.TestCase.*;
 
 public class ObjectMapperTest {
@@ -23,7 +25,7 @@ public class ObjectMapperTest {
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapperTest.class);
 
 	@Test
-	public void testKeyspaceBuild() throws IOException {
+	public void testObjectMapper() throws IOException, CQLGenerationException {
 		//Get a connection manager based on the test properties
 		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestProperties());
 		assertNotNull(cm);
@@ -37,8 +39,21 @@ public class ObjectMapperTest {
 		cm.rebuildKeyspace(definition);
 		ObjectMapper om = cm.getObjectMapper();
 
+		//Get a test object to insert
 		Map<String, String> testObject = TestHelpers.getTestObject(0);
-		logger.debug(testObject.toString());
+		UUID key = om.insert("testtype", testObject);
+
+		//Query to get back the object from the database
+		Map<String, String> dbObject = om.getByKey("testtype", key);
+		assertEquals(testObject, dbObject);
+
+		//Add another object with the same foreign key
+		om.insert("testtype", TestHelpers.getTestObject(1));
+
+		//Query by foreign key
+		Criteria criteria = TestHelpers.getTestCriteria(0);
+		List<Map<String, String>> dbObjects = om.list("testtype", criteria);
+		TestCase.assertEquals(2, dbObject.size());
 
 		//Teardown connections
 		cm.teardown();

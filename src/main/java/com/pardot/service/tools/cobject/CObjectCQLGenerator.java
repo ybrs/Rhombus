@@ -4,6 +4,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
+import com.pardot.cassandra.Criteria;
 import com.pardot.service.tools.cobject.shardingstrategy.ShardStrategyException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -84,12 +85,36 @@ public class CObjectCQLGenerator {
 	/**
 	 *
 	 * @param objType - The name of the Object type aka CDefinition.name
+	 * @param data - A map of fieldnames to values representing the data to insert
+	 * @return Iterator of CQL statements that need to be executed for this task.
+	 * @throws CQLGenerationException
+	 */
+	@NotNull
+	public CQLStatementIterator makeCQLforInsert(String objType, Map<String,String> data, UUID key, long timestamp) throws CQLGenerationException {
+		return makeCQLforInsert(this.definitions.get(objType), data, key, timestamp, 0);
+	}
+
+	/**
+	 *
+	 * @param objType - The name of the Object type aka CDefinition.name
 	 * @param key - The TimeUUID of the object to retrieve
 	 * @return Iterator of CQL statements that need to be executed for this task. (Should have a length of 1 for this particular method)
 	 */
 	@NotNull
 	public CQLStatementIterator makeCQLforGet(String objType, UUID key){
 		return makeCQLforGet(this.definitions.get(objType), key);
+	}
+
+	/**
+	 *
+	 * @param objType - The name of the Object type aka CDefinition.name
+	 * @param key - The TimeUUID of the object to retrieve
+	 * @return Iterator of CQL statements that need to be executed for this task. (Should have a length of 1 for this particular method)
+	 */
+	@NotNull
+	public CQLStatementIterator makeCQLforGet(String objType, Criteria criteria) throws CQLGenerationException {
+		return makeCQLforGet(this.definitions.get(objType), criteria.getIndex(), criteria.getIndexKeys(),
+			criteria.getOrdering(), criteria.getStartTimestamp(), criteria.getEndTimestamp(), criteria.getLimit());
 	}
 
 	/**
@@ -134,7 +159,7 @@ public class CObjectCQLGenerator {
 	 * @return Iterator of CQL statements that need to be executed for this task.
 	 * @throws CQLGenerationException
 	 */
-	public CQLStatementIterator makeCQLforGet(String objType, String index, Map<String,String> indexkeys,CObjectOrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
+	public CQLStatementIterator makeCQLforGet(String objType, String index, Map<String,String> indexkeys, CObjectOrdering ordering, long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {
 		return makeCQLforGet(this.definitions.get(objType),index, indexkeys,ordering, starttimestamp, endtimestamp, limit);
 	}
 
@@ -186,7 +211,7 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static CQLStatementIterator makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,String> data) throws CQLGenerationException{
-		return makeCQLforInsert(def,data,null,0,0);
+		return makeCQLforInsert(def, data, null, 0, 0);
 	}
 
 	protected static CQLStatementIterator makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,String> data, @Nullable UUID uuid, long timestamp, int ttl) throws CQLGenerationException{
@@ -275,7 +300,7 @@ public class CObjectCQLGenerator {
 	protected static CQLStatementIterator makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, long limit) throws CQLGenerationException {
 		DateTime now = new DateTime(DateTimeZone.UTC);
 		long unixtimestamp = (long)now.getMillis();
-		return makeCQLforGet(def,index,indexvalues,CObjectOrdering.DESCENDING,null,UUIDs.endOf(unixtimestamp), limit, false);
+		return makeCQLforGet(def, index, indexvalues, CObjectOrdering.DESCENDING, null, UUIDs.endOf(unixtimestamp), limit, false);
 	}
 
 	protected static CQLStatementIterator makeCQLforGet(CDefinition def, String index, Map<String,String> indexvalues, CObjectOrdering ordering,long starttimestamp, long endtimestamp, long limit) throws CQLGenerationException {

@@ -66,6 +66,7 @@ public class ConnectionManager {
 		ObjectMapper mapper = new ObjectMapper(session, keyspaceDefinition);
 		mapper.buildKeyspace();
 		defaultKeyspace = keyspaceDefinition;
+		objectMappers.put(defaultKeyspace, mapper);
 	}
 
 	/**
