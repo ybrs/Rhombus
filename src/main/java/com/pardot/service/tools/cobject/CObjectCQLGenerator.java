@@ -47,7 +47,7 @@ public class CObjectCQLGenerator {
 	 * @param objectDefinitions - A map where the key is the CDefinition.name and the value is the CDefinition.
 	 *                          This map should include a CDefinition for every object in the system.
 	 */
-	public CObjectCQLGenerator(HashMap<String, CDefinition> objectDefinitions){
+	public CObjectCQLGenerator(Map<String, CDefinition> objectDefinitions){
 		this.definitions = objectDefinitions;
 	}
 
@@ -56,7 +56,7 @@ public class CObjectCQLGenerator {
 	 * @param objectDefinitions - A map where the key is the CDefinition.name and the value is the CDefinition.
 	 *                          This map should include a CDefinition for every object in the system.
 	 */
-	public void setDefinitions(HashMap<String, CDefinition> objectDefinitions){
+	public void setDefinitions(Map<String, CDefinition> objectDefinitions){
 		this.definitions = objectDefinitions;
 	}
 

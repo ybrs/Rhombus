@@ -13,7 +13,7 @@ import static junit.framework.TestCase.*;
 public class ObjectMapperTest {
 
 	@Test
-	public void testKeyspaceDropAndCreate() throws IOException {
+	public void testKeyspaceBuild() throws IOException {
 		//Get a connection manager based on the test properties
 		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestProperties());
 		assertNotNull(cm);
@@ -25,13 +25,8 @@ public class ObjectMapperTest {
 
 		//Rebuild the keyspace
 		cm.rebuildKeyspace(definition);
+
+		//Teardown connections
+		cm.teardown();
 	}
-
-
-	@Test
-	public void testKeyspaceBuild() throws IOException {
-
-
-	}
-
 }
