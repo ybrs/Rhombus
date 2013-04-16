@@ -1,6 +1,8 @@
 package com.pardot.service.analytics.functional;
 
 import static org.junit.Assert.*;
+
+import com.pardot.service.analytics.helpers.TestHelpers;
 import org.junit.Test;
 
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
@@ -23,8 +25,8 @@ public class CassandraConnectionTest {
 
 	@Test
 	public void testKeyspaceCreate() throws IOException {
-		ConnectionManager cm = new ConnectionManager(getTestProperties());
-		Session session = cm.getSession();
+		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestProperties());
+		Session session = cm.getEmptySession();
 		assertNotNull(session);
 
 		//Create the functional keyspace
@@ -41,12 +43,5 @@ public class CassandraConnectionTest {
 		session.shutdown();
 	}
 
-	private Properties getTestProperties() throws IOException {
-		String filename = "cassandra.properties";
-		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filename);
-		Properties properties = new Properties();
-		properties.load(inputStream);
-		inputStream.close();
-		return properties;
-	}
+
 }

@@ -2,58 +2,31 @@ package com.pardot.cassandra;
 
 
 import com.datastax.driver.core.Cluster;
-
-import java.util.List;
+import com.datastax.driver.core.Session;
+import com.pardot.service.tools.cobject.CKeyspaceDefinition;
 
 public class ObjectMapper {
 
-	public ObjectMapper(CKeyspace keyspace) {
+	private Session session;
+	private CKeyspaceDefinition keyspaceDefinition;
 
+	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition) {
+		//This expects a session without an associated keyspace
+		this.session = session;
+		this.keyspaceDefinition = keyspaceDefinition;
 	}
 
 	/**
-	 * Get a session without an associated keyspace
-	 * The requester is responsible for closing this session
-	 * @return A session for this connection
+	 * Build the tables contained in the keyspace definition.
+	 * This method assumes that its keyspace exists and
+	 * does not contain any tables.
 	 */
-	protected ObjectMapper getEmptySession() {
-		return getCluster().connect();
+	public void buildKeyspace() {
+
+		//String cql = Subject.makeStaticTableCreate(def);
 	}
 
-	/**
-	 * Get the session created for the default keyspace
-	 * @return The default session for this connection
-	 */
-	public ObjectMapper getDefaultSession() {
-		return defaultSession;
-	}
-
-	/**
-	 * Get a session for the specified keyspace
-	 * @param keyspace
-	 * @return a session for the specified keyspace
-	 */
-	public ObjectMapper getSession(String keyspace) {
-		ObjectMapper objectMapper = sessions.get(keyspace);
-		if(objectMapper == null) {
-			objectMapper = getCluster().connect(keyspace);
-			sessions.put(keyspace, objectMapper);
-		}
-		return objectMapper;
-	}
-
-	private Cluster getCluster() {
-		return cluster;
-	}
-
-	public void closeConnections() {
-		for(ObjectMapper objectMapper : sessions.values()) {
-			try {
-				objectMapper.shutdown();
-			} catch(Exception e) {
-				//Ignore
-			}
-		}
-
+	public void teardown() {
+		session.shutdown();
 	}
 }

@@ -1,15 +1,10 @@
 package com.pardot.service.analytics;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pardot.service.analytics.helpers.TestHelpers;
 import com.pardot.service.tools.cobject.*;
-import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 /**

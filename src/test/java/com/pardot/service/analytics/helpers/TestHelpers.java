@@ -1,7 +1,9 @@
 package com.pardot.service.analytics.helpers;
 import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * Pardot, An ExactTarget Company
@@ -24,4 +26,12 @@ public class TestHelpers {
 		return ret;
 	}
 
+	public static Properties getTestProperties() throws IOException {
+		String filename = "cassandra.properties";
+		InputStream inputStream = TestHelpers.class.getClassLoader().getResourceAsStream(filename);
+		Properties properties = new Properties();
+		properties.load(inputStream);
+		inputStream.close();
+		return properties;
+	}
 }
