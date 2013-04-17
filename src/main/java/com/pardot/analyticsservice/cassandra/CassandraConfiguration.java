@@ -13,14 +13,14 @@ import java.util.List;
 public class CassandraConfiguration {
 	@NotNull
 	@JsonProperty
-	private List<String> connectionPoints;
+	private List<String> contactPoints;
 
 
-	public List<String> getConnectionPoints() {
-		return connectionPoints;
+	public List<String> getContactPoints() {
+		return contactPoints;
 	}
 
-	public void setConnectionPoints(List<String> connectionPoints) {
-		this.connectionPoints = connectionPoints;
+	public void setContactPoints(List<String> contactPoints) {
+		this.contactPoints = contactPoints;
 	}
 }

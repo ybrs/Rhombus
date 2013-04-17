@@ -25,6 +25,7 @@ public class AnalyticsDataResource {
 		this.cassandraConfiguration = cassandraConfiguration;
 	}
 
+	@Path("/configuration")
 	@GET
 	@Timed
 	public CassandraConfiguration showConfiguration() {
