@@ -1,4 +1,7 @@
 package com.pardot.analyticsservice.helpers;
+
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.pardot.analyticsservice.cassandra.CassandraConfiguration;
 import com.pardot.analyticsservice.cassandra.Criteria;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -7,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Pardot, An ExactTarget Company
@@ -33,21 +35,22 @@ public class TestHelpers {
 		return ret;
 	}
 
-	public static Properties getTestProperties() throws IOException {
-		String filename = "cassandra.properties";
+	public static CassandraConfiguration getTestCassandraConfiguration() throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		String filename = "cassandra-functional.js";
 		InputStream inputStream = TestHelpers.class.getClassLoader().getResourceAsStream(filename);
-		Properties properties = new Properties();
-		properties.load(inputStream);
+		CassandraConfiguration configuration = mapper.readValue(inputStream, CassandraConfiguration.class);
 		inputStream.close();
-		return properties;
+		return configuration;
 	}
 
 	public static Map<String, String> getTestObject(int index) {
 		if(testObjects == null) {
 			try {
 				ObjectMapper mapper = new ObjectMapper();
-				String json = TestHelpers.readFileToString(TestHelpers.class, "TestObjects.js");
-				List root = mapper.readValue(json, List.class);
+				InputStream inputStream = TestHelpers.class.getClassLoader().getResourceAsStream("TestObjects.js");
+				List root = mapper.readValue(inputStream, List.class);
+				inputStream.close();
 				testObjects = (List<Map<String, String>>)root;
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -60,8 +63,8 @@ public class TestHelpers {
 		if(criteriaHolder == null) {
 			try {
 				ObjectMapper mapper = new ObjectMapper();
-				String json = TestHelpers.readFileToString(TestHelpers.class, "TestCriteria.js");
-				criteriaHolder = mapper.readValue(json, CriteriaHolder.class);
+				InputStream inputStream = TestHelpers.class.getClassLoader().getResourceAsStream("TestCriteria.js");
+				criteriaHolder = mapper.readValue(inputStream, CriteriaHolder.class);
 			} catch(Exception e) {
 				e.printStackTrace();
 			}

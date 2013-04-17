@@ -1,5 +1,0 @@
-environment: dev
-
-cassandraConfiguration:
-  contactPoints:
-    - cassandra.localhost.com

@@ -2,6 +2,7 @@ package com.pardot.analyticsservice.functional;
 
 import static org.junit.Assert.*;
 
+import com.datastax.driver.core.exceptions.InvalidConfigurationInQueryException;
 import com.pardot.analyticsservice.helpers.TestHelpers;
 import org.junit.Test;
 
@@ -23,22 +24,35 @@ public class CassandraConnectionTest {
 
 	@Test
 	public void testKeyspaceCreate() throws IOException {
-		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestProperties());
+		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());
 		Session session = cm.getEmptySession();
 		assertNotNull(session);
 
-		//Create the functional keyspace
+		//Drop the functional keyspace if it exists
 		try {
-			session.execute("CREATE KEYSPACE functional WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }");
-		} catch (AlreadyExistsException e) {
-		 	//Ignore
+			session.execute("DROP KEYSPACE functional_create");
+		} catch (InvalidConfigurationInQueryException e) {
+			//Ignore
 		}
+
+		//Create the functional keyspace
+		session.execute("CREATE KEYSPACE functional_create WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }");
 
 		//Change to our functional testing keyspace
 		session.execute("USE functional");
 
+		//Drop the functional keyspace
+		try {
+			session.execute("DROP KEYSPACE functional_create");
+		} catch (InvalidConfigurationInQueryException e) {
+			//Ignore
+		}
+
 		//Shutdown the session
 		session.shutdown();
+
+		//Teardown the connection manager
+		cm.teardown();
 	}
 
 
