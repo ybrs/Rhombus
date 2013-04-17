@@ -1,12 +1,12 @@
 package com.pardot.analyticsservice.cassandra.cobject;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.pardot.analyticsservice.cassandra.cobject.filters.CIndexFilter;
 import com.pardot.analyticsservice.cassandra.cobject.shardingstrategy.TimebasedShardingStrategy;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 
 /**
  * Pardot, An ExactTarget Company.
@@ -82,8 +82,10 @@ public class CIndex {
 	}
 
 	public void setKey(String key) {
-		this.key = key;
-		this.compositeKeyList = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
+		ArrayList<String> listtoset = new ArrayList<String>(Arrays.asList(key.split("\\s*:\\s*")));
+		java.util.Collections.sort(listtoset);
+		this.compositeKeyList = listtoset;
+		this.key = Joiner.on(":").join(listtoset);
 	}
 
 	public List<String> getCompositeKeyList() {
@@ -96,6 +98,14 @@ public class CIndex {
 
 	public void setFilters(List<CIndexFilter> filters) {
 		this.filters = filters;
+	}
+
+	public List<String> getIndexValues(Map<String,String> allValues){
+		List<String> ret = Lists.newArrayList();
+		for(String key : compositeKeyList){
+			ret.add(allValues.get(key));
+		}
+		return ret;
 	}
 
 }

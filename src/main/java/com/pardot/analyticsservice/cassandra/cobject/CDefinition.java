@@ -1,12 +1,11 @@
 package com.pardot.analyticsservice.cassandra.cobject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Pardot, An ExactTarget Company.
@@ -18,6 +17,7 @@ public class CDefinition {
 	private String name;
 	private Map<String, CField> fields;
 	private Map<String, CIndex> indexes;
+	private SortedMap<String, CIndex> indexesIndexedByFields;
 
 	public CDefinition(){
 	}
@@ -48,8 +48,10 @@ public class CDefinition {
 	}
 	public void setIndexes(List<CIndex> indexes) {
 		this.indexes = Maps.newHashMap();
+		this.indexesIndexedByFields = Maps.newTreeMap();
 		for(CIndex index : indexes) {
 			this.indexes.put(index.getName(), index);
+			this.indexesIndexedByFields.put(index.getKey(),index);
 		}
 	}
 
@@ -62,4 +64,10 @@ public class CDefinition {
 		}
 		return ret.values();
 	}
+
+	public CIndex getIndex(SortedMap<String,String> indexValues){
+		String key = Joiner.on(":").join(indexValues.keySet());
+		return indexesIndexedByFields.get(key);
+	}
+
 }

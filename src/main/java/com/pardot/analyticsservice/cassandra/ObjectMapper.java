@@ -32,7 +32,7 @@ public class ObjectMapper {
 	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition) {
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
-		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions());
+		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(),null);
 	}
 
 	/**

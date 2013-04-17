@@ -3,6 +3,7 @@ package com.pardot.analyticsservice.cassandra;
 import com.pardot.analyticsservice.cassandra.cobject.CObjectOrdering;
 
 import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * Pardot, an ExactTarget company
@@ -12,7 +13,7 @@ import java.util.Map;
 public class Criteria {
 
 	private String index;
-	private Map<String, String> indexKeys;
+	private SortedMap<String, String> indexKeys;
 	private CObjectOrdering ordering;
 	private Long startTimestamp;
 	private Long endTimestamp;
@@ -26,11 +27,11 @@ public class Criteria {
 		this.index = index;
 	}
 
-	public Map<String, String> getIndexKeys() {
+	public SortedMap<String, String> getIndexKeys() {
 		return indexKeys;
 	}
 
-	public void setIndexKeys(Map<String, String> indexKeys) {
+	public void setIndexKeys(SortedMap<String, String> indexKeys) {
 		this.indexKeys = indexKeys;
 	}
 
