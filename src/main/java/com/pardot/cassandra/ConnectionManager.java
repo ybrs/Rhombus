@@ -11,7 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-// For now, we will only worry about managing a single keyspace
+/**
+ * Pardot, an ExactTarget company
+ * User: Michael Frank
+ * Date: 4/17/13
+ */
 public class ConnectionManager {
 
 	private List<String> contactPoints;

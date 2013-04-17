@@ -4,14 +4,19 @@ import com.pardot.service.tools.cobject.CObjectOrdering;
 
 import java.util.Map;
 
+/**
+ * Pardot, an ExactTarget company
+ * User: Michael Frank
+ * Date: 4/17/13
+ */
 public class Criteria {
 
 	private String index;
 	private Map<String, String> indexKeys;
 	private CObjectOrdering ordering;
-	private long startTimestamp;
-	private long endTimestamp;
-	private long limit;
+	private Long startTimestamp;
+	private Long endTimestamp;
+	private Long limit;
 
 	public String getIndex() {
 		return index;
@@ -37,7 +42,7 @@ public class Criteria {
 		this.ordering = CObjectOrdering.fromString(ordering);
 	}
 
-	public long getStartTimestamp() {
+	public Long getStartTimestamp() {
 		return startTimestamp;
 	}
 
@@ -45,7 +50,7 @@ public class Criteria {
 		this.startTimestamp = startTimestamp;
 	}
 
-	public long getEndTimestamp() {
+	public Long getEndTimestamp() {
 		return endTimestamp;
 	}
 
@@ -53,7 +58,7 @@ public class Criteria {
 		this.endTimestamp = endTimestamp;
 	}
 
-	public long getLimit() {
+	public Long getLimit() {
 		return limit;
 	}
 

@@ -9,12 +9,22 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pardot.service.tools.cobject.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Pardot, an ExactTarget company
+ * User: Michael Frank
+ * Date: 4/17/13
+ */
 public class ObjectMapper {
+
+	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
+	private static final int reasonableStatementLimit = 1;
 
 	private Session session;
 	private CKeyspaceDefinition keyspaceDefinition;
@@ -36,6 +46,7 @@ public class ObjectMapper {
 			CQLStatementIterator statementIterator = cqlGenerator.makeCQLforCreate(definition.getName());
 			while(statementIterator.hasNext()) {
 				String cql = statementIterator.next();
+				logger.debug("Executing CQL: " + cql);
 				session.execute(cql);
 			}
 		}
@@ -47,6 +58,7 @@ public class ObjectMapper {
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforInsert(objectType, values, key, timestamp);
 		while(statementIterator.hasNext()) {
 			String cql = statementIterator.next();
+			logger.debug("Executing CQL: " + cql);
 			session.execute(cql);
 		}
 		return key;
@@ -72,13 +84,16 @@ public class ObjectMapper {
 
 	private List<Map<String, String>> mapResults(CQLStatementIterator statementIterator, CDefinition definition) {
 		List<Map<String, String>> results = Lists.newArrayList();
-		while(statementIterator.hasNext()) {
+		int statementNumber = 0;
+		while(statementIterator.hasNext() && statementNumber < reasonableStatementLimit) {
 			String cql = statementIterator.next();
+			logger.debug("Executing CQL: " + cql);
 			ResultSet resultSet = session.execute(cql);
 			for(Row row : resultSet) {
 				Map<String, String> result = mapResult(row, definition);
 				results.add(result);
 			}
+			statementNumber++;
 		}
 		return results;
 	}

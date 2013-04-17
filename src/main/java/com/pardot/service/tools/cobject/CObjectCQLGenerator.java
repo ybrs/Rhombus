@@ -108,13 +108,28 @@ public class CObjectCQLGenerator {
 	/**
 	 *
 	 * @param objType - The name of the Object type aka CDefinition.name
-	 * @param key - The TimeUUID of the object to retrieve
-	 * @return Iterator of CQL statements that need to be executed for this task. (Should have a length of 1 for this particular method)
+	 * @param criteria - The criteria object describing which rows to retrieve
+	 * @return Iterator of CQL statements that need to be executed for this task.
 	 */
 	@NotNull
 	public CQLStatementIterator makeCQLforGet(String objType, Criteria criteria) throws CQLGenerationException {
+		CDefinition definition = this.definitions.get(objType);
+		CObjectOrdering ordering = (criteria.getOrdering() != null ? criteria.getOrdering(): CObjectOrdering.DESCENDING);
+		Long startTimestamp = criteria.getStartTimestamp();
+		Long endTimestamp = criteria.getEndTimestamp();
+		UUID startUUID = null;
+		UUID endUUID = null;
+		if(startTimestamp == null && endTimestamp == null) {
+			startUUID = UUIDs.timeBased();
+		}
+		if(startTimestamp != null) {
+			startUUID = UUIDs.startOf(startTimestamp);
+		}
+		if(endTimestamp != null) {
+			endUUID = UUIDs.startOf(endTimestamp);
+		}
 		return makeCQLforGet(this.definitions.get(objType), criteria.getIndex(), criteria.getIndexKeys(),
-			criteria.getOrdering(), criteria.getStartTimestamp(), criteria.getEndTimestamp(), criteria.getLimit());
+			ordering, startUUID, endUUID, criteria.getLimit(), false);
 	}
 
 	/**

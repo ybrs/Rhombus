@@ -50,7 +50,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 		public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = CDefinition.fromJsonString(json);
-			Map<String,String> data = TestHelpers.getTestObject(0);
+			Map<String, String> data = TestHelpers.getTestObject(0);
 			CQLStatementIterator result = Subject.makeCQLforInsert(def,data);
 			assertEquals("Should generate CQL statements for the static table plus all indexes except the filtered index", 4, result.size());
 			data.put("filtered", "0");
