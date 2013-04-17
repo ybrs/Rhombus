@@ -5,7 +5,7 @@ import com.datastax.driver.core.Session;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import com.pardot.service.tools.cobject.CKeyspaceDefinition;
+import com.pardot.analyticsservice.cassandra.cobject.CKeyspaceDefinition;
 
 import java.util.List;
 import java.util.Map;

@@ -7,7 +7,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.pardot.service.tools.cobject.*;
+import com.pardot.analyticsservice.cassandra.cobject.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

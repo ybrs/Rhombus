@@ -1,6 +1,6 @@
 package com.pardot.analyticsservice.cassandra;
 
-import com.pardot.service.tools.cobject.CObjectOrdering;
+import com.pardot.analyticsservice.cassandra.cobject.CObjectOrdering;
 
 import java.util.Map;
 
