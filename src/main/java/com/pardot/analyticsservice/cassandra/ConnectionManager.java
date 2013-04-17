@@ -23,13 +23,13 @@ public class ConnectionManager {
 	private CKeyspaceDefinition defaultKeyspace;
 	private Cluster cluster;
 
-	public ConnectionManager(Properties properties) {
-		this.contactPoints = Lists.newArrayList(properties.getProperty("contactPoints").split(","));
+	public ConnectionManager(CassandraConfiguration configuration) {
+		this.contactPoints = configuration.getContactPoints();
 		buildCluster();
 	}
 
-	public ConnectionManager(Properties properties, CKeyspaceDefinition defaultKeyspace) {
-		this.contactPoints = Lists.newArrayList(properties.getProperty("contactPoints").split(","));
+	public ConnectionManager(CassandraConfiguration configuration, CKeyspaceDefinition defaultKeyspace) {
+		this.contactPoints = Lists.newArrayList(configuration.getContactPoints());
 		this.defaultKeyspace = defaultKeyspace;
 		buildCluster();
 	}

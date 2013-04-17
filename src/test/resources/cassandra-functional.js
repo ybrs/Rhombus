@@ -1,0 +1,5 @@
+{
+    "contactPoints" : [
+        "mfdev.localhost.com"
+    ]
+}
