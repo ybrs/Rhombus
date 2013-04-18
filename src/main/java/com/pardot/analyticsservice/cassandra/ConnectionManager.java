@@ -25,16 +25,17 @@ public class ConnectionManager {
 
 	public ConnectionManager(CassandraConfiguration configuration) {
 		this.contactPoints = configuration.getContactPoints();
-		buildCluster();
 	}
 
 	public ConnectionManager(CassandraConfiguration configuration, CKeyspaceDefinition defaultKeyspace) {
 		this.contactPoints = Lists.newArrayList(configuration.getContactPoints());
 		this.defaultKeyspace = defaultKeyspace;
-		buildCluster();
 	}
 
-	private void buildCluster() {
+	/**
+	 * Build the cluster based on the CassandraConfiguration passed in the constructor
+	 */
+	public void buildCluster() {
 		Cluster.Builder builder = Cluster.builder();
 		for(String contactPoint : contactPoints) {
 			builder.addContactPoint(contactPoint);
@@ -112,10 +113,12 @@ public class ConnectionManager {
 
 	/**
 	 * Teardown all connections contained in associated object mappers
+	 * and shutdown the cluster.
 	 */
 	public void teardown() {
 		for(ObjectMapper mapper : objectMappers.values()) {
 			mapper.teardown();
 		}
+		cluster.shutdown();
 	}
 }

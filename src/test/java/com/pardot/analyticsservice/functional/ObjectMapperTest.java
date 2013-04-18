@@ -26,6 +26,7 @@ public class ObjectMapperTest {
 	public void testObjectMapper() throws IOException, CQLGenerationException {
 		//Get a connection manager based on the test properties
 		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());
+		cm.buildCluster();
 		assertNotNull(cm);
 
 		//Build our keyspace definition object

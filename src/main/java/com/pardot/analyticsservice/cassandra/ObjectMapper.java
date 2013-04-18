@@ -24,6 +24,7 @@ public class ObjectMapper {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
 	private static final int reasonableStatementLimit = 1;
+	private static final boolean logCql = true;
 
 	private Session session;
 	private CKeyspaceDefinition keyspaceDefinition;
@@ -41,14 +42,24 @@ public class ObjectMapper {
 	 * does not contain any tables.
 	 */
 	public void buildKeyspace() {
+		//First build the shard index
+		String cql = CObjectCQLGenerator.makeCQLforShardIndexTableCreate();
+		executeCql(cql);
+		//Now build the tables for each object
 		for(CDefinition definition : keyspaceDefinition.getDefinitions().values()) {
 			CQLStatementIterator statementIterator = cqlGenerator.makeCQLforCreate(definition.getName());
 			while(statementIterator.hasNext()) {
-				String cql = statementIterator.next();
-				logger.debug("Executing CQL: " + cql);
-				session.execute(cql);
+				cql = statementIterator.next();
+				executeCql(cql);
 			}
 		}
+	}
+
+	private void executeCql(String cql) {
+		if(logCql) {
+			logger.debug("Executing CQL: " + cql);
+		}
+		session.execute(cql);
 	}
 
 	public UUID insert(String objectType, Map<String, String> values) throws CQLGenerationException {
@@ -57,16 +68,21 @@ public class ObjectMapper {
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforInsert(objectType, values, key, timestamp);
 		while(statementIterator.hasNext()) {
 			String cql = statementIterator.next();
-			logger.debug("Executing CQL: " + cql);
-			session.execute(cql);
+			executeCql(cql);
 		}
 		return key;
 	}
 
+	/**
+	 *
+	 * @param objectType
+	 * @param key
+	 * @return Object of type with key or null if it does not exist
+	 */
 	public Map<String, String> getByKey(String objectType, UUID key) {
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforGet(objectType, key);
-		List<Map<String, String>> results = mapResults(statementIterator, def);
+		List<Map<String, String>> results = mapResults(statementIterator, def, 1L);
 		if(results.size() > 0) {
 			return results.get(0);
 		} else {
@@ -74,29 +90,49 @@ public class ObjectMapper {
 		}
 	}
 
+	/**
+	 * @param objectType
+	 * @param criteria
+	 * @return List of objects that match the specified type and criteria
+	 * @throws CQLGenerationException
+	 */
 	public List<Map<String, String>> list(String objectType, Criteria criteria) throws CQLGenerationException {
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforGet(objectType, criteria);
-		List<Map<String, String>> results = mapResults(statementIterator, def);
+		List<Map<String, String>> results = mapResults(statementIterator, def, criteria.getLimit());
 		return results;
 	}
 
-	private List<Map<String, String>> mapResults(CQLStatementIterator statementIterator, CDefinition definition) {
+
+	/**
+	 * Iterates through cql statements executing them in sequence and mapping the results until limit is reached
+	 * @param statementIterator
+	 * @param definition
+	 * @return Ordered resultset concatenating results from statements in statement iterator.
+	 */
+	private List<Map<String, String>> mapResults(CQLStatementIterator statementIterator, CDefinition definition, Long limit) {
 		List<Map<String, String>> results = Lists.newArrayList();
 		int statementNumber = 0;
-		while(statementIterator.hasNext() && statementNumber < reasonableStatementLimit) {
+		int resultNumber = 0;
+		while(statementIterator.hasNext(resultNumber) && resultNumber < limit && statementNumber < reasonableStatementLimit) {
 			String cql = statementIterator.next();
 			logger.debug("Executing CQL: " + cql);
 			ResultSet resultSet = session.execute(cql);
 			for(Row row : resultSet) {
 				Map<String, String> result = mapResult(row, definition);
 				results.add(result);
+				resultNumber++;
 			}
 			statementNumber++;
 		}
 		return results;
 	}
 
+	/**
+	 * @param row
+	 * @param definition
+	 * @return Data contained in a row mapped to the object described in definition.
+	 */
 	private Map<String, String> mapResult(Row row, CDefinition definition) {
 		Map<String, String> result = Maps.newHashMap();
 		for(CField field : definition.getFields().values()) {

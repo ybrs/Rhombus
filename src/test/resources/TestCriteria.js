@@ -1,7 +1,6 @@
 {
     "criteria" : [
                      {
-                         "index": "foreign",
                          "indexKeys": {
                              "foreignid": "777"
                          },

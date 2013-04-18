@@ -1,5 +1,7 @@
 package com.pardot.analyticsservice;
 
+import com.pardot.analyticsservice.cassandra.ManagedConnectionManager;
+import com.pardot.analyticsservice.core.AnalyticsDataProvider;
 import com.pardot.analyticsservice.health.ServiceHealthCheck;
 import com.pardot.analyticsservice.resources.AnalyticsDataResource;
 import com.yammer.dropwizard.Service;
@@ -24,7 +26,15 @@ public class AnalyticsService extends Service<AnalyticsServiceConfiguration> {
 
 	@Override
 	public void run(AnalyticsServiceConfiguration configuration, Environment environment) throws Exception {
-		environment.addResource(new AnalyticsDataResource(configuration.getCassandraConfiguration()));
+		ManagedConnectionManager cm = new ManagedConnectionManager(configuration.getCassandraConfiguration());
+		//Add managed objects
+		environment.manage(cm);
+
+		//Add resources
+		environment.addResource(new AnalyticsDataResource(configuration, new AnalyticsDataProvider(cm)));
+
+		//Add health checks
 		environment.addHealthCheck(new ServiceHealthCheck());
+
 	}
 }

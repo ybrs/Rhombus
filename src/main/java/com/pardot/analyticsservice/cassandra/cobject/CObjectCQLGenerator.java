@@ -22,15 +22,15 @@ import java.util.*;
  */
 public class CObjectCQLGenerator {
 
-	protected static final String TEMPLATE_CREATE_STATIC = "CREATE TABLE %s (id timeuuid PRIMARY KEY, %s);";
-	protected static final String TEMPLATE_CREATE_WIDE = "CREATE TABLE %s (id timeuuid, shardid bigint, %s, PRIMARY KEY ((shardid, %s),id) );";
-	protected static final String TEMPLATE_CREATE_WIDE_INDEX = "CREATE TABLE %s (shardid bigint, tablename varchar, indexvalues varchar, targetrowkey, PRIMARY KEY ((tablename, indexvalues),shardid) );";
-	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO %s (id, %s) VALUES (%s, %s) USING TIMESTAMP %s%s;";
-	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO %s (id, shardid, %s) VALUES (%s, %s, %s) USING TIMESTAMP %s%s;";
-	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO %s (tablename, indexvalues, shardid, targetrowkey) VALUES ('%s', '%s', %d, '%s') USING TIMESTAMP %d;";
-	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM %s WHERE %s;";
-	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM %s WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
-	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM %s WHERE tablename = '%s' AND indexvalues = '%s'%s ORDER BY shardid %s ALLOW FILTERING;";
+	protected static final String TEMPLATE_CREATE_STATIC = "CREATE TABLE \"%s\" (id timeuuid PRIMARY KEY, %s);";
+	protected static final String TEMPLATE_CREATE_WIDE = "CREATE TABLE \"%s\" (id timeuuid, shardid bigint, %s, PRIMARY KEY ((shardid, %s),id) );";
+	protected static final String TEMPLATE_CREATE_WIDE_INDEX = "CREATE TABLE \"%s\" (shardid bigint, tablename varchar, indexvalues varchar, targetrowkey varchar, PRIMARY KEY ((tablename, indexvalues),shardid) );";
+	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO \"%s\" (id, %s) VALUES (%s, %s) USING TIMESTAMP %s%s;";
+	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO \"%s\" (id, shardid, %s) VALUES (%s, %s, %s) USING TIMESTAMP %s%s;";
+	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO \"%s\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('%s', '%s', %d, '%s') USING TIMESTAMP %d;";
+	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM \"%s\" WHERE %s;";
+	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM \"%s\" WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
+	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM \"%s\" WHERE tablename = '%s' AND indexvalues = '%s'%s ORDER BY shardid %s ALLOW FILTERING;";
 
 	protected Map<String, CDefinition> definitions;
 	protected CObjectShardList shardList;

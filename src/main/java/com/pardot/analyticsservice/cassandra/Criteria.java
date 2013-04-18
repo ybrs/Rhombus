@@ -12,20 +12,11 @@ import java.util.SortedMap;
  */
 public class Criteria {
 
-	private String index;
 	private SortedMap<String, String> indexKeys;
 	private CObjectOrdering ordering;
 	private Long startTimestamp;
 	private Long endTimestamp;
 	private Long limit;
-
-	public String getIndex() {
-		return index;
-	}
-
-	public void setIndex(String index) {
-		this.index = index;
-	}
 
 	public SortedMap<String, String> getIndexKeys() {
 		return indexKeys;

@@ -17,11 +17,11 @@ public class ManagedConnectionManager extends ConnectionManager implements Manag
 
 	@Override
 	public void start() throws Exception {
-		//To change body of implemented methods use File | Settings | File Templates.
+		super.buildCluster();
 	}
 
 	@Override
 	public void stop() throws Exception {
-		//To change body of implemented methods use File | Settings | File Templates.
+		super.teardown();
 	}
 }
