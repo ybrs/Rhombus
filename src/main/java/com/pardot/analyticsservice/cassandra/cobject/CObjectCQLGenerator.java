@@ -31,7 +31,7 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM \"%s\" WHERE %s;";
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM \"%s\" WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
 	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM \"%s\" WHERE tablename = '%s' AND indexvalues = '%s'%s ORDER BY shardid %s ALLOW FILTERING;";
-
+	protected static final String TEMPLATE_DELETE = "DELETE FROM %s USING TIMESTAMP %d WHERE %s;";
 	protected Map<String, CDefinition> definitions;
 	protected CObjectShardList shardList;
 
@@ -177,14 +177,16 @@ public class CObjectCQLGenerator {
 	}
 
 	/**
-	 * TODO: IMPLEMENT THIS
+	 *
 	 * @param objType - The name of the Object type aka CDefinition.name
 	 * @param key - The TimeUUID of the object to delete
+	 * @param data - All the values of the fields existing in this object (or just the required fields will work)
+	 * @param timestamp - The timestamp for the request
 	 * @return Iterator of CQL statements that need to be executed for this task.
 	 */
 	@NotNull
-	public CQLStatementIterator makeCQLforDelete(String objType, String key){
-		return makeCQLforDelete(this.definitions.get(objType), key);
+	public CQLStatementIterator makeCQLforDelete(String objType, UUID key,  Map<String,String> data, long timestamp){
+		return makeCQLforDelete(this.definitions.get(objType), key, data, timestamp);
 	}
 
 	/**
@@ -300,28 +302,26 @@ public class CObjectCQLGenerator {
 		));
 		//Index Tables
 		for(CIndex i : def.getIndexes().values()){
-			if(i.passesAllFilters(data)){
-				//insert it into the index
-				long shardId = i.getShardingStrategy().getShardKey(uuid);
-				ret.add(makeInsertStatementWide(
+			//insert it into the index
+			long shardId = i.getShardingStrategy().getShardKey(uuid);
+			ret.add(makeInsertStatementWide(
+					makeTableName(def.getName(),i.getName()),
+					makeCommaList(fieldsAndValues.get("fields")),
+					makeCommaList(fieldsAndValues.get("values")),
+					uuid,
+					shardId,
+					timestamp,
+					ttl
+			));
+			if(!(i.getShardingStrategy() instanceof ShardingStrategyNone)){
+				//record that we have made an insert into that shard
+				ret.add(makeInsertStatementWideIndex(
+						CObjectShardList.SHARD_INDEX_TABLE_NAME,
 						makeTableName(def.getName(),i.getName()),
-						makeCommaList(fieldsAndValues.get("fields")),
-						makeCommaList(fieldsAndValues.get("values")),
-						uuid,
 						shardId,
-						timestamp,
-						ttl
+						i.getIndexValues(data),
+						timestamp
 				));
-				if(!(i.getShardingStrategy() instanceof ShardingStrategyNone)){
-					//record that we have made an insert into that shard
-					ret.add(makeInsertStatementWideIndex(
-							CObjectShardList.SHARD_INDEX_TABLE_NAME,
-							makeTableName(def.getName(),i.getName()),
-							shardId,
-							i.getIndexValues(data),
-							timestamp
-					));
-				}
 			}
 		}
 		return new BoundedCQLStatementIterator(ret);
@@ -392,10 +392,37 @@ public class CObjectCQLGenerator {
 		return makeCQLforGet(shardList, def,indexvalues,ordering,UUIDs.startOf(starttimestamp),UUIDs.endOf(endtimestamp),limit, true);
 	}
 
-	protected static CQLStatementIterator makeCQLforDelete(CDefinition def, String key){
-		ArrayList<String> ret = Lists.newArrayList();
-
+	protected static CQLStatementIterator makeCQLforDelete(CDefinition def, UUID key, Map<String,String> data, long timestamp){
+		List<String> ret = Lists.newArrayList();
+		ret.add(makeCQLforDeleteUUIDFromStaticTable(def, key, timestamp));
+		for(CIndex i : def.getIndexes().values()){
+			ret.add(makeCQLforDeleteUUIDFromIndex(def, i, key, i.getIndexKeyAndValues(data), timestamp));
+		}
 		return new BoundedCQLStatementIterator(ret);
+	}
+
+	protected static String makeCQLforDeleteUUIDFromStaticTable(CDefinition def, UUID uuid, long timestamp){
+		return String.format(
+			TEMPLATE_DELETE,
+			makeTableName(def.getName(),null),
+			timestamp,
+			"id = "+uuid.toString()
+		);
+	}
+
+	protected static String makeCQLforDeleteUUIDFromIndex(CDefinition def, CIndex index, UUID uuid, Map<String,String> indexValues, long timestamp){
+		String whereCQL = String.format(
+			"id = %s AND shardid = %d %s",
+			uuid.toString(),
+			index.getShardingStrategy().getShardKey(uuid)+"",
+			makeAndedEqualList(def, indexValues)
+		);
+		return String.format(
+			TEMPLATE_DELETE,
+			makeTableName(def.getName(),index.getName()),
+			timestamp,
+			whereCQL
+		);
 	}
 
 	protected static String makeStaticTableCreate(CDefinition def){

@@ -3,7 +3,6 @@ package com.pardot.analyticsservice.cassandra.cobject;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.pardot.analyticsservice.cassandra.cobject.filters.CIndexFilter;
 import com.pardot.analyticsservice.cassandra.cobject.shardingstrategy.TimebasedShardingStrategy;
 
 import java.util.*;
@@ -15,10 +14,8 @@ import java.util.*;
  */
 public class CIndex {
 
-	private String name;
 	private String key;
 	private List<String> compositeKeyList;
-	private List<CIndexFilter> filters;
 	private TimebasedShardingStrategy shardingStrategy;
 
 	public CIndex() {
@@ -26,18 +23,8 @@ public class CIndex {
 	}
 
 	public CIndex(String name, String key, TimebasedShardingStrategy shardingStrategy){
-		this.name = name;
 		this.setKey(key);
 		this.shardingStrategy = shardingStrategy;
-	}
-
-	public boolean passesAllFilters(Map<String,String> data){
-		for(CIndexFilter f : this.filters){
-			if(!f.isIncluded(data)){
-				return false;
-			}
-		}
-		return true;
 	}
 
 
@@ -70,11 +57,7 @@ public class CIndex {
 	}
 
 	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+		return getKey();
 	}
 
 	public String getKey() {
@@ -92,18 +75,18 @@ public class CIndex {
 		return compositeKeyList;
 	}
 
-	public List<CIndexFilter> getFilters() {
-		return filters;
-	}
-
-	public void setFilters(List<CIndexFilter> filters) {
-		this.filters = filters;
-	}
-
 	public List<String> getIndexValues(Map<String,String> allValues){
 		List<String> ret = Lists.newArrayList();
 		for(String key : compositeKeyList){
 			ret.add(allValues.get(key));
+		}
+		return ret;
+	}
+
+	public SortedMap<String,String> getIndexKeyAndValues(Map<String,String> allValues){
+		SortedMap<String,String> ret = Maps.newTreeMap();
+		for(String key : compositeKeyList){
+			ret.put(key, allValues.get(key));
 		}
 		return ret;
 	}
