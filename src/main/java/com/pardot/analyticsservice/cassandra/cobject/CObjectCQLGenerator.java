@@ -27,10 +27,10 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_CREATE_WIDE_INDEX = "CREATE TABLE %s (shardid bigint, tablename varchar, indexvalues varchar, targetrowkey, PRIMARY KEY ((tablename, indexvalues),shardid) );";
 	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO %s (id, %s) VALUES (%s, %s) USING TIMESTAMP %s%s;";
 	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO %s (id, shardid, %s) VALUES (%s, %s, %s) USING TIMESTAMP %s%s;";
-	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO %s (tablename, indexvalues, shardid, targetrowkey) VALUES (%s, %s, %d, %s) USING TIMESTAMP %d;";
+	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO %s (tablename, indexvalues, shardid, targetrowkey) VALUES ('%s', '%s', %d, '%s') USING TIMESTAMP %d;";
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM %s WHERE %s;";
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM %s WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
-	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM %s WHERE tablename = %s AND indexvalues = %s%s ORDER BY shardid %s ALLOW FILTERING;";
+	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM %s WHERE tablename = '%s' AND indexvalues = '%s'%s ORDER BY shardid %s ALLOW FILTERING;";
 
 	protected Map<String, CDefinition> definitions;
 	protected CObjectShardList shardList;
@@ -268,7 +268,7 @@ public class CObjectCQLGenerator {
 			targetTableName,
 			indexValuesString,
 			shardId,
-			shardId+indexValuesString,
+			shardId+":"+indexValuesString,
 			timestamp
 		);
 	}
@@ -314,13 +314,13 @@ public class CObjectCQLGenerator {
 				));
 				if(!(i.getShardingStrategy() instanceof ShardingStrategyNone)){
 					//record that we have made an insert into that shard
-					makeInsertStatementWideIndex(
+					ret.add(makeInsertStatementWideIndex(
 							CObjectShardList.SHARD_INDEX_TABLE_NAME,
 							makeTableName(def.getName(),i.getName()),
 							shardId,
 							i.getIndexValues(data),
 							timestamp
-					);
+					));
 				}
 			}
 		}

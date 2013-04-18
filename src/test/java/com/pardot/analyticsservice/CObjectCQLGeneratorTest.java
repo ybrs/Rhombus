@@ -62,23 +62,29 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			CDefinition def = CDefinition.fromJsonString(json);
 			Map<String, String> data = TestHelpers.getTestObject(0);
 			CQLStatementIterator result = Subject.makeCQLforInsert(def,data);
-			assertEquals("Should generate CQL statements for the static table plus all indexes except the filtered index", 4, result.size());
+			assertEquals("Should generate CQL statements for the static table plus all indexes except the filtered index", 6, result.size());
 			data.put("filtered", "0");
 			UUID uuid = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
 			result = Subject.makeCQLforInsert(def,data,uuid,1,0);
 			List<String> actual = toList(result);
 
-			assertEquals("Should generate CQL statements for the static table plus all indexes including the filtered index", 5, actual.size());
+			assertEquals("Should generate CQL statements for the static table plus all indexes including the filtered index", 8, actual.size());
 			//static table
 			assertEquals("INSERT INTO testtype (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(0));
-			//index 1
+
 			assertEquals("INSERT INTO testtype__foreign_instance (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(1));
-			//index 2
-			assertEquals("INSERT INTO testtype__instance (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(2));
-			//index 3
-			assertEquals("INSERT INTO testtype__foreign (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(3));
-			//index 4
-			assertEquals("INSERT INTO testtype__unfiltered_Instance (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(4));
+			assertEquals("INSERT INTO __shardindex (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype__foreign_instance', '777:222222:5', 160, '160:777:222222:5') USING TIMESTAMP 1;", actual.get(2));
+
+
+			assertEquals("INSERT INTO testtype__instance (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(3));
+			assertEquals("INSERT INTO __shardindex (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype__instance', '222222:5', 160, '160:222222:5') USING TIMESTAMP 1;", actual.get(4));
+
+
+			assertEquals("INSERT INTO testtype__foreign (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(5));
+			//foreign has shard strategy None so we dont expect an insert into the shard index table
+
+			assertEquals("INSERT INTO testtype__unfiltered_Instance (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 0, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(6));
+			assertEquals("INSERT INTO __shardindex (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype__unfiltered_Instance', '222222:5', 160, '160:222222:5') USING TIMESTAMP 1;", actual.get(7));
 
 			//test with ttl
 			result = Subject.makeCQLforInsert(def,data,uuid,1,20);
@@ -113,6 +119,8 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			indexkeys.put("instance", "222222");
 			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys, 10);
 			expected = "SELECT * FROM testtype__foreign_instance WHERE shardid = 1 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id <";
+			assertEquals(expected, actual.next().substring(0,122));
+			expected = "SELECT * FROM testtype__foreign_instance WHERE shardid = 2 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id <";
 			assertEquals(expected, actual.next().substring(0,122));
 			assertEquals("Should be bounded query list", true, actual.isBounded());
 
