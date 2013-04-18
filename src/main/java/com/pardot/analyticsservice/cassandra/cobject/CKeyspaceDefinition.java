@@ -1,9 +1,11 @@
 package com.pardot.analyticsservice.cassandra.cobject;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Map;
 
@@ -20,6 +22,12 @@ public class CKeyspaceDefinition {
 	public static CKeyspaceDefinition fromJsonString(String json) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.readValue(json, CKeyspaceDefinition.class);
+	}
+
+	public static CKeyspaceDefinition fromJsonFile(String filename) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		InputStream inputStream = CKeyspaceDefinition.class.getClassLoader().getResourceAsStream(filename);
+		return mapper.readValue(inputStream, CKeyspaceDefinition.class);
 	}
 
 	public String getName() {
@@ -56,5 +64,4 @@ public class CKeyspaceDefinition {
 	public void setReplicationFactor(int replicationFactor) {
 		this.replicationFactor = replicationFactor;
 	}
-
 }

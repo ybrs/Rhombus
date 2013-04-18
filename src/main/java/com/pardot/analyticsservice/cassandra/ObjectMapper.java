@@ -57,12 +57,14 @@ public class ObjectMapper {
 
 	private void executeCql(String cql) {
 		if(logCql) {
-			logger.debug("Executing CQL: " + cql);
+			logger.debug("Executing CQL: {}", cql);
 		}
 		session.execute(cql);
 	}
 
 	public UUID insert(String objectType, Map<String, String> values) throws CQLGenerationException {
+		logger.debug("Insert {}", objectType);
+		System.out.println("Insert object " + objectType);
 		UUID key = UUIDs.timeBased();
 		long timestamp = UUIDs.unixTimestamp(key);
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforInsert(objectType, values, key, timestamp);

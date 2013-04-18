@@ -3,8 +3,11 @@ package com.pardot.analyticsservice.core;
 import com.google.common.collect.Maps;
 import com.pardot.analyticsservice.cassandra.ConnectionManager;
 import com.pardot.analyticsservice.cassandra.Criteria;
+import com.pardot.analyticsservice.cassandra.ObjectMapper;
 import com.pardot.analyticsservice.cassandra.cobject.CObjectOrdering;
 import com.pardot.analyticsservice.cassandra.cobject.CQLGenerationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.List;
@@ -18,11 +21,17 @@ import java.util.UUID;
  * Date: 4/17/13
  */
 public class AnalyticsDataProvider {
+	private static Logger logger = LoggerFactory.getLogger(AnalyticsDataProvider.class);
 
 	private ConnectionManager connectionManager;
 
 	public AnalyticsDataProvider(ConnectionManager connectionManager) {
 		this.connectionManager = connectionManager;
+	}
+
+	public boolean rebuildKeyspace() {
+		connectionManager.rebuildKeyspace(null);
+		return true;
 	}
 
 	/**
@@ -50,7 +59,14 @@ public class AnalyticsDataProvider {
 
 	public String doInsert(String objectType, Map<String, String> values) {
 		try {
-			return connectionManager.getObjectMapper().insert(objectType, values).toString();
+			logger.debug("doInsert data provider");
+			ObjectMapper mapper = connectionManager.getObjectMapper();
+			logger.debug("got mapper {}", mapper);
+			UUID uuid = mapper.insert(objectType, values);
+			logger.debug("got uuid {}", uuid);
+			String id = uuid.toString();
+			logger.debug("doInsert returning {}", id);
+			return id;
 		} catch (CQLGenerationException e) {
 			//TODO
 			return null;

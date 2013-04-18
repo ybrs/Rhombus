@@ -1,12 +1,15 @@
 package com.pardot.analyticsservice;
 
 import com.pardot.analyticsservice.cassandra.ManagedConnectionManager;
+import com.pardot.analyticsservice.cassandra.cobject.CKeyspaceDefinition;
 import com.pardot.analyticsservice.core.AnalyticsDataProvider;
 import com.pardot.analyticsservice.health.ServiceHealthCheck;
 import com.pardot.analyticsservice.resources.AnalyticsDataResource;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Pardot, an ExactTarget company
@@ -26,8 +29,9 @@ public class AnalyticsService extends Service<AnalyticsServiceConfiguration> {
 
 	@Override
 	public void run(AnalyticsServiceConfiguration configuration, Environment environment) throws Exception {
+		//Add managed connection manager
 		ManagedConnectionManager cm = new ManagedConnectionManager(configuration.getCassandraConfiguration());
-		//Add managed objects
+		cm.setDefaultKeyspace(CKeyspaceDefinition.fromJsonFile("AnalyticsKeyspace-dev.js"));
 		environment.manage(cm);
 
 		//Add resources

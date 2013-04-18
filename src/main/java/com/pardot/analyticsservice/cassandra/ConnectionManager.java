@@ -6,6 +6,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.pardot.analyticsservice.cassandra.cobject.CKeyspaceDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,8 @@ import java.util.Properties;
  */
 public class ConnectionManager {
 
+	private static final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
+
 	private List<String> contactPoints;
 	private Map<CKeyspaceDefinition, ObjectMapper> objectMappers = Maps.newHashMap();
 	private CKeyspaceDefinition defaultKeyspace;
@@ -25,11 +29,6 @@ public class ConnectionManager {
 
 	public ConnectionManager(CassandraConfiguration configuration) {
 		this.contactPoints = configuration.getContactPoints();
-	}
-
-	public ConnectionManager(CassandraConfiguration configuration, CKeyspaceDefinition defaultKeyspace) {
-		this.contactPoints = Lists.newArrayList(configuration.getContactPoints());
-		this.defaultKeyspace = defaultKeyspace;
 	}
 
 	/**
@@ -50,7 +49,8 @@ public class ConnectionManager {
 	public ObjectMapper getObjectMapper() {
 		ObjectMapper objectMapper = objectMappers.get(defaultKeyspace);
 		if(objectMapper == null) {
-			Session session = cluster.connect();
+			logger.debug("Connecting to keyspace {}", defaultKeyspace.getName());
+			Session session = cluster.connect(defaultKeyspace.getName());
 			objectMapper = new ObjectMapper(session, defaultKeyspace);
 			objectMappers.put(defaultKeyspace, objectMapper);
 		}
@@ -65,6 +65,9 @@ public class ConnectionManager {
 	 * @param keyspaceDefinition
 	 */
 	public void rebuildKeyspace(CKeyspaceDefinition keyspaceDefinition) {
+		if(keyspaceDefinition == null) {
+			keyspaceDefinition = defaultKeyspace;
+		}
 		//Get a session for the new keyspace
 		Session session = getSessionForNewKeyspace(keyspaceDefinition);
 		//Use this session to create an object mapper and build the keyspace
@@ -120,5 +123,9 @@ public class ConnectionManager {
 			mapper.teardown();
 		}
 		cluster.shutdown();
+	}
+
+	public void setDefaultKeyspace(CKeyspaceDefinition keyspaceDefinition) {
+		this.defaultKeyspace = keyspaceDefinition;
 	}
 }

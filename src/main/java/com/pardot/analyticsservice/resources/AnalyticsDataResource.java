@@ -2,9 +2,10 @@ package com.pardot.analyticsservice.resources;
 
 
 import com.pardot.analyticsservice.AnalyticsServiceConfiguration;
-import com.pardot.analyticsservice.cassandra.ConnectionManager;
 import com.pardot.analyticsservice.core.AnalyticsDataProvider;
 import com.yammer.metrics.annotation.Timed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -24,6 +25,8 @@ import java.util.Map;
 @Consumes(MediaType.APPLICATION_JSON)
 public class AnalyticsDataResource {
 
+	private static final Logger logger = LoggerFactory.getLogger(AnalyticsDataResource.class);
+
 	private AnalyticsServiceConfiguration analyticsServiceConfiguration;
 	private AnalyticsDataProvider dataProvider;
 
@@ -32,17 +35,25 @@ public class AnalyticsDataResource {
 		this.dataProvider = dataProvider;
 	}
 
-	@Path("/configuration")
-	@GET
-	@Timed
+	@Path("/_configuration")
+	 @GET
+	 @Timed
 	public AnalyticsServiceConfiguration showConfiguration() {
 		return analyticsServiceConfiguration;
+	}
+
+	@Path("/_rebuildkeyspace")
+	@GET
+	@Timed
+	public boolean rebuildKeyspace() {
+		return dataProvider.rebuildKeyspace();
 	}
 
 	@Path("/{object}/{id}")
 	@GET
 	@Timed
 	public Map<String, String> getObjectById(@PathParam("object") String object, @PathParam("id") String id) {
+		logger.debug("getObjectById {}:{}", object, id);
 		return dataProvider.doGet(object, id);
 	}
 
@@ -56,7 +67,8 @@ public class AnalyticsDataResource {
 	@Path("/{object}")
 	@PUT
 	@Timed
-	public String putObject(@PathParam("object") String object, Map<String, String> values) {
+	public String insert(@PathParam("object") String object, Map<String, String> values) {
+		logger.debug("insert {}\n{}", object, values);
 		return dataProvider.doInsert(object, values);
 	}
 }

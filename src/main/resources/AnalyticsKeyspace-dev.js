@@ -1,5 +1,5 @@
 {
-    "name" : "pi-analytics",
+    "name" : "pianalytics",
     "replicationClass" : "SimpleStrategy",
     "replicationFactor" : 1,
     "definitions" : [
