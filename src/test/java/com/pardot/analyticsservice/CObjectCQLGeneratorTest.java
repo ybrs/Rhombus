@@ -8,11 +8,9 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Pardot, An ExactTarget Company
@@ -20,6 +18,18 @@ import java.util.UUID;
  * Date: 4/9/13
  */
 public class CObjectCQLGeneratorTest  extends TestCase {
+
+	public class ShardListMock implements CObjectShardList {
+		List<Long> result;
+		public ShardListMock(List<Long> result){
+			this.result = result;
+		}
+
+		@Override
+		public List<Long> getShardIdList(CDefinition def, SortedMap<String, String> indexValues, CObjectOrdering ordering, @Nullable UUID start, @Nullable UUID end) {
+			return result;
+		}
+	}
 
 	public class Subject extends CObjectCQLGenerator {
 
@@ -94,23 +104,27 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			String expected = "SELECT * FROM testtype WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43;";
 			assertEquals("Should generate proper CQL for static table get by ID",expected,toList(actual).get(0));
 
-			//Wide table bounded
+			CObjectShardList shardIdLists = new ShardListMock(Arrays.asList(1L,2L,3L,4L,5L));
+
+			//Wide table using shardIdList and therefore bounded
 			TreeMap<String,String> indexkeys = Maps.newTreeMap();
 			indexkeys.put("foreignid","777");
 			indexkeys.put("type", "5");
 			indexkeys.put("instance", "222222");
-			actual = Subject.makeCQLforGet(def, indexkeys, 10);
-			assertEquals("Should be unbounded query list", false, actual.isBounded());
+			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys, 10);
+			expected = "SELECT * FROM testtype__foreign_instance WHERE shardid = 1 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id <";
+			assertEquals(expected, actual.next().substring(0,122));
+			assertEquals("Should be bounded query list", true, actual.isBounded());
 
 
-			//Wide table exclusive slice
+			//Wide table exclusive slice bounded query should not use shard list
 			indexkeys = Maps.newTreeMap();
 			indexkeys.put("foreignid","777");
 			indexkeys.put("type", "5");
 			indexkeys.put("instance", "222222");
 			UUID start = UUID.fromString("a8a2abe0-a251-11e2-bcbb-adf1a79a327f");
 			UUID stop = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
-			actual = Subject.makeCQLforGet(def, indexkeys, CObjectOrdering.DESCENDING, start, stop,10, false);
+			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys, CObjectOrdering.DESCENDING, start, stop,10, false);
 			expected = "SELECT * FROM testtype__foreign_instance WHERE shardid = 160 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id > a8a2abe0-a251-11e2-bcbb-adf1a79a327f AND id < ada375b0-a2d9-11e2-99a3-3f36d3955e43 ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
 			assertTrue("Should be bounded query iterator", actual.isBounded());
@@ -120,7 +134,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			//wide table inclusive slice ascending bounded
 			start = UUID.fromString("b4c10d80-15f0-11e0-8080-808080808080"); // 1/1/2011 long startd = 1293918439000L;
 			stop = UUID.fromString("2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f"); //1/1/2012 long endd = 1325454439000L;
-			actual = Subject.makeCQLforGet(def, indexkeys,CObjectOrdering.ASCENDING, start, stop,10, true);
+			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys,CObjectOrdering.ASCENDING, start, stop,10, true);
 			assertEquals("Should be proper size for range", 13, actual.size()); //All of 2011 plus the first month of 2012
 			expected = "SELECT * FROM testtype__foreign_instance WHERE shardid = 133 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
@@ -134,7 +148,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			//wide table inclusive slice descending bounded
 			start = UUID.fromString("b4c10d80-15f0-11e0-8080-808080808080"); // 1/1/2011 long startd = 1293918439000L;
 			stop = UUID.fromString("2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f"); //1/1/2012 long endd = 1325454439000L;
-			actual = Subject.makeCQLforGet(def, indexkeys,CObjectOrdering.DESCENDING, start, stop,10, true);
+			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys,CObjectOrdering.DESCENDING, start, stop,10, true);
 			assertEquals("Descending: Should be proper size for range", 13, actual.size()); //All of 2011 plus the first month of 2012
 			expected = "SELECT * FROM testtype__foreign_instance WHERE shardid = 145 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Descending: Should generate proper CQL for wide table get by index values",expected,actual.next());
