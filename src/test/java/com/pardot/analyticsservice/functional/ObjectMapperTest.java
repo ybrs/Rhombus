@@ -25,7 +25,7 @@ public class ObjectMapperTest {
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapperTest.class);
 
 	@Test
-	public void testObjectMapper() throws IOException, CQLGenerationException {
+	public void testObjectMapper() throws IOException, CQLGenerationException, InterruptedException {
 		//Get a connection manager based on the test properties
 		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());
 		cm.buildCluster();
@@ -74,8 +74,8 @@ public class ObjectMapperTest {
 		//Get from the original index
 		dbObjects = om.list("testtype", criteria);
 		assertEquals(0, dbObjects.size());
-
 		//Get from the new index
+
 		Criteria criteria2 = TestHelpers.getTestCriteria(1);
 		dbObjects = om.list("testtype", criteria2);
 		assertEquals(1, dbObjects.size());
