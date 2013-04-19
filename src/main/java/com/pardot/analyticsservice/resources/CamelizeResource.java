@@ -17,7 +17,7 @@ public class CamelizeResource {
 	@Path("/_lowerUnderToCamel")
 	@GET
 	@Timed
-	public String showConfiguration(String toCamelize) {
+	public String lowerUnderToCamel(String toCamelize) {
 		return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, toCamelize);
 	}
 }

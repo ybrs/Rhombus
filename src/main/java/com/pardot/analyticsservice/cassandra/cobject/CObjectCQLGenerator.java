@@ -121,7 +121,11 @@ public class CObjectCQLGenerator {
 		UUID startUUID = null;
 		UUID endUUID = null;
 		if(startTimestamp == null && endTimestamp == null) {
-			startUUID = UUIDs.timeBased();
+			if(ordering.equals(CObjectOrdering.ASCENDING)) {
+				startUUID = UUIDs.timeBased();
+			} else {
+				endUUID = UUIDs.timeBased();
+			}
 		}
 		if(startTimestamp != null) {
 			startUUID = UUIDs.startOf(startTimestamp);
@@ -285,7 +289,7 @@ public class CObjectCQLGenerator {
 			uuid = UUIDs.timeBased();
 		}
 		if(timestamp == 0){
-			timestamp = UUIDs.unixTimestamp(uuid);
+			timestamp = System.currentTimeMillis();
 		}
 		if(!validateData(def, data)){
 			throw new CQLGenerationException("Invalid Insert Requested. Missing Field(s)");
@@ -393,6 +397,9 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static CQLStatementIterator makeCQLforDelete(CDefinition def, UUID key, Map<String,String> data, long timestamp){
+		if(timestamp == 0){
+			timestamp = System.currentTimeMillis();
+		}
 		List<String> ret = Lists.newArrayList();
 		ret.add(makeCQLforDeleteUUIDFromStaticTable(def, key, timestamp));
 		for(CIndex i : def.getIndexes().values()){

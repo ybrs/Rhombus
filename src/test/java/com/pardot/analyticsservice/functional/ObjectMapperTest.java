@@ -52,7 +52,10 @@ public class ObjectMapperTest {
 		//Query by foreign key
 		Criteria criteria = TestHelpers.getTestCriteria(0);
 		List<Map<String, String>> dbObjects = om.list("testtype", criteria);
-		//assertEquals(2, dbObject.size());
+		assertEquals(2, dbObjects.size());
+
+		//Remove one of the objects we added
+
 
 		//Teardown connections
 		cm.teardown();

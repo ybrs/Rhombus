@@ -76,6 +76,18 @@ public class ObjectMapper {
 	}
 
 	/**
+	 * Delete objecttype with id key
+	 * @param objectType
+	 * @param key
+	 */
+	public void delete(String objectType, UUID key) {
+		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
+		Map<String, String> values = getByKey(objectType, key);
+		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforDelete(objectType, key, values, 0);
+		List<Map<String, String>> results = mapResults(statementIterator, def, 0L);
+	}
+
+	/**
 	 *
 	 * @param objectType
 	 * @param key
@@ -116,7 +128,7 @@ public class ObjectMapper {
 		List<Map<String, String>> results = Lists.newArrayList();
 		int statementNumber = 0;
 		int resultNumber = 0;
-		while(statementIterator.hasNext(resultNumber) && resultNumber < limit && statementNumber < reasonableStatementLimit) {
+		while(statementIterator.hasNext(resultNumber) ) {
 			String cql = statementIterator.next();
 			logger.debug("Executing CQL: " + cql);
 			ResultSet resultSet = session.execute(cql);
@@ -126,6 +138,9 @@ public class ObjectMapper {
 				resultNumber++;
 			}
 			statementNumber++;
+			if((limit > 0 && resultNumber >= limit) || statementNumber > reasonableStatementLimit) {
+				break;
+			}
 		}
 		return results;
 	}
