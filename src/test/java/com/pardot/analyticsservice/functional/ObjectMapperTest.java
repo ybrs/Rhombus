@@ -74,8 +74,8 @@ public class ObjectMapperTest {
 		//Get from the original index
 		dbObjects = om.list("testtype", criteria);
 		assertEquals(0, dbObjects.size());
-		//Get from the new index
 
+		//Get from the new index
 		Criteria criteria2 = TestHelpers.getTestCriteria(1);
 		dbObjects = om.list("testtype", criteria2);
 		assertEquals(1, dbObjects.size());

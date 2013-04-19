@@ -59,13 +59,9 @@ public class AnalyticsDataProvider {
 
 	public String doInsert(String objectType, Map<String, String> values) {
 		try {
-			logger.debug("doInsert data provider");
 			ObjectMapper mapper = connectionManager.getObjectMapper();
-			logger.debug("got mapper {}", mapper);
 			UUID uuid = mapper.insert(objectType, values);
-			logger.debug("got uuid {}", uuid);
 			String id = uuid.toString();
-			logger.debug("doInsert returning {}", id);
 			return id;
 		} catch (CQLGenerationException e) {
 			//TODO
@@ -73,8 +69,19 @@ public class AnalyticsDataProvider {
 		}
 	}
 
-	public void doDelete(String objectType, UUID identifier) {
-		//return connectionManager.getObjectMapper().
+	public String doUpdate(String objectType, String id, Map<String,String> values) {
+		try {
+			ObjectMapper mapper = connectionManager.getObjectMapper();
+			UUID uuid = mapper.update(objectType, UUID.fromString(id), values);
+			return uuid.toString();
+		} catch (CQLGenerationException e) {
+			//TODO
+			return null;
+		}
+	}
+
+	public void doDelete(String objectType, String id) {
+		connectionManager.getObjectMapper().delete(objectType, UUID.fromString(id));
 	}
 
 	private Criteria criteriaFromQueryParams(MultivaluedMap<String, String> params) {

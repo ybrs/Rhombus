@@ -38,37 +38,109 @@ public class AnalyticsDataResource {
 	@Path("/_configuration")
 	 @GET
 	 @Timed
-	public AnalyticsServiceConfiguration showConfiguration() {
-		return analyticsServiceConfiguration;
+	public AnalyticsResult showConfiguration() {
+		AnalyticsResult result = new AnalyticsResult();
+		result.setSuccess(true);
+		result.setResult(analyticsServiceConfiguration);
+		return result;
 	}
 
 	@Path("/_rebuildkeyspace")
 	@GET
 	@Timed
-	public boolean rebuildKeyspace() {
-		return dataProvider.rebuildKeyspace();
+	public AnalyticsResult rebuildKeyspace() {
+		AnalyticsResult result = new AnalyticsResult();
+		try {
+			dataProvider.rebuildKeyspace();
+			result.setSuccess(true);
+		} catch(Exception e) {
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
 	}
 
 	@Path("/{object}/{id}")
 	@GET
 	@Timed
-	public Map<String, String> getObjectById(@PathParam("object") String object, @PathParam("id") String id) {
+	public AnalyticsResult getObjectById(@PathParam("object") String object, @PathParam("id") String id) {
 		logger.debug("getObjectById {}:{}", object, id);
-		return dataProvider.doGet(object, id);
+		AnalyticsResult result = new AnalyticsResult();
+		try {
+			Map<String,String> returnedObject = dataProvider.doGet(object, id);
+			result.setResult(returnedObject);
+			result.setSuccess(true);
+		} catch(Exception e) {
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
 	}
 
 	@Path("/{object}")
 	@GET
 	@Timed
-	public List<Map<String, String>> queryObject(@PathParam("object") String object, @Context UriInfo uriInfo) {
-		return dataProvider.doQuery(object, uriInfo.getQueryParameters());
+	public AnalyticsResult queryObject(@PathParam("object") String object, @Context UriInfo uriInfo) {
+		logger.debug("queryObject {}", object);
+		AnalyticsResult result = new AnalyticsResult();
+		try {
+			List<Map<String, String>> returnedObjects = dataProvider.doQuery(object, uriInfo.getQueryParameters());
+			result.setSuccess(true);
+			result.setResult(returnedObjects);
+		} catch(Exception e) {
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
 	}
 
 	@Path("/{object}")
 	@PUT
 	@Timed
-	public String insert(@PathParam("object") String object, Map<String, String> values) {
-		logger.debug("insert {}\n{}", object, values);
-		return dataProvider.doInsert(object, values);
+	public AnalyticsResult insert(@PathParam("object") String object, Map<String, String> values) {
+		logger.debug("insert object {}", object);
+		AnalyticsResult result = new AnalyticsResult();
+		try {
+			String id = dataProvider.doInsert(object, values);
+			result.setSuccess(true);
+			result.setId(id);
+		} catch(Exception e) {
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
+	}
+
+	@Path("/{object}/{id}")
+	@POST
+	@Timed
+	public AnalyticsResult update(@PathParam("object") String object, @PathParam("id") String id, Map<String, String> values) {
+		logger.debug("Update object {}: {}", object, id);
+		AnalyticsResult result = new AnalyticsResult();
+		try {
+			String newId = dataProvider.doUpdate(object, id, values);
+			result.setSuccess(true);
+			result.setId(newId);
+		} catch(Exception e) {
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
+	}
+
+	@Path("/{object}/{id}")
+	@DELETE
+	@Timed
+	public AnalyticsResult delete(@PathParam("object") String object, @PathParam("id") String id) {
+		logger.debug("Delete object {}: {}", object, id);
+		AnalyticsResult result = new AnalyticsResult();
+		try {
+			dataProvider.doDelete(object, id);
+			result.setSuccess(true);
+		} catch(Exception e) {
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
 	}
 }
