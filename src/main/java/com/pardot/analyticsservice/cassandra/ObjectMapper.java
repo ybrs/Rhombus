@@ -23,7 +23,7 @@ import java.util.UUID;
 public class ObjectMapper {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
-	private static final int reasonableStatementLimit = 1;
+	private static final int reasonableStatementLimit = 20;
 	private static final boolean logCql = true;
 
 	private Session session;
@@ -139,6 +139,7 @@ public class ObjectMapper {
 			}
 			statementNumber++;
 			if((limit > 0 && resultNumber >= limit) || statementNumber > reasonableStatementLimit) {
+				logger.debug("Breaking from mapping results");
 				break;
 			}
 		}
