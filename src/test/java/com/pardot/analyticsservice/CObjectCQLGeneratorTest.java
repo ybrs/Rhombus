@@ -163,6 +163,27 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 
 		}
 
+		public void testMakeCQLforDelete() throws CObjectParseException,CObjectParseException, CQLGenerationException, IOException {
+			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
+			CDefinition def = CDefinition.fromJsonString(json);
+			Map<String, String> data = TestHelpers.getTestObject(0);
+			UUID uuid = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
+			CQLStatementIterator result = Subject.makeCQLforDelete(def,uuid,data,111);
+
+			String expected;
+
+			expected = "DELETE FROM testtype USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43;";
+			assertEquals(expected,result.next());
+			expected = "DELETE FROM testtype__instance_type USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 instance = 222222 AND type = 5;";
+			assertEquals(expected,result.next());
+			expected = "DELETE FROM testtype__foreignid_instance_type USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 foreignid = 777 AND instance = 222222 AND type = 5;";
+			assertEquals(expected,result.next());
+			expected = "DELETE FROM testtype__foreignid USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 1 foreignid = 777;";
+			assertEquals(expected,result.next());
+			assertTrue(!result.hasNext());
+
+		}
+
 
 	}
 
@@ -216,6 +237,11 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 	public void testMakeCQLforGet() throws CQLGenerationException, CObjectParseException, IOException {
 		Subject s = new Subject();
 		s.testMakeCQLforGet();
+	}
+
+	public void testMakeCQLforDelete() throws CQLGenerationException, CObjectParseException, IOException {
+		Subject s = new Subject();
+		s.testMakeCQLforDelete();
 	}
 
 

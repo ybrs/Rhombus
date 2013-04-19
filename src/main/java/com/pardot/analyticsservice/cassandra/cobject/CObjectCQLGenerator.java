@@ -414,7 +414,7 @@ public class CObjectCQLGenerator {
 		String whereCQL = String.format(
 			"id = %s AND shardid = %d %s",
 			uuid.toString(),
-			index.getShardingStrategy().getShardKey(uuid)+"",
+			index.getShardingStrategy().getShardKey(uuid),
 			makeAndedEqualList(def, indexValues)
 		);
 		return String.format(
