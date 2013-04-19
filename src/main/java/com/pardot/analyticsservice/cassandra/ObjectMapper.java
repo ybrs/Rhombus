@@ -62,17 +62,30 @@ public class ObjectMapper {
 		session.execute(cql);
 	}
 
-	public UUID insert(String objectType, Map<String, String> values) throws CQLGenerationException {
+
+	private UUID insert(String objectType, Map<String, String> values, UUID key) throws CQLGenerationException {
 		logger.debug("Insert {}", objectType);
-		System.out.println("Insert object " + objectType);
-		UUID key = UUIDs.timeBased();
-		long timestamp = UUIDs.unixTimestamp(key);
+		if(key == null) {
+			key = UUIDs.timeBased();
+		}
+		long timestamp = System.currentTimeMillis();
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforInsert(objectType, values, key, timestamp);
 		while(statementIterator.hasNext()) {
 			String cql = statementIterator.next();
 			executeCql(cql);
 		}
 		return key;
+	}
+
+	/**
+	 * Insert a new objectType with values
+	 * @param objectType
+	 * @param values
+	 * @return UUID of inserted object
+	 * @throws CQLGenerationException
+	 */
+	public UUID insert(String objectType, Map<String, String> values) throws CQLGenerationException {
+		return insert(objectType, values, null);
 	}
 
 	/**
@@ -84,7 +97,24 @@ public class ObjectMapper {
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
 		Map<String, String> values = getByKey(objectType, key);
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforDelete(objectType, key, values, 0);
-		List<Map<String, String>> results = mapResults(statementIterator, def, 0L);
+		mapResults(statementIterator, def, 0L);
+	}
+
+	/**
+	 * Update objectType with key using values
+	 * @param objectType
+	 * @param key
+	 * @param values
+	 * @return new UUID of the object
+	 * @throws CQLGenerationException
+	 */
+	public UUID update(String objectType, UUID key, Map<String, String> values) throws CQLGenerationException {
+		//Make a new key
+		UUID newKey = UUIDs.startOf(key.timestamp());
+		//Delete
+		delete(objectType, key);
+		//Insert
+		return insert(objectType, values, newKey);
 	}
 
 	/**
