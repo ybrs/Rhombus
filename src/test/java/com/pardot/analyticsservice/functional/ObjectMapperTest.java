@@ -80,7 +80,6 @@ public class ObjectMapperTest {
 		dbObjects = om.list("testtype", criteria2);
 		assertEquals(1, dbObjects.size());
 
-
 		//Teardown connections
 		cm.teardown();
 	}
