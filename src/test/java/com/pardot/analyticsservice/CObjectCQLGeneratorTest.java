@@ -174,11 +174,11 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 
 			expected = "DELETE FROM testtype USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43;";
 			assertEquals(expected,result.next());
-			expected = "DELETE FROM testtype__instance_type USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 instance = 222222 AND type = 5;";
+			expected = "DELETE FROM testtype__instance_type USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 AND instance = 222222 AND type = 5;";
 			assertEquals(expected,result.next());
-			expected = "DELETE FROM testtype__foreignid_instance_type USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 foreignid = 777 AND instance = 222222 AND type = 5;";
+			expected = "DELETE FROM testtype__foreignid_instance_type USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 AND foreignid = 777 AND instance = 222222 AND type = 5;";
 			assertEquals(expected,result.next());
-			expected = "DELETE FROM testtype__foreignid USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 1 foreignid = 777;";
+			expected = "DELETE FROM testtype__foreignid USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 1 AND foreignid = 777;";
 			assertEquals(expected,result.next());
 			assertTrue(!result.hasNext());
 
