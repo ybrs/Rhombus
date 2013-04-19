@@ -40,7 +40,7 @@ public class CassandraConnectionTest {
 		session.execute("CREATE KEYSPACE functional_create WITH replication = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }");
 
 		//Change to our functional testing keyspace
-		session.execute("USE functional");
+		session.execute("USE functional_create");
 
 		//Drop the functional keyspace
 		try {

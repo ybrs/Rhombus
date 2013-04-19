@@ -1,5 +1,5 @@
 {
     "contactPoints" : [
-        "mfdev.localhost.com"
+        "cdev.localhost.com"
     ]
 }

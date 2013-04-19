@@ -219,7 +219,7 @@ public class CObjectCQLGenerator {
 		return String.format(
 			TEMPLATE_SELECT_WIDE_INDEX,
 			CObjectShardList.SHARD_INDEX_TABLE_NAME,
-			makeTableName(def.getName(),i.getName()),
+			makeTableName(def,i),
 			indexValueString,
 			whereCQL,
 			ordering
@@ -293,7 +293,7 @@ public class CObjectCQLGenerator {
 		Map<String,ArrayList<String>> fieldsAndValues = makeFieldAndValueList(def,data);
 		//Static Table
 		ret.add(makeInsertStatementStatic(
-				makeTableName(def.getName(),null),
+				makeTableName(def,null),
 				makeCommaList(fieldsAndValues.get("fields")),
 				makeCommaList(fieldsAndValues.get("values")),
 				uuid,
@@ -305,7 +305,7 @@ public class CObjectCQLGenerator {
 			//insert it into the index
 			long shardId = i.getShardingStrategy().getShardKey(uuid);
 			ret.add(makeInsertStatementWide(
-					makeTableName(def.getName(),i.getName()),
+					makeTableName(def,i),
 					makeCommaList(fieldsAndValues.get("fields")),
 					makeCommaList(fieldsAndValues.get("values")),
 					uuid,
@@ -317,7 +317,7 @@ public class CObjectCQLGenerator {
 				//record that we have made an insert into that shard
 				ret.add(makeInsertStatementWideIndex(
 						CObjectShardList.SHARD_INDEX_TABLE_NAME,
-						makeTableName(def.getName(),i.getName()),
+						makeTableName(def,i),
 						shardId,
 						i.getIndexValues(data),
 						timestamp
@@ -354,7 +354,7 @@ public class CObjectCQLGenerator {
 		String limitCQL = (limit > 0)? "LIMIT %d" : "";
 		String CQLTemplate = String.format(
 			TEMPLATE_SELECT_WIDE,
-			makeTableName(def.getName(),i.getName()),
+			makeTableName(def,i),
 			"%d",
 			whereCQL,
 			ordering,
@@ -404,7 +404,7 @@ public class CObjectCQLGenerator {
 	protected static String makeCQLforDeleteUUIDFromStaticTable(CDefinition def, UUID uuid, long timestamp){
 		return String.format(
 			TEMPLATE_DELETE,
-			makeTableName(def.getName(),null),
+			makeTableName(def,null),
 			timestamp,
 			"id = "+uuid.toString()
 		);
@@ -419,7 +419,7 @@ public class CObjectCQLGenerator {
 		);
 		return String.format(
 			TEMPLATE_DELETE,
-			makeTableName(def.getName(),index.getName()),
+			makeTableName(def,index),
 			timestamp,
 			whereCQL
 		);
@@ -435,7 +435,7 @@ public class CObjectCQLGenerator {
 	protected static String makeWideTableCreate(CDefinition def, CIndex index){
 		return String.format(
 				TEMPLATE_CREATE_WIDE,
-				def.getName()+"__"+index.getName(),
+				makeTableName(def,index),
 				makeFieldList(def.getFields().values(), true),
 				makeCommaList(index.getCompositeKeyList()));
 	}
@@ -511,11 +511,13 @@ public class CObjectCQLGenerator {
 		return ret;
 	}
 
-	protected static String makeTableName(String objName, @Nullable String indexName){
-		if(indexName == null){
+	protected static String makeTableName(CDefinition def, @Nullable CIndex index){
+		String objName = def.getName();
+		if(index == null){
 			return objName;
 		}
 		else{
+			String indexName = Joiner.on('_').join(index.getCompositeKeyList());
 			return objName+"__"+indexName;
 		}
 	}

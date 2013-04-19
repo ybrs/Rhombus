@@ -2,7 +2,7 @@
     "environment": "dev",
     "cassandraConfiguration": {
         "contactPoints" : [
-            "mfdev.localhost.com"
+            "cdev.localhost.com"
         ]
     },
 
