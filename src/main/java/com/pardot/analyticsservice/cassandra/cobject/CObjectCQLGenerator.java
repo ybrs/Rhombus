@@ -116,25 +116,9 @@ public class CObjectCQLGenerator {
 	public CQLStatementIterator makeCQLforGet(String objType, Criteria criteria) throws CQLGenerationException {
 		CDefinition definition = this.definitions.get(objType);
 		CObjectOrdering ordering = (criteria.getOrdering() != null ? criteria.getOrdering(): CObjectOrdering.DESCENDING);
-		Long startTimestamp = criteria.getStartTimestamp();
-		Long endTimestamp = criteria.getEndTimestamp();
-		UUID startUUID = null;
-		UUID endUUID = null;
-		if(startTimestamp == null && endTimestamp == null) {
-			if(ordering.equals(CObjectOrdering.ASCENDING)) {
-				startUUID = UUIDs.timeBased();
-			} else {
-				endUUID = UUIDs.timeBased();
-			}
-		}
-		if(startTimestamp != null) {
-			startUUID = UUIDs.startOf(startTimestamp);
-		}
-		if(endTimestamp != null) {
-			endUUID = UUIDs.startOf(endTimestamp);
-		}
-		return makeCQLforGet(this.shardList,this.definitions.get(objType), criteria.getIndexKeys(),
-			ordering, startUUID, endUUID, criteria.getLimit(), false);
+		long startTimestamp = (criteria.getStartTimestamp() == null )? 0 : criteria.getStartTimestamp().longValue();
+		long endTimestamp = (criteria.getEndTimestamp() == null)? DateTime.now().getMillis() : criteria.getEndTimestamp().longValue();
+		return this.makeCQLforGet(shardList,this.definitions.get(objType), criteria.getIndexKeys(),ordering,startTimestamp, endTimestamp, criteria.getLimit());
 	}
 
 	/**

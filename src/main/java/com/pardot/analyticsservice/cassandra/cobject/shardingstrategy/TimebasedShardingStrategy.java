@@ -4,6 +4,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Range;
+import org.joda.time.DateTime;
 
 import java.util.UUID;
 
@@ -60,8 +61,8 @@ public abstract class TimebasedShardingStrategy {
 			}
 			else{
 				//unbounded start and bounded end
-				long end = getShardKey(timestampEnd);
-				return Range.atMost(end);
+				//never allow shardId to be less than 1
+				return Range.closed(1L,getShardKey(timestampEnd));
 			}
 		}
 		else{
@@ -69,7 +70,8 @@ public abstract class TimebasedShardingStrategy {
 			//bounded start
 			if(timestampEnd == 0){
 				//bounded start and unbounded end
-				return Range.atLeast(start);
+				//never allow the shardid to be greater than now.
+				return Range.closed(start, this.getShardKey(DateTime.now().getMillis()));
 			}
 			else{
 				long end = getShardKey(timestampEnd);
