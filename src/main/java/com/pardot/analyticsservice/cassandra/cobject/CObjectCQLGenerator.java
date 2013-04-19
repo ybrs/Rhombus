@@ -419,7 +419,7 @@ public class CObjectCQLGenerator {
 
 	protected static String makeCQLforDeleteUUIDFromIndex(CDefinition def, CIndex index, UUID uuid, Map<String,String> indexValues, long timestamp){
 		String whereCQL = String.format(
-			"id = %s AND shardid = %d %s",
+			"id = %s AND shardid = %d AND %s",
 			uuid.toString(),
 			index.getShardingStrategy().getShardKey(uuid),
 			makeAndedEqualList(def, indexValues)

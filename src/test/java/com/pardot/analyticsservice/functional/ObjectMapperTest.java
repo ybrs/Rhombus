@@ -55,7 +55,11 @@ public class ObjectMapperTest {
 		assertEquals(2, dbObjects.size());
 
 		//Remove one of the objects we added
+		om.delete("testtype", key);
 
+		//Re-query by foreign key
+		dbObjects = om.list("testtype", criteria);
+		assertEquals(1, dbObjects.size());
 
 		//Teardown connections
 		cm.teardown();
