@@ -96,7 +96,7 @@ public class ObjectMapper {
 	public void delete(String objectType, UUID key) {
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
 		Map<String, String> values = getByKey(objectType, key);
-		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforDelete(objectType, key, values, 0);
+		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforDelete(objectType, key, values, null);
 		mapResults(statementIterator, def, 0L);
 	}
 
@@ -110,7 +110,7 @@ public class ObjectMapper {
 	 */
 	public UUID update(String objectType, UUID key, Map<String, String> values) throws CQLGenerationException {
 		//Make a new key
-		UUID newKey = UUIDs.startOf(key.timestamp());
+		UUID newKey = UUIDs.startOf(UUIDs.unixTimestamp(key));
 		//Delete
 		delete(objectType, key);
 		//Insert

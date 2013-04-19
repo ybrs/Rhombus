@@ -50,11 +50,11 @@ public abstract class TimebasedShardingStrategy {
 		this.offset = offset;
 	}
 
-	public Range<Long> getShardKeyRange(long timestampStart, long timestampEnd) throws ShardStrategyException {
+	public Range<Long> getShardKeyRange(Long timestampStart, Long timestampEnd) throws ShardStrategyException {
 
-		if(timestampStart == 0){
+		if(timestampStart == null){
 			//unbounded start
-			if(timestampEnd == 0){
+			if(timestampEnd == null){
 				//unbounded start and unbounded end
 				//THIS IS NOT ALLOWED. Throw an exception here
 				throw new ShardStrategyException("Time range must have either an upper or lower bound");
@@ -62,19 +62,19 @@ public abstract class TimebasedShardingStrategy {
 			else{
 				//unbounded start and bounded end
 				//never allow shardId to be less than 1
-				return Range.closed(1L,getShardKey(timestampEnd));
+				return Range.closed(1L,getShardKey(Long.valueOf(timestampEnd)));
 			}
 		}
 		else{
-			long start = getShardKey(timestampStart);
+			long start = getShardKey(Long.valueOf(timestampStart));
 			//bounded start
-			if(timestampEnd == 0){
+			if(timestampEnd == null){
 				//bounded start and unbounded end
 				//never allow the shardid to be greater than now.
 				return Range.closed(start, this.getShardKey(DateTime.now().getMillis()));
 			}
 			else{
-				long end = getShardKey(timestampEnd);
+				long end = getShardKey(Long.valueOf(timestampEnd));
 				//bounded start and bounded end
 				return Range.closed(start,end);
 			}
