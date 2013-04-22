@@ -15,7 +15,6 @@ import java.util.Map;
  */
 public class CDefinitionTest extends TestCase{
 
-
     public void testFields() throws IOException {
         String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
         CDefinition def = CDefinition.fromJsonString(json);

@@ -1,4 +1,0 @@
-{
-	"accountId": "bigint",
-	"fieldAsTime": "timeuuid"
-}
