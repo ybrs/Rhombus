@@ -1,13 +1,13 @@
-Pardot Analytics Service
+Rhombus
 ===========================
 
-An api layer for Visitor information.
+An time-series object store for Cassandra that handles all the complexity of building wide row indexes.
 
 to install:
 
 (1) Clone the repository
 
-	git clone git@github.com:Pardot/analytics-service.git
+	git clone git@github.com:Pardot/Rhombus.git
 
 (2) install maven
 
