@@ -1,7 +1,7 @@
-Pardot Analytics Service
+Rhombus
 ===========================
 
-An api layer for Visitor information.
+An time-series object store for Cassandra that handles all the complexity of building wide row indexes.
 
 to install:
 
