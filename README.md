@@ -7,7 +7,7 @@ to install:
 
 (1) Clone the repository
 
-	git clone git@github.com:Pardot/analytics-service.git
+	git clone git@github.com:Pardot/Rhombus.git
 
 (2) install maven
 
