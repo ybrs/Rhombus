@@ -3,48 +3,33 @@ Rhombus
 
 An time-series object store for Cassandra that handles all the complexity of building wide row indexes.
 
-to install:
+To use as a dependency:
 
-(1) Clone the repository
+(1) Add the proper repository to pom.xml (snapshots or releases)
 
-	git clone git@github.com:Pardot/Rhombus.git
+    <repository>
+        <id>pardot-snapshots</id>
+        <url>ssh://git@github.com/pardot/pardot-maven-artifacts/raw/master/snapshots</url>
+    </repository>
 
-(2) install maven
+(2) Add the dependency
 
-	brew install maven
-
-(3) Build and Run
-
-To build:
-
-	mvn package
-
-To run:
-
-	java -jar target/analytics-1.0-SNAPSHOT.jar server target/classes/service-dev.js
+    <dependency>
+        <groupId>com.pardot</groupId>
+        <artifactId>rhombus</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </dependency>
 
 
-To run/debug in IntelliJ IDEA
+To deploy:
 
-(1) Open the cloned repository as a project.
+(1) Maven deploy to the releases or snapshots directory of the local pardot-maven-artifacts repository
 
-(2) Create a run configuration
+    (ex): mvn -DaltDeploymentRepository=snapshot-repo::default::file:../pardot-maven-artifacts/snapshots clean deploy
 
-    Add a new configuration with the plus button of type Application
-        Name: Service
-        Main class: com.pardot.analyticsservice.AnalyticsService
-        Program arguments: server target/classes/service-dev.js
+(2) Add and push the new deployment to github
 
-(3) Run the server
-
-	Select Service from the run configuration dropdown in the toolbar
-	Run or debug
-
-
-Configuring Cassandra
-
-Analytics Service requires a connection to Cassandra 1.2 or greater.
-
-After installing cassandra, you must modify cassandra.yml and set start_native_transport: true
-
-Modify the hosts file of the machine running the analytics service and point cdev.localhost.com to the Cassandra server
+    cd ../pardot-maven-artifacts
+    git add .
+    git commit -m "<message>"
+    git push
