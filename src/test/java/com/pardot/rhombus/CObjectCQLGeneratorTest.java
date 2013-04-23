@@ -84,6 +84,28 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			result = Subject.makeCQLforInsert(def,data,uuid,Long.valueOf(1),Integer.valueOf(20));
 			actual = toList(result);
 			assertEquals("INSERT INTO \"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1 AND TTL 20;", actual.get(0));
+
+			//test with inserting less than all of the fields
+			data = TestHelpers.getTestObject(3);
+			uuid = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
+			result = Subject.makeCQLforInsert(def,data,uuid,Long.valueOf(1),null);
+			actual = toList(result);
+
+			assertEquals("Should generate CQL statements for the static table plus all indexes including the filtered index", 6, actual.size());
+			//static table
+			assertEquals("INSERT INTO \"testtype\" (id, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(0));
+
+			assertEquals("INSERT INTO \"testtype__instance_type\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(1));
+			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype__instance_type', '222222:5', 160, '160:222222:5') USING TIMESTAMP 1;", actual.get(2));
+
+
+			assertEquals("INSERT INTO \"testtype__foreignid_instance_type\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(3));
+			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype__foreignid_instance_type', '777:222222:5', 160, '160:777:222222:5') USING TIMESTAMP 1;", actual.get(4));
+
+
+			assertEquals("INSERT INTO \"testtype__foreignid\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(5));
+			//foreign has shard strategy None so we dont expect an insert into the shard index table
+
 		}
 
 		public void testMakeCQLforCreate() throws CObjectParseException, IOException {

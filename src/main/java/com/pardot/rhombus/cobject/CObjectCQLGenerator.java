@@ -436,8 +436,10 @@ public class CObjectCQLGenerator {
 		ArrayList<String> fieldList = new ArrayList<String>(def.getFields().size());
 		ArrayList<String> valueList = new ArrayList<String>(def.getFields().size());
 		for(CField f : def.getFields().values()){
-			fieldList.add(f.getName());
-			valueList.add(getCQLValueString(f,data.get(f.getName())));
+			if(data.get(f.getName()) != null){
+				fieldList.add(f.getName());
+				valueList.add(getCQLValueString(f,data.get(f.getName())));
+			}
 		}
 		Map<String,ArrayList<String>> ret = Maps.newHashMap();
 		ret.put("fields", fieldList);
