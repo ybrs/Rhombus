@@ -53,12 +53,12 @@ public class ShardStrategyTests extends TestCase {
 		assertEquals("Range should have appropriate start point", 158L, range.lowerEndpoint().longValue());
 		assertEquals("Range should have appropriate end point", 170L, range.upperEndpoint().longValue());
 
-		//test range unbounded
+		//test range auto bounded
 		subject = new ShardingStrategyMonthly();
-		d1 = new DateTime(2014,2,22,2,0,0, DateTimeZone.UTC); //170
-		range = subject.getShardKeyRange(Long.valueOf(d1.getMillis()),Long.valueOf(0));
-		assertEquals("Range should have appropriate start point", 170L, range.lowerEndpoint().longValue());
-		assertTrue("Range should have no upper bound", !range.hasUpperBound());
+		d1 = new DateTime(2011,2,22,2,0,0, DateTimeZone.UTC); //170
+		range = subject.getShardKeyRange(Long.valueOf(d1.getMillis()),null);
+		assertEquals("Range should have appropriate start point", 134L, range.lowerEndpoint().longValue());
+		assertTrue("Range should have an upper bound", range.hasUpperBound());
 		assertTrue("Range should have a lower bound",range.hasLowerBound());
 	}
 
@@ -85,10 +85,10 @@ public class ShardStrategyTests extends TestCase {
 
 		//test range unbounded
 		subject = new ShardingStrategyNone();
-		d1 = new DateTime(2014,2,22,2,0,0, DateTimeZone.UTC);
-		range = subject.getShardKeyRange(Long.valueOf(d1.getMillis()),Long.valueOf(0));
+		d1 = new DateTime(2012,2,22,2,0,0, DateTimeZone.UTC);
+		range = subject.getShardKeyRange(Long.valueOf(d1.getMillis()),null);
 		assertEquals("Range should have appropriate start point", 1L , range.lowerEndpoint().longValue());
-		assertTrue("Range should have no upper bound",!range.hasUpperBound());
-		assertTrue("Range should have a lower bound",range.hasLowerBound());
+		assertTrue("Range should be just 1",range.upperEndpoint().longValue() == 1L);
+		assertTrue("Range should be just 1",range.lowerEndpoint().longValue() == range.upperEndpoint().longValue());
 	}
 }
