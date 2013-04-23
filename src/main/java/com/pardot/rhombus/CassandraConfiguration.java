@@ -11,6 +11,7 @@ import java.util.List;
  * Date: 4/17/13
  */
 public class CassandraConfiguration {
+
 	@NotNull
 	@JsonProperty
 	private List<String> contactPoints;

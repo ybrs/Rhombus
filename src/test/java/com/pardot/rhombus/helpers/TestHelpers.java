@@ -1,7 +1,9 @@
 package com.pardot.rhombus.helpers;
 
+import com.google.common.collect.Lists;
 import com.pardot.rhombus.CassandraConfiguration;
 import com.pardot.rhombus.Criteria;
+import com.pardot.rhombus.util.JsonUtil;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -35,24 +37,15 @@ public class TestHelpers {
 	}
 
 	public static CassandraConfiguration getTestCassandraConfiguration() throws IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		String filename = "cassandra-functional.js";
-		InputStream inputStream = TestHelpers.class.getClassLoader().getResourceAsStream(filename);
-		CassandraConfiguration configuration = mapper.readValue(inputStream, CassandraConfiguration.class);
-		inputStream.close();
-		return configuration;
+		return JsonUtil.objectFromJsonResource(CassandraConfiguration.class, CassandraConfiguration.class.getClassLoader(), "cassandra-functional.js");
 	}
 
 	public static Map<String, String> getTestObject(int index) {
 		if(testObjects == null) {
 			try {
-				ObjectMapper mapper = new ObjectMapper();
-				InputStream inputStream = TestHelpers.class.getClassLoader().getResourceAsStream("TestObjects.js");
-				List root = mapper.readValue(inputStream, List.class);
-				inputStream.close();
-				testObjects = (List<Map<String, String>>)root;
-			} catch(Exception e) {
-				e.printStackTrace();
+				testObjects = (List<Map<String, String>>)JsonUtil.objectFromJsonResource(List.class, TestHelpers.class.getClassLoader(), "TestObjects.js");
+			} catch (IOException e) {
+				testObjects = Lists.newArrayList();
 			}
 		}
 		return testObjects.get(index);
@@ -61,11 +54,9 @@ public class TestHelpers {
 	public static Criteria getTestCriteria(int index) {
 		if(criteriaHolder == null) {
 			try {
-				ObjectMapper mapper = new ObjectMapper();
-				InputStream inputStream = TestHelpers.class.getClassLoader().getResourceAsStream("TestCriteria.js");
-				criteriaHolder = mapper.readValue(inputStream, CriteriaHolder.class);
-			} catch(Exception e) {
-				e.printStackTrace();
+				criteriaHolder = JsonUtil.objectFromJsonResource(CriteriaHolder.class, TestHelpers.class.getClassLoader(), "TestCriteria.js");
+			} catch (IOException e) {
+				criteriaHolder = new CriteriaHolder();
 			}
 		}
 		return criteriaHolder.getCriteria().get(index);
