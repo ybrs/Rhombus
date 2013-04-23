@@ -24,7 +24,7 @@ public class ObjectMapper {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
 	private static final int reasonableStatementLimit = 20;
-	private static final boolean logCql = false;
+	private boolean logCql = false;
 
 	private Session session;
 	private CKeyspaceDefinition keyspaceDefinition;
@@ -233,6 +233,14 @@ public class ObjectMapper {
 				fieldValue = null;
 		}
 		return fieldValue.toString();
+	}
+
+	public boolean getLogCql() {
+		return logCql;
+	}
+
+	public void setLogCql(boolean logCql) {
+		this.logCql = logCql;
 	}
 
 	public void teardown() {
