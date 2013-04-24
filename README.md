@@ -27,7 +27,7 @@ To deploy:
 
     (ex): mvn -DaltDeploymentRepository=snapshot-repo::default::file:../pardot-maven-artifacts/snapshots clean deploy
 
-(2) Add and push the new deployment to github
+(2) Add and push the new deployment to github.
 
     cd ../pardot-maven-artifacts
     git add .
