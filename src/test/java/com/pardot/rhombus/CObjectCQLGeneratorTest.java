@@ -106,6 +106,33 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals("INSERT INTO \"testtype__foreignid\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(5));
 			//foreign has shard strategy None so we dont expect an insert into the shard index table
 
+
+			//test that an exception is thrown if you try to insert missing an index primary key with allowNullPrimaryKeyInserts = false
+			assertTrue(!def.isAllowNullPrimaryKeyInserts());
+			data = Maps.newHashMap();
+			data.put("data1","this is a test");
+			uuid = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
+			try{
+				Subject.makeCQLforInsert(def,data,uuid,Long.valueOf(1),null);
+				assertTrue("Should never get here", false);
+			}
+			catch (CQLGenerationException e){
+				assertTrue("Should throw cqlGenerationException if missing index fields and allowNullPrimaryKeyInserts = false", true);
+			}
+
+			//test that an insert is allowed and that the associated indexes are ignored if you try to insert missing an index primary key with allowNullPrimaryKeyInserts = true
+			def.setAllowNullPrimaryKeyInserts(true);
+			assertTrue(def.isAllowNullPrimaryKeyInserts());
+			data.put("data1","this is a test");
+			data.put("foreignid", "777");
+			uuid = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
+			result = Subject.makeCQLforInsert(def,data,uuid,Long.valueOf(1),null);
+			actual = toList(result);
+			assertEquals("Number of CQL statements should be correct",2,actual.size());
+			//static table
+			assertEquals("INSERT INTO \"testtype\" (id, data1, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 'this is a test', 777) USING TIMESTAMP 1;", actual.get(0));
+			assertEquals("INSERT INTO \"testtype__foreignid\" (id, shardid, data1, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 'this is a test', 777) USING TIMESTAMP 1;",actual.get(1));
+			//foreign has shard strategy None so we dont expect an insert into the shard index table
 		}
 
 		public void testMakeCQLforCreate() throws CObjectParseException, IOException {

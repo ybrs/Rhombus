@@ -18,6 +18,7 @@ public class CDefinition {
 	private Map<String, CField> fields;
 	private Map<String, CIndex> indexes;
 	private SortedMap<String, CIndex> indexesIndexedByFields;
+	private boolean allowNullPrimaryKeyInserts = false;
 
 	public CDefinition(){
 	}
@@ -53,6 +54,14 @@ public class CDefinition {
 			this.indexes.put(index.getName(), index);
 			this.indexesIndexedByFields.put(index.getKey(),index);
 		}
+	}
+
+	public boolean isAllowNullPrimaryKeyInserts() {
+		return allowNullPrimaryKeyInserts;
+	}
+
+	public void setAllowNullPrimaryKeyInserts(boolean allowNullPrimaryKeyInserts) {
+		this.allowNullPrimaryKeyInserts = allowNullPrimaryKeyInserts;
 	}
 
 	public Collection<String> getRequiredFields(){

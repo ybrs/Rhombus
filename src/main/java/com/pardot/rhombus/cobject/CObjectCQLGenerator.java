@@ -289,6 +289,12 @@ public class CObjectCQLGenerator {
 		));
 		//Index Tables
 		for(CIndex i : def.getIndexes().values()){
+			if(def.isAllowNullPrimaryKeyInserts()){
+				//check if we have the necessary primary fields to insert on this index. If not just continue;
+				if(!i.validateIndexKeys(i.getIndexKeyAndValues(data))){
+					continue;
+				}
+			}
 			//insert it into the index
 			long shardId = i.getShardingStrategy().getShardKey(uuid);
 			ret.add(makeInsertStatementWide(
@@ -448,6 +454,9 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static boolean validateData(CDefinition def, Map<String,String> data){
+		if(def.isAllowNullPrimaryKeyInserts()){
+			return true;
+		}
 		Collection<String> fields = def.getRequiredFields();
 		for( String f : fields){
 			if(!data.containsKey(f)){
