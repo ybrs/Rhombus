@@ -37,7 +37,7 @@ public class Criteria {
 		return startTimestamp;
 	}
 
-	public void setStartTimestamp(long startTimestamp) {
+	public void setStartTimestamp(Long startTimestamp) {
 		this.startTimestamp = startTimestamp;
 	}
 
@@ -45,7 +45,7 @@ public class Criteria {
 		return endTimestamp;
 	}
 
-	public void setEndTimestamp(long endTimestamp) {
+	public void setEndTimestamp(Long endTimestamp) {
 		this.endTimestamp = endTimestamp;
 	}
 
@@ -53,7 +53,7 @@ public class Criteria {
 		return limit;
 	}
 
-	public void setLimit(long limit) {
+	public void setLimit(Long limit) {
 		this.limit = limit;
 	}
 }
