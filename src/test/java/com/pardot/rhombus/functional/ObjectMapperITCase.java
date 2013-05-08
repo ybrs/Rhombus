@@ -18,9 +18,9 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-public class ObjectMapperTest {
+public class ObjectMapperITCase {
 
-	private static Logger logger = LoggerFactory.getLogger(ObjectMapperTest.class);
+	private static Logger logger = LoggerFactory.getLogger(ObjectMapperITCase.class);
 
 	@Test
 	public void testObjectMapper() throws IOException, CQLGenerationException, InterruptedException {

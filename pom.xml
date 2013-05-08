@@ -18,6 +18,13 @@
         <findbugs.version>2.0.1</findbugs.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>pardot-snapshots</id>
+            <url>ssh://git@github.com/pardot/pardot-maven-artifacts/raw/master/snapshots</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Jackson -->
         <dependency>
@@ -129,6 +136,36 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.14.1</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.7.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cassandra-maven-plugin</artifactId>
+                <version>1.2.1-1-Pardot</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>start</goal>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

@@ -15,13 +15,13 @@ import org.joda.time.DateTimeZone;
  * User: robrighter
  * Date: 4/16/13
  */
-public class ShardStrategyTests extends TestCase {
+public class ShardStrategyTest extends TestCase {
 	/**
 	 * Create the test case
 	 *
 	 * @param testName name of the test case
 	 */
-	public ShardStrategyTests( String testName ) {
+	public ShardStrategyTest(String testName) {
 		super( testName );
 	}
 
@@ -29,7 +29,7 @@ public class ShardStrategyTests extends TestCase {
 	 * @return the suite of tests being tested
 	 */
 	public static Test suite() {
-		return new TestSuite( ShardStrategyTests.class );
+		return new TestSuite( ShardStrategyTest.class );
 	}
 
 	public void testShardingStrategyMonthly() throws ShardStrategyException {
