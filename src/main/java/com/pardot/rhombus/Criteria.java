@@ -1,5 +1,6 @@
 package com.pardot.rhombus;
 
+import com.google.common.base.Objects;
 import com.pardot.rhombus.cobject.CObjectOrdering;
 
 import java.util.SortedMap;
@@ -16,6 +17,16 @@ public class Criteria {
 	private Long startTimestamp;
 	private Long endTimestamp;
 	private Long limit;
+
+	public String toString() {
+		return Objects.toStringHelper(this.getClass())
+				.add("indexKeys", indexKeys.toString())
+				.add("ordering", ordering.toString())
+				.add("startTimestamp", startTimestamp.toString())
+				.add("endTimestamp", endTimestamp.toString())
+				.add("limit", limit.toString())
+				.toString();
+	}
 
 	public SortedMap<String, String> getIndexKeys() {
 		return indexKeys;
