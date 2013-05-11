@@ -20,11 +20,11 @@ public class Criteria {
 
 	public String toString() {
 		return Objects.toStringHelper(this.getClass())
-				.add("indexKeys", indexKeys.toString())
-				.add("ordering", ordering.toString())
-				.add("startTimestamp", startTimestamp.toString())
-				.add("endTimestamp", endTimestamp.toString())
-				.add("limit", limit.toString())
+				.add("indexKeys", indexKeys)
+				.add("ordering", ordering)
+				.add("startTimestamp", startTimestamp)
+				.add("endTimestamp", endTimestamp)
+				.add("limit", limit)
 				.toString();
 	}
 

@@ -27,7 +27,6 @@ public class CriteriaTest {
 		indexKeys.put("object_id", "3");
 		criteria.setIndexKeys(indexKeys);
 		criteria.setStartTimestamp(System.currentTimeMillis() - 3600000);
-		criteria.setEndTimestamp(System.currentTimeMillis());
 		criteria.setLimit(50L);
 		criteria.setOrdering("ASC");
 
