@@ -21,9 +21,10 @@ public class ConnectionManager {
 	private static final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
 
 	private List<String> contactPoints;
-	private Map<CKeyspaceDefinition, ObjectMapper> objectMappers = Maps.newHashMap();
+	private Map<String, ObjectMapper> objectMappers = Maps.newHashMap();
 	private CKeyspaceDefinition defaultKeyspace;
 	private Cluster cluster;
+	private boolean logCql = false;
 
 	public ConnectionManager(CassandraConfiguration configuration) {
 		this.contactPoints = configuration.getContactPoints();
@@ -45,34 +46,44 @@ public class ConnectionManager {
 	 * @return The default object mapper
 	 */
 	public ObjectMapper getObjectMapper() {
-		ObjectMapper objectMapper = objectMappers.get(defaultKeyspace);
+		return getObjectMapper(defaultKeyspace.getName());
+	}
+
+	/**
+	 * Get an object mapper for a keyspace
+	 * @return Object mapper for the specified keyspace
+	 */
+	public ObjectMapper getObjectMapper(String keyspace) {
+		ObjectMapper objectMapper = objectMappers.get(keyspace);
 		if(objectMapper == null) {
 			logger.debug("Connecting to keyspace {}", defaultKeyspace.getName());
 			Session session = cluster.connect(defaultKeyspace.getName());
 			objectMapper = new ObjectMapper(session, defaultKeyspace);
-			objectMappers.put(defaultKeyspace, objectMapper);
+			objectMapper.setLogCql(logCql);
+			objectMappers.put(keyspace, objectMapper);
 		}
 		return objectMapper;
+
 	}
 
 	/**
-	 * This method rebuilds a keyspace from a definition.  In the process
-	 * it removes any existing keyspace with the same name.  This operation
-	 * is immediate and irreversible.
+	 * This method rebuilds a keyspace from a definition.  If forceRebuild is true, the process
+	 * removes any existing keyspace with the same name.  This operation is immediate and irreversible.
 	 *
-	 * @param keyspaceDefinition
+	 * @param keyspaceDefinition The definition to build the keyspace from
+	 * @param forceRebuild Force destruction and rebuild of keyspace
 	 */
-	public void rebuildKeyspace(CKeyspaceDefinition keyspaceDefinition) {
+	public void buildKeyspace(CKeyspaceDefinition keyspaceDefinition, Boolean forceRebuild) throws Exception {
 		if(keyspaceDefinition == null) {
 			keyspaceDefinition = defaultKeyspace;
 		}
 		//Get a session for the new keyspace
-		Session session = getSessionForNewKeyspace(keyspaceDefinition);
+		Session session = getSessionForNewKeyspace(keyspaceDefinition, forceRebuild);
 		//Use this session to create an object mapper and build the keyspace
 		ObjectMapper mapper = new ObjectMapper(session, keyspaceDefinition);
-		mapper.buildKeyspace();
-		defaultKeyspace = keyspaceDefinition;
-		objectMappers.put(defaultKeyspace, mapper);
+		mapper.setLogCql(logCql);
+		mapper.buildKeyspace(forceRebuild);
+		objectMappers.put(keyspaceDefinition.getName(), mapper);
 	}
 
 	/**
@@ -84,27 +95,42 @@ public class ConnectionManager {
 		return cluster.connect();
 	}
 
-	private Session getSessionForNewKeyspace(CKeyspaceDefinition keyspace) {
+	private Session getSessionForNewKeyspace(CKeyspaceDefinition keyspace, Boolean forceRebuild) throws Exception {
 		//Get a new session
 		Session session = cluster.connect();
 
-		//Drop the keyspace if it already exists
-		try {
-			session.execute("DROP KEYSPACE " + keyspace.getName() + ";");
-		} catch(Exception e) {
-			//Ignore
+		if(forceRebuild) {
+			try {
+				//Drop the keyspace if it already exists
+				session.execute("DROP KEYSPACE " + keyspace.getName() + ";");
+			} catch(Exception e) {
+				//Ignore
+			}
 		}
 
-		//Create the new keyspace
+		//First try to create the new keyspace
 		StringBuilder sb = new StringBuilder();
-		sb.append("CREATE KEYSPACE ");
 		sb.append(keyspace.getName());
 		sb.append(" WITH replication = { 'class' : '");
 		sb.append(keyspace.getReplicationClass());
-		sb.append("', 'replication_factor' : ");
-		sb.append("" + keyspace.getReplicationFactor());
+		for(String key : keyspace.getReplicationFactors().keySet()) {
+			sb.append("', '");
+			sb.append(key);
+			sb.append("' : ");
+			sb.append(keyspace.getReplicationFactors().get(key));
+		}
 		sb.append("};");
-		session.execute(sb.toString());
+		try {
+			session.execute("CREATE KEYSPACE " + sb.toString());
+		} catch(Exception e) {
+			//TODO Catch only the specific exception for keyspace already exists
+			if(!forceRebuild) {
+				//If we are not forcing a rebuild and the create failed, attempt to update
+				session.execute("ALTER KEYSPACE " + sb.toString());
+			} else {
+				throw e;
+			}
+		}
 
 		//Close our session and get a new one directly associated with the new keyspace
 		session.shutdown();
@@ -125,5 +151,13 @@ public class ConnectionManager {
 
 	public void setDefaultKeyspace(CKeyspaceDefinition keyspaceDefinition) {
 		this.defaultKeyspace = keyspaceDefinition;
+	}
+
+	public boolean isLogCql() {
+		return logCql;
+	}
+
+	public void setLogCql(boolean logCql) {
+		this.logCql = logCql;
 	}
 }

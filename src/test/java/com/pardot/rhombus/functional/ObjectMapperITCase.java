@@ -23,7 +23,8 @@ public class ObjectMapperITCase {
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapperITCase.class);
 
 	@Test
-	public void testObjectMapper() throws IOException, CQLGenerationException, InterruptedException {
+	public void testObjectMapper() throws Exception {
+		logger.debug("Starting testObjectMapper");
 		//Get a connection manager based on the test properties
 		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());
 		cm.buildCluster();
@@ -35,7 +36,8 @@ public class ObjectMapperITCase {
 		assertNotNull(definition);
 
 		//Rebuild the keyspace and get the object mapper
-		cm.rebuildKeyspace(definition);
+		cm.buildKeyspace(definition, true);
+		cm.setDefaultKeyspace(definition);
 		ObjectMapper om = cm.getObjectMapper();
 
 		//Get a test object to insert

@@ -18,6 +18,10 @@
             ],
             "indexes" : [
                 {
+                    "key": "filtered",
+                    "shardingStrategy": {"type": "ShardingStrategyNone"}
+                },
+                {
                     "key": "foreignid",
                     "shardingStrategy": {"type": "ShardingStrategyNone"}
                 },

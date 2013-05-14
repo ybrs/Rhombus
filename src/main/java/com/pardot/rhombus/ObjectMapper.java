@@ -4,6 +4,7 @@ package com.pardot.rhombus;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -41,25 +42,54 @@ public class ObjectMapper {
 	 * This method assumes that its keyspace exists and
 	 * does not contain any tables.
 	 */
-	public void buildKeyspace() {
+	public void buildKeyspace(Boolean forceRebuild) {
 		//First build the shard index
 		String cql = CObjectCQLGenerator.makeCQLforShardIndexTableCreate();
-		executeCql(cql);
-		//Now build the tables for each object
-		for(CDefinition definition : keyspaceDefinition.getDefinitions().values()) {
-			CQLStatementIterator statementIterator = cqlGenerator.makeCQLforCreate(definition.getName());
-			while(statementIterator.hasNext()) {
-				cql = statementIterator.next();
+		try {
+			executeCql(cql);
+		} catch(Exception e) {
+			if(forceRebuild) {
+				String dropCql = CObjectCQLGenerator.makeCQLforShardIndexTableDrop();
+				logger.debug("Attempting to drop table with cql {}", dropCql);
+				executeCql(dropCql);
 				executeCql(cql);
+			} else {
+				logger.debug("Not dropping shard index table");
+			}
+		}
+		//Now build the tables for each object if the definition contains tables
+		if(keyspaceDefinition.getDefinitions() != null) {
+			for(CDefinition definition : keyspaceDefinition.getDefinitions().values()) {
+				CQLStatementIterator statementIterator = cqlGenerator.makeCQLforCreate(definition.getName());
+				CQLStatementIterator dropStatementIterator = cqlGenerator.makeCQLforDrop(definition.getName());
+				while(statementIterator.hasNext()) {
+					cql = statementIterator.next();
+					String dropCql = dropStatementIterator.next();
+					try {
+						executeCql(cql);
+					} catch (AlreadyExistsException e) {
+						if(forceRebuild) {
+							logger.debug("ForceRebuild is on, dropping table");
+							executeCql(dropCql);
+							executeCql(cql);
+						} else {
+							logger.warn("Table already exists and will not be updated");
+						}
+					}
+				}
 			}
 		}
 	}
 
-	private void executeCql(String cql) {
+	/**
+	 * This should never be used outside of testing
+	 * @param cql String of cql to execute
+	 */
+	public ResultSet executeCql(String cql) {
 		if(logCql) {
 			logger.debug("Executing CQL: {}", cql);
 		}
-		session.execute(cql);
+		return session.execute(cql);
 	}
 
 

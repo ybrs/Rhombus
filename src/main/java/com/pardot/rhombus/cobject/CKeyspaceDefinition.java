@@ -11,7 +11,7 @@ import java.util.Map;
 public class CKeyspaceDefinition {
 	private String name;
 	private String replicationClass;
-	private int replicationFactor;
+	private Map<String, Integer> replicationFactors;
 	private Map<String, CDefinition> definitions;
 
 	public CKeyspaceDefinition() {
@@ -56,11 +56,11 @@ public class CKeyspaceDefinition {
 		this.replicationClass = replicationClass;
 	}
 
-	public int getReplicationFactor() {
-		return replicationFactor;
+	public Map<String, Integer> getReplicationFactors() {
+		return replicationFactors;
 	}
 
-	public void setReplicationFactor(int replicationFactor) {
-		this.replicationFactor = replicationFactor;
+	public void setReplicationFactors(Map<String, Integer> replicationFactors) {
+		this.replicationFactors = replicationFactors;
 	}
 }

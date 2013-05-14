@@ -25,6 +25,7 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_CREATE_STATIC = "CREATE TABLE \"%s\" (id timeuuid PRIMARY KEY, %s);";
 	protected static final String TEMPLATE_CREATE_WIDE = "CREATE TABLE \"%s\" (id timeuuid, shardid bigint, %s, PRIMARY KEY ((shardid, %s),id) );";
 	protected static final String TEMPLATE_CREATE_WIDE_INDEX = "CREATE TABLE \"%s\" (shardid bigint, tablename varchar, indexvalues varchar, targetrowkey varchar, PRIMARY KEY ((tablename, indexvalues),shardid) );";
+	protected static final String TEMPLATE_DROP = "DROP TABLE \"%s\";";
 	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO \"%s\" (id, %s) VALUES (%s, %s) USING TIMESTAMP %s%s;";
 	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO \"%s\" (id, shardid, %s) VALUES (%s, %s, %s) USING TIMESTAMP %s%s;";
 	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO \"%s\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('%s', '%s', %d, '%s') USING TIMESTAMP %d;";
@@ -69,6 +70,15 @@ public class CObjectCQLGenerator {
 	 */
 	public CQLStatementIterator makeCQLforCreate(String objType){
 		return makeCQLforCreate(this.definitions.get(objType));
+	}
+
+	/**
+	 *
+	 * @param objType - The name of the Object type aka CDefinition.name
+	 * @return Iterator of CQL statements that need to be executed for this task.
+	 */
+	public CQLStatementIterator makeCQLforDrop(String objType){
+		return makeCQLforDrop(this.definitions.get(objType));
 	}
 
 	/**
@@ -186,6 +196,15 @@ public class CObjectCQLGenerator {
 
 	/**
 	 *
+	 * @return String of single CQL statement required to create the Shard Index Table
+	 */
+	public static String makeCQLforShardIndexTableDrop(){
+		return String.format(TEMPLATE_DROP, CObjectShardList.SHARD_INDEX_TABLE_NAME);
+	}
+
+
+	/**
+	 *
 	 * @param def - CIndex for the index for which to pull the shard list
 	 * @param indexValues - Values identifing the specific index for which to pull the shard list
 	 * @param ordering - ASC or DESC
@@ -219,6 +238,16 @@ public class CObjectCQLGenerator {
 		ret.add(makeStaticTableCreate(def));
 		for(CIndex i : def.getIndexes().values()){
 			ret.add(makeWideTableCreate(def, i));
+		}
+		return new BoundedCQLStatementIterator(ret);
+	}
+
+
+	protected static CQLStatementIterator makeCQLforDrop(CDefinition def){
+		List<String> ret = Lists.newArrayList();
+		ret.add(makeTableDrop(def.getName()));
+		for(CIndex i : def.getIndexes().values()){
+			ret.add(makeTableDrop(makeTableName(def, i)));
 		}
 		return new BoundedCQLStatementIterator(ret);
 	}
@@ -421,6 +450,12 @@ public class CObjectCQLGenerator {
 			timestamp,
 			whereCQL
 		);
+	}
+
+	protected static String makeTableDrop(String tableName){
+		return String.format(
+				TEMPLATE_DROP,
+				tableName);
 	}
 
 	protected static String makeStaticTableCreate(CDefinition def){
