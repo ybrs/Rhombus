@@ -236,8 +236,10 @@ public class CObjectCQLGenerator {
 	protected static CQLStatementIterator makeCQLforCreate(CDefinition def){
 		List<String> ret = Lists.newArrayList();
 		ret.add(makeStaticTableCreate(def));
-		for(CIndex i : def.getIndexes().values()){
-			ret.add(makeWideTableCreate(def, i));
+		if(def.getIndexes() != null) {
+			for(CIndex i : def.getIndexes().values()){
+				ret.add(makeWideTableCreate(def, i));
+			}
 		}
 		return new BoundedCQLStatementIterator(ret);
 	}
@@ -246,8 +248,10 @@ public class CObjectCQLGenerator {
 	protected static CQLStatementIterator makeCQLforDrop(CDefinition def){
 		List<String> ret = Lists.newArrayList();
 		ret.add(makeTableDrop(def.getName()));
-		for(CIndex i : def.getIndexes().values()){
-			ret.add(makeTableDrop(makeTableName(def, i)));
+		if(def.getIndexes() != null) {
+			for(CIndex i : def.getIndexes().values()){
+				ret.add(makeTableDrop(makeTableName(def, i)));
+			}
 		}
 		return new BoundedCQLStatementIterator(ret);
 	}
@@ -317,33 +321,35 @@ public class CObjectCQLGenerator {
 				ttl
 		));
 		//Index Tables
-		for(CIndex i : def.getIndexes().values()){
-			if(def.isAllowNullPrimaryKeyInserts()){
-				//check if we have the necessary primary fields to insert on this index. If not just continue;
-				if(!i.validateIndexKeys(i.getIndexKeyAndValues(data))){
-					continue;
+		if(def.getIndexes() != null) {
+			for(CIndex i : def.getIndexes().values()){
+				if(def.isAllowNullPrimaryKeyInserts()){
+					//check if we have the necessary primary fields to insert on this index. If not just continue;
+					if(!i.validateIndexKeys(i.getIndexKeyAndValues(data))){
+						continue;
+					}
 				}
-			}
-			//insert it into the index
-			long shardId = i.getShardingStrategy().getShardKey(uuid);
-			ret.add(makeInsertStatementWide(
-					makeTableName(def,i),
-					makeCommaList(fieldsAndValues.get("fields")),
-					makeCommaList(fieldsAndValues.get("values")),
-					uuid,
-					shardId,
-					timestamp,
-					ttl
-			));
-			if(!(i.getShardingStrategy() instanceof ShardingStrategyNone)){
-				//record that we have made an insert into that shard
-				ret.add(makeInsertStatementWideIndex(
-						CObjectShardList.SHARD_INDEX_TABLE_NAME,
+				//insert it into the index
+				long shardId = i.getShardingStrategy().getShardKey(uuid);
+				ret.add(makeInsertStatementWide(
 						makeTableName(def,i),
+						makeCommaList(fieldsAndValues.get("fields")),
+						makeCommaList(fieldsAndValues.get("values")),
+						uuid,
 						shardId,
-						i.getIndexValues(data),
-						timestamp
+						timestamp,
+						ttl
 				));
+				if(!(i.getShardingStrategy() instanceof ShardingStrategyNone)){
+					//record that we have made an insert into that shard
+					ret.add(makeInsertStatementWideIndex(
+							CObjectShardList.SHARD_INDEX_TABLE_NAME,
+							makeTableName(def,i),
+							shardId,
+							i.getIndexValues(data),
+							timestamp
+					));
+				}
 			}
 		}
 		return new BoundedCQLStatementIterator(ret);

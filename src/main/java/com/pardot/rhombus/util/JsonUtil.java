@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Pardot, an ExactTarget company
@@ -19,5 +20,14 @@ public class JsonUtil {
 		T returnObject = om.readValue(inputStream, objectClass);
 		inputStream.close();
 		return returnObject;
+	}
+
+	public static Map<String, String> rhombusMapFromResource(ClassLoader resourceClassLoader, String resourceLocation) throws IOException {
+		ObjectMapper om = new ObjectMapper();
+		InputStream inputStream = resourceClassLoader.getResourceAsStream(resourceLocation);
+		//System.out.println(inputStream.toString());
+		MapContainer mc = om.readValue(inputStream, MapContainer.class);
+		inputStream.close();
+		return mc.getValues();
 	}
 }

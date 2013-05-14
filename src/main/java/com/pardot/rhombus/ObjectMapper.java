@@ -12,6 +12,7 @@ import com.pardot.rhombus.cobject.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -251,6 +252,9 @@ public class ObjectMapper {
 				break;
 			case TIMESTAMP:
 				fieldValue = row.getDate(field.getName());
+				if(fieldValue != null) {
+					fieldValue = ((Date)fieldValue).getTime();
+				}
 				break;
 			case UUID:
 			case TIMEUUID:
@@ -262,7 +266,7 @@ public class ObjectMapper {
 			default:
 				fieldValue = null;
 		}
-		return fieldValue.toString();
+		return (fieldValue == null ? null :fieldValue.toString());
 	}
 
 	public boolean getLogCql() {

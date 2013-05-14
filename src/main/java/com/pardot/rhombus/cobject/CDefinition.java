@@ -66,9 +66,11 @@ public class CDefinition {
 
 	public Collection<String> getRequiredFields(){
 		Map<String,String> ret = Maps.newHashMap();
-		for( CIndex i : indexes.values()){
-			for(String key : i.getCompositeKeyList()){
-				ret.put(key,key);
+		if(indexes != null) {
+			for( CIndex i : indexes.values()){
+				for(String key : i.getCompositeKeyList()){
+					ret.put(key,key);
+				}
 			}
 		}
 		return ret.values();
