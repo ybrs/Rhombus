@@ -266,7 +266,7 @@ public class ObjectMapper {
 			default:
 				fieldValue = null;
 		}
-		return (fieldValue == null ? null :fieldValue.toString());
+		return (fieldValue == null ? null : fieldValue.toString());
 	}
 
 	public boolean getLogCql() {
