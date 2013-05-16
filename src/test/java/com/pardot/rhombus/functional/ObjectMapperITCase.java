@@ -45,7 +45,12 @@ public class ObjectMapperITCase {
 
 		//Query to get back the object from the database
 		Map<String, String> dbObject = om.getByKey("testtype", key);
-		assertEquals(testObject, dbObject);
+		for(String dbKey : dbObject.keySet()) {
+			//Verify that everything but the key is the same
+			if(!dbKey.equals("id")) {
+				assertEquals(testObject.get(dbKey), dbObject.get(dbKey));
+			}
+		}
 
 		//Add another object with the same foreign key
 		UUID key2 = om.insert("testtype", TestHelpers.getTestObject(1));
@@ -68,7 +73,12 @@ public class ObjectMapperITCase {
 
 		//Get the updated object back and make sure it matches
 		Map<String, String> dbObject2 = om.getByKey("testtype", key3);
-		assertEquals(testObject2, dbObject2);
+		for(String dbKey : dbObject2.keySet()) {
+			//Verify that everything but the key is the same
+			if(!dbKey.equals("id")) {
+				assertEquals(testObject2.get(dbKey), dbObject2.get(dbKey));
+			}
+		}
 
 		//Get from the original index
 		dbObjects = om.list("testtype", criteria);
@@ -107,11 +117,17 @@ public class ObjectMapperITCase {
 
 		//Get back the values
 		Map<String, String> returnedValues = om.getByKey("testobjecttype", uuid);
+
+		//Verify that id is returned
+		assertNotNull(returnedValues.get("id"));
+
 		logger.debug("Returned values: {}", returnedValues);
 		for(String returnedKey : returnedValues.keySet()) {
-			String insertValue = values.get(returnedKey);
-			String returnValue = returnedValues.get(returnedKey);
-			assertEquals(insertValue, returnValue);
+			if(!returnedKey.equals("id")) {
+				String insertValue = values.get(returnedKey);
+				String returnValue = returnedValues.get(returnedKey);
+				assertEquals(insertValue, returnValue);
+			}
 		}
 	}
 
