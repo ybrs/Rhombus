@@ -1,9 +1,11 @@
 package com.pardot.rhombus;
 
+import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.base.Objects;
 import com.pardot.rhombus.cobject.CObjectOrdering;
 
 import java.util.SortedMap;
+import java.util.UUID;
 
 /**
  * Pardot, an ExactTarget company
@@ -14,17 +16,20 @@ public class Criteria {
 
 	private SortedMap<String, String> indexKeys;
 	private CObjectOrdering ordering;
-	private Long startTimestamp;
-	private Long endTimestamp;
+	private UUID startUuid;
+	private UUID endUuid;
 	private Long limit;
+	private Boolean inclusive = true;
+
 
 	public String toString() {
 		return Objects.toStringHelper(this.getClass())
 				.add("indexKeys", indexKeys)
 				.add("ordering", ordering)
-				.add("startTimestamp", startTimestamp)
-				.add("endTimestamp", endTimestamp)
+				.add("startTimestamp", startUuid)
+				.add("endTimestamp", endUuid)
 				.add("limit", limit)
+				.add("inclusive", inclusive)
 				.toString();
 	}
 
@@ -44,20 +49,28 @@ public class Criteria {
 		this.ordering = CObjectOrdering.fromString(ordering);
 	}
 
-	public Long getStartTimestamp() {
-		return startTimestamp;
+	public UUID getStartUuid() {
+		return startUuid;
+	}
+
+	public void setStartUuid(UUID startUuid) {
+		this.startUuid = startUuid;
+	}
+
+	public UUID getEndUuid() {
+		return endUuid;
+	}
+
+	public void setEndUuid(UUID endUuid) {
+		this.endUuid = endUuid;
 	}
 
 	public void setStartTimestamp(Long startTimestamp) {
-		this.startTimestamp = startTimestamp;
-	}
-
-	public Long getEndTimestamp() {
-		return endTimestamp;
+		this.startUuid = UUIDs.startOf(startTimestamp);
 	}
 
 	public void setEndTimestamp(Long endTimestamp) {
-		this.endTimestamp = endTimestamp;
+		this.endUuid = UUIDs.endOf(endTimestamp);
 	}
 
 	public Long getLimit() {
@@ -66,5 +79,13 @@ public class Criteria {
 
 	public void setLimit(Long limit) {
 		this.limit = limit;
+	}
+
+	public Boolean getInclusive() {
+		return inclusive;
+	}
+
+	public void setInclusive(Boolean inclusive) {
+		this.inclusive = inclusive;
 	}
 }

@@ -126,8 +126,9 @@ public class CObjectCQLGenerator {
 	public CQLStatementIterator makeCQLforGet(String objType, Criteria criteria) throws CQLGenerationException {
 		CDefinition definition = this.definitions.get(objType);
 		CObjectOrdering ordering = (criteria.getOrdering() != null ? criteria.getOrdering(): CObjectOrdering.DESCENDING);
-		Long endTimestamp = (criteria.getEndTimestamp() == null)? Long.valueOf(DateTime.now().getMillis()) : criteria.getEndTimestamp();
-		return this.makeCQLforGet(shardList,this.definitions.get(objType), criteria.getIndexKeys(),ordering,criteria.getStartTimestamp(), endTimestamp, criteria.getLimit());
+		UUID endUuid = (criteria.getEndUuid() == null ? UUIDs.startOf(DateTime.now().getMillis()) : criteria.getEndUuid());
+		return makeCQLforGet(shardList, definition, criteria.getIndexKeys(), ordering,  criteria.getStartUuid(),
+				 endUuid, criteria.getLimit(), criteria.getInclusive());
 	}
 
 	/**
