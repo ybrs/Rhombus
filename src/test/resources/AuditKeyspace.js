@@ -1,31 +1,34 @@
 {
-    "name" : "pianalytics",
+    "name" : "pianalyticsfunctional",
     "replicationClass" : "SimpleStrategy",
-    "replicationFactor" : 1,
+    "replicationFactors" : {
+        "replication_factor" : 1
+    },
     "definitions" : [
         {
-            "name": "audit",
+            "name": "object_audit",
             "fields": [
+                {"name": "account_id", "type": "uuid"},
                 {"name": "object_type", "type": "varchar"},
-                {"name": "object_id", "type": "varchar"},
-                {"name": "change_source_type", "type": "bigint"},
-                {"name": "change_source_id", "type": "int"},
-                {"name": "type", "type": "int"},
-                {"name": "user", "type": "varchar"},
+                {"name": "object_id", "type": "uuid"},
+                {"name": "source_type", "type": "varchar"},
+                {"name": "source_id", "type": "uuid"},
+                {"name": "user_id", "type": "uuid"},
+                {"name": "created_at", "type": "timestamp"},
                 {"name": "changes", "type": "varchar"}
             ],
             "indexes" : [
                 {
-                    "key": "object_id:object_type",
+                    "key": "account_id:object_id:object_type",
                     "shardingStrategy": {"type": "ShardingStrategyNone"}
                 },
                 {
-                    "key": "object_id:object_type:type",
-                    "shardingStrategy": {"type": "ShardingStrategyNone"}
+                    "key": "account_id:user_id",
+                    "shardingStrategy": {"type": "ShardingStrategyMonthly"}
                 },
                 {
-                    "key": "change_source_id:change_source_type",
-                    "shardingStrategy": {"type": "ShardingStrategyNone"}
+                    "key": "account_id:source_id:source_type",
+                    "shardingStrategy": {"type": "ShardingStrategyMonthly"}
                 }
             ]
         }

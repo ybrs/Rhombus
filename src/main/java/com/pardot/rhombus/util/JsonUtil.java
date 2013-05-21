@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,7 +23,7 @@ public class JsonUtil {
 		return returnObject;
 	}
 
-	public static Map<String, String> rhombusMapFromResource(ClassLoader resourceClassLoader, String resourceLocation) throws IOException {
+	public static List<Map<String, String>> rhombusMapFromResource(ClassLoader resourceClassLoader, String resourceLocation) throws IOException {
 		ObjectMapper om = new ObjectMapper();
 		InputStream inputStream = resourceClassLoader.getResourceAsStream(resourceLocation);
 		//System.out.println(inputStream.toString());

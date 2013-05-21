@@ -110,19 +110,32 @@ public class ObjectMapper {
 
 	/**
 	 * Insert a new objectType with values
-	 * @param objectType
-	 * @param values
+	 * @param objectType Type of object to insert
+	 * @param values Values to insert
 	 * @return UUID of inserted object
 	 * @throws CQLGenerationException
 	 */
 	public UUID insert(String objectType, Map<String, String> values) throws CQLGenerationException {
-		return insert(objectType, values, null);
+		return insert(objectType, values, (UUID)null);
 	}
 
 	/**
-	 * Delete objecttype with id key
-	 * @param objectType
-	 * @param key
+	 * Used to insert an object with a UUID based on the provided timestamp
+	 * Best used for testing, as time resolution collisions are not accounted for
+	 * @param objectType Type of object to insert
+	 * @param values Values to insert
+	 * @param timestamp Timestamp to use to create the object UUID
+	 * @return the UUID of the newly inserted object
+	 */
+	public UUID insert(String objectType, Map<String, String> values, Long timestamp) throws CQLGenerationException {
+		UUID uuid = UUIDs.startOf(timestamp);
+		return insert(objectType, values, uuid);
+	}
+
+	/**
+	 * Delete Object of type with id key
+	 * @param objectType Type of object to delete
+	 * @param key Key of object to delete
 	 */
 	public void delete(String objectType, UUID key) {
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
@@ -133,9 +146,9 @@ public class ObjectMapper {
 
 	/**
 	 * Update objectType with key using values
-	 * @param objectType
-	 * @param key
-	 * @param values
+	 * @param objectType Type of object to update
+	 * @param key Key of object to update
+	 * @param values Values to update
 	 * @return new UUID of the object
 	 * @throws CQLGenerationException
 	 */
@@ -150,8 +163,8 @@ public class ObjectMapper {
 
 	/**
 	 *
-	 * @param objectType
-	 * @param key
+	 * @param objectType Type of object to get
+	 * @param key Key of object to get
 	 * @return Object of type with key or null if it does not exist
 	 */
 	public Map<String, String> getByKey(String objectType, UUID key) {
@@ -166,23 +179,22 @@ public class ObjectMapper {
 	}
 
 	/**
-	 * @param objectType
-	 * @param criteria
+	 * @param objectType Type of object to query
+	 * @param criteria Criteria to query by
 	 * @return List of objects that match the specified type and criteria
 	 * @throws CQLGenerationException
 	 */
 	public List<Map<String, String>> list(String objectType, Criteria criteria) throws CQLGenerationException {
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforGet(objectType, criteria);
-		List<Map<String, String>> results = mapResults(statementIterator, def, criteria.getLimit());
-		return results;
+		return mapResults(statementIterator, def, criteria.getLimit());
 	}
 
 
 	/**
 	 * Iterates through cql statements executing them in sequence and mapping the results until limit is reached
-	 * @param statementIterator
-	 * @param definition
+	 * @param statementIterator Statement iterator to execute
+	 * @param definition definition to execute the statements against
 	 * @return Ordered resultset concatenating results from statements in statement iterator.
 	 */
 	private List<Map<String, String>> mapResults(CQLStatementIterator statementIterator, CDefinition definition, Long limit) {
@@ -208,8 +220,8 @@ public class ObjectMapper {
 	}
 
 	/**
-	 * @param row
-	 * @param definition
+	 * @param row The row to map
+	 * @param definition The definition to map the row on to
 	 * @return Data contained in a row mapped to the object described in definition.
 	 */
 	private Map<String, String> mapResult(Row row, CDefinition definition) {
@@ -268,10 +280,6 @@ public class ObjectMapper {
 				fieldValue = null;
 		}
 		return (fieldValue == null ? null : fieldValue.toString());
-	}
-
-	public boolean getLogCql() {
-		return logCql;
 	}
 
 	public void setLogCql(boolean logCql) {

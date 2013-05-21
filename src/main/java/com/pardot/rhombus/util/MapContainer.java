@@ -1,5 +1,6 @@
 package com.pardot.rhombus.util;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -8,21 +9,21 @@ import java.util.Map;
  * Date: 5/14/13
  */
 public class MapContainer {
-	private Map<String, String> values;
+	private List<Map<String, String>> values;
 
 	public MapContainer() {
 
 	}
 
-	public MapContainer(Map<String, String> values) {
+	public MapContainer(List<Map<String, String>> values) {
 		this.values = values;
 	}
 
-	public Map<String, String> getValues() {
+	public List<Map<String, String>> getValues() {
 		return values;
 	}
 
-	public void setValues(Map<String, String> values) {
+	public void setValues(List<Map<String, String>> values) {
 		this.values = values;
 	}
 }

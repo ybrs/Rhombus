@@ -1,6 +1,7 @@
 package com.pardot.rhombus.functional;
 
 
+import com.google.common.collect.Maps;
 import com.pardot.rhombus.ConnectionManager;
 import com.pardot.rhombus.Criteria;
 import com.pardot.rhombus.ObjectMapper;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -111,8 +113,8 @@ public class ObjectMapperITCase {
 		ObjectMapper om = cm.getObjectMapper();
 
 		//Insert in some values of each type
-		Map<String, String> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "ObjectMapperTypeTestData.js");
-		UUID uuid = om.insert("testobjecttype", values);
+		List<Map<String, String>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "ObjectMapperTypeTestData.js");
+		UUID uuid = om.insert("testobjecttype", values.get(0));
 		assertNotNull(uuid);
 
 		//Get back the values
@@ -124,12 +126,62 @@ public class ObjectMapperITCase {
 		logger.debug("Returned values: {}", returnedValues);
 		for(String returnedKey : returnedValues.keySet()) {
 			if(!returnedKey.equals("id")) {
-				String insertValue = values.get(returnedKey);
+				String insertValue = values.get(0).get(returnedKey);
 				String returnValue = returnedValues.get(returnedKey);
 				assertEquals(insertValue, returnValue);
 			}
 		}
 	}
+
+
+	@Test
+	public void testDateRangeQueries() throws Exception {
+		logger.debug("Starting testDateRangeQueries");
+
+		//Build the connection manager
+		ConnectionManager cm = getConnectionManager();
+
+		//Build our keyspace definition object
+		CKeyspaceDefinition definition = JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class, this.getClass().getClassLoader(), "AuditKeyspace.js");
+		assertNotNull(definition);
+
+		//Rebuild the keyspace and get the object mapper
+		cm.buildKeyspace(definition, true);
+		logger.debug("Built keyspace: {}", definition.getName());
+		cm.setDefaultKeyspace(definition);
+		ObjectMapper om = cm.getObjectMapper();
+
+		//Insert our test data
+		List<Map<String, String>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "DateRangeQueryTestData.js");
+		for(Map<String, String> object : values) {
+			Long createdAt = Long.parseLong(object.get("created_at"));
+			logger.debug("Inserting audit with created_at: {}", createdAt);
+			om.insert("object_audit", object, createdAt);
+		}
+
+		//Make sure that we have the proper number of results
+		SortedMap<String, String> indexValues = Maps.newTreeMap();
+		indexValues.put("account_id", "00000003-0000-0030-0040-000000030000");
+		indexValues.put("object_type", "Account");
+		indexValues.put("object_id", "00000003-0000-0030-0040-000000030000");
+		Criteria criteria = new Criteria();
+		criteria.setIndexKeys(indexValues);
+		criteria.setLimit(50L);
+		List<Map<String, String>> results = om.list("object_audit", criteria);
+		assertEquals(8, results.size());
+
+		//Now query for results since May 1 2013
+		criteria.setStartTimestamp(1367366400000L);
+		results = om.list("object_audit", criteria);
+		assertEquals(7, results.size());
+
+		//And for results since May 14, 2013
+		criteria.setStartTimestamp(1368489600000L);
+		results = om.list("object_audit", criteria);
+		assertEquals(5, results.size());
+
+	}
+
 
 	private ConnectionManager getConnectionManager() throws IOException {
 		//Get a connection manager based on the test properties

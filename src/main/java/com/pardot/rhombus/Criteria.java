@@ -3,6 +3,8 @@ package com.pardot.rhombus;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.base.Objects;
 import com.pardot.rhombus.cobject.CObjectOrdering;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.SortedMap;
 import java.util.UUID;
@@ -13,6 +15,7 @@ import java.util.UUID;
  * Date: 4/17/13
  */
 public class Criteria {
+	private static final Logger logger = LoggerFactory.getLogger(Criteria.class);
 
 	private SortedMap<String, String> indexKeys;
 	private CObjectOrdering ordering;
