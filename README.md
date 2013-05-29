@@ -7,10 +7,21 @@ To use as a dependency:
 
 (1) Add the proper repository to pom.xml (snapshots or releases)
 
-    <repository>
-        <id>pardot-snapshots</id>
-        <url>ssh://git@github.com/pardot/pardot-maven-artifacts/raw/master/snapshots</url>
-    </repository>
+    <repositories>
+        <repository>
+            <id>pardot-snapshot-repository</id>
+            <url>scp://test.pardot.com/var/www/chef-repos/maven/snapshots</url>
+        </repository>
+    </repositories>
+
+    OR
+
+    <repositories>
+        <repository>
+            <id>pardot-release-repository</id>
+            <url>scp://test.pardot.com/var/www/chef-repos/maven/releases</url>
+        </repository>
+    </repositories>
 
 (2) Add the dependency
 
@@ -20,16 +31,50 @@ To use as a dependency:
         <version>1.0-SNAPSHOT</version>
     </dependency>
 
+    OR
+
+    <dependency>
+        <groupId>com.pardot</groupId>
+        <artifactId>rhombus</artifactId>
+        <version>1.0</version>
+    </dependency>
+
+
+(3) Configure server information in maven settings.xml (~/.m2/settings.xml) - may need to create.
+
+    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+        <localRepository/>
+        <interactiveMode/>
+        <usePluginRegistry/>
+        <offline/>
+        <pluginGroups/>
+        <servers>
+            <server>
+                <id>pardot-snapshot-repository</id>
+                <username>xx</username>
+                <password>XXXXXXXXXX</password>
+                <filePermissions>664</filePermissions>
+                <directoryPermissions>775</directoryPermissions>
+            </server>
+            <server>
+                <id>pardot-release-repository</id>
+                <username>xx</username>
+                <password>XXXXXXXXXX</password>
+                <filePermissions>664</filePermissions>
+                <directoryPermissions>775</directoryPermissions>
+            </server>
+        </servers>
+        <mirrors/>
+        <proxies/>
+        <profiles/>
+        <activeProfiles/>
+    </settings>
 
 To deploy:
 
-(1) Maven deploy to the releases or snapshots directory of the local pardot-maven-artifacts repository
+(1) Maven deploy to the releases or snapshots directory of the local pardot-maven-artifacts repository.  This is determined by the presence or absence of SNAPSHOT in the version number.
 
-    (ex): mvn -DaltDeploymentRepository=snapshot-repo::default::file:../pardot-maven-artifacts/snapshots clean deploy
-
-(2) Add and push the new deployment to github.
-
-    cd ../pardot-maven-artifacts
-    git add .
-    git commit -m "<message>"
-    git push
+    mvn deploy
