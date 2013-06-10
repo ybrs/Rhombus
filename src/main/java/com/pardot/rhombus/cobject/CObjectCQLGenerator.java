@@ -27,8 +27,8 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_CREATE_WIDE = "CREATE TABLE \"%s\" (id timeuuid, shardid bigint, %s, PRIMARY KEY ((shardid, %s),id) );";
 	protected static final String TEMPLATE_CREATE_WIDE_INDEX = "CREATE TABLE \"%s\" (shardid bigint, tablename varchar, indexvalues varchar, targetrowkey varchar, PRIMARY KEY ((tablename, indexvalues),shardid) );";
 	protected static final String TEMPLATE_DROP = "DROP TABLE \"%s\";";
-	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO \"%s\" (id, %s) VALUES (%s, %s) USING TIMESTAMP %s%s;";
-	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO \"%s\" (id, shardid, %s) VALUES (%s, %s, %s) USING TIMESTAMP %s%s;";
+	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO \"%s\" (%s) VALUES (%s) USING TIMESTAMP ?%s;";
+	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO \"%s\" (%s) VALUES (%s) USING TIMESTAMP ?%s;";
 	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO \"%s\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('%s', '%s', %d, '%s') USING TIMESTAMP %d;";
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM \"%s\" WHERE %s;";
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM \"%s\" WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
@@ -259,29 +259,50 @@ public class CObjectCQLGenerator {
 	}
 
 
-	protected static String makeInsertStatementStatic(String tableName, String fields, String values, UUID uuid, Long timestamp, Integer ttl){
-		return String.format(
-				TEMPLATE_INSERT_STATIC,
-				tableName,
-				fields,
-				uuid.toString(),
-				values,
-				timestamp+"",
-				(ttl == null) ? "" : (" AND TTL "+ ttl)
-		);
+	protected static CQLStatement makeInsertStatementStatic(String tableName, List<String> fields, List values, UUID uuid, Long timestamp, Integer ttl){
+		fields.add(0,"id");
+		values.add(0,uuid);
+		CQLStatement ret = new CQLStatement();
+		ret.setPreparable(true);
+		ret.setQuery(String.format(
+			TEMPLATE_INSERT_STATIC,
+			tableName,
+			makeCommaList(fields),
+			makeCommaList(values,true),
+			(ttl == null) ? "" : (" AND TTL "+ ttl)
+		));
+
+		values.add(timestamp);
+		if(ttl != null){
+			values.add(ttl);
+		}
+
+		ret.setValues(values.toArray());
+		return ret;
 	}
 
-	protected static String makeInsertStatementWide(String tableName, String fields, String values, UUID uuid, long shardid, Long timestamp, Integer ttl){
-		return String.format(
-				TEMPLATE_INSERT_WIDE,
-				tableName,
-				fields,
-				uuid.toString(),
-				shardid,
-				values,
-				timestamp+"",
-				(ttl == null) ? "" : (" AND TTL "+ ttl)
-		);
+	protected static CQLStatement makeInsertStatementWide(String tableName, List<String> fields, List values, UUID uuid, long shardid, Long timestamp, Integer ttl){
+		fields.add(0,"shardid");
+		values.add(0,Long.valueOf(shardid));
+		fields.add(0,"id");
+		values.add(0,uuid);
+
+		CQLStatement ret = new CQLStatement();
+		ret.setPreparable(true);
+		ret.setQuery(String.format(
+			TEMPLATE_INSERT_WIDE,
+			tableName,
+			makeCommaList(fields),
+			makeCommaList(values,true),
+			(ttl == null) ? "" : (" AND TTL "+ ttl)
+		));
+
+		values.add(timestamp);
+		if(ttl != null){
+			values.add(ttl);
+		}
+		ret.setValues(values.toArray());
+		return ret;
 	}
 
 	protected static String makeInsertStatementWideIndex(String tableName, String targetTableName, long shardId, List<String> indexValues, Long timestamp){
@@ -536,14 +557,18 @@ public class CObjectCQLGenerator {
 		return ret;
 	}
 
-	protected static String makeCommaList(List<String> strings){
+	protected static String makeCommaList(List<String> strings, boolean onlyQuestionMarks){
 		Iterator<String> it = strings.iterator();
 		String ret = "";
 		while(it.hasNext()){
-			String s = it.next();
+			String s = onlyQuestionMarks ? "?" : it.next();
 			ret = ret + s +(it.hasNext() ? ", " : "");
 		}
 		return ret;
+	}
+
+	protected static String makeCommaList(List<String> strings){
+		return makeCommaList(strings, false);
 	}
 
 	protected static String makeFieldList(Collection<CField> fields, boolean withType){
