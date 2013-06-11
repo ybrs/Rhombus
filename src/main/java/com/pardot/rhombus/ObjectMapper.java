@@ -94,7 +94,15 @@ public class ObjectMapper {
 	}
 
 
-	private UUID insert(String objectType, Map<String, String> values, UUID key) throws CQLGenerationException {
+	/**
+	 * Insert a new object with values and key
+	 * @param objectType Type of object to insert
+	 * @param values Values to insert
+	 * @param key Time UUID to use as key
+	 * @return
+	 * @throws CQLGenerationException
+	 */
+	public UUID insert(String objectType, Map<String, String> values, UUID key) throws CQLGenerationException {
 		logger.debug("Insert {}", objectType);
 		if(key == null) {
 			key = UUIDs.timeBased();

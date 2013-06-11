@@ -1,6 +1,5 @@
 package com.pardot.rhombus;
 
-import com.pardot.rhombus.cobject.CObjectOrdering;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

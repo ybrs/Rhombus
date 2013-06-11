@@ -5,18 +5,13 @@ An time-series object store for Cassandra that handles all the complexity of bui
 
 To use as a dependency:
 
-(1) Add the proper repository to pom.xml (snapshots or releases)
+(1) Add the proper repositories to pom.xml (snapshots or releases)
 
     <repositories>
         <repository>
             <id>pardot-snapshot-repository</id>
             <url>scp://test.pardot.com/var/www/chef-repos/maven/snapshots</url>
         </repository>
-    </repositories>
-
-    OR
-
-    <repositories>
         <repository>
             <id>pardot-release-repository</id>
             <url>scp://test.pardot.com/var/www/chef-repos/maven/releases</url>
@@ -27,7 +22,7 @@ To use as a dependency:
 
     <dependency>
         <groupId>com.pardot</groupId>
-        <artifactId>rhombus</artifactId>
+        <artifactId>models</artifactId>
         <version>1.0-SNAPSHOT</version>
     </dependency>
 
@@ -35,12 +30,25 @@ To use as a dependency:
 
     <dependency>
         <groupId>com.pardot</groupId>
-        <artifactId>rhombus</artifactId>
+        <artifactId>models</artifactId>
         <version>1.0</version>
     </dependency>
 
 
-(3) Configure server information in maven settings.xml (~/.m2/settings.xml) - may need to create.
+(3) Add the wagon ssh extension to the build section of the project pom.xml
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>2.4</version>
+            </extension>
+        </extensions>
+    </build>
+
+
+(4) Configure server information in maven settings.xml (~/.m2/settings.xml) - may need to create.
 
     <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -72,6 +80,7 @@ To use as a dependency:
         <profiles/>
         <activeProfiles/>
     </settings>
+
 
 To deploy:
 
