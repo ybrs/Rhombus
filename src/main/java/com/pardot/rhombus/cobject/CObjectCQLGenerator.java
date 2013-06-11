@@ -8,6 +8,7 @@ import com.google.common.collect.Range;
 import com.pardot.rhombus.Criteria;
 import com.pardot.rhombus.cobject.shardingstrategy.ShardStrategyException;
 import com.pardot.rhombus.cobject.shardingstrategy.ShardingStrategyNone;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -562,9 +563,17 @@ public class CObjectCQLGenerator {
 			return objName;
 		}
 		else{
-			String indexName = Joiner.on('_').join(index.getCompositeKeyList());
-			return objName+"__"+indexName;
+			return makeIndexTableName(def,index);
 		}
+	}
+
+	protected static String makeIndexTableName(CDefinition def, CIndex index){
+		String indexName = Joiner.on('_').join(index.getCompositeKeyList());
+		String hash = DigestUtils.md5Hex(def.getName()+"|"+indexName);
+		//md5 hashes (in hex) give us 32 chars. We have 48 chars available so that gives us 16 chars remaining for a pretty
+		//display name for the object type.
+		String objDisplayName = def.getName().length() > 15 ? def.getName().substring(0,16) : def.getName();
+		return objDisplayName+hash;
 	}
 
 	public void setShardList(CObjectShardList shardList) {

@@ -45,15 +45,15 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = CDefinition.fromJsonString(json);
 			String cql1 = Subject.makeWideTableCreate(def, def.getIndexes().get("foreignid"));
-			String expected1 = "CREATE TABLE \"testtype__foreignid\" (id timeuuid, shardid bigint, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint, PRIMARY KEY ((shardid, foreignid),id) );";
+			String expected1 = "CREATE TABLE \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id timeuuid, shardid bigint, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint, PRIMARY KEY ((shardid, foreignid),id) );";
 			assertEquals(expected1, cql1);
 
 			String cql2 = Subject.makeWideTableCreate(def, def.getIndexes().get("instance:type"));
-			String expected2 = "CREATE TABLE \"testtype__instance_type\" (id timeuuid, shardid bigint, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint, PRIMARY KEY ((shardid, instance, type),id) );";
+			String expected2 = "CREATE TABLE \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id timeuuid, shardid bigint, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint, PRIMARY KEY ((shardid, instance, type),id) );";
 			assertEquals(expected2, cql2);
 
 			String cql3 = Subject.makeWideTableCreate(def, def.getIndexes().get("foreignid:instance:type"));
-			String expected3 = "CREATE TABLE \"testtype__foreignid_instance_type\" (id timeuuid, shardid bigint, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint, PRIMARY KEY ((shardid, foreignid, instance, type),id) );";
+			String expected3 = "CREATE TABLE \"testtypef9bf3332bb4ec879849ec43c67776131\" (id timeuuid, shardid bigint, filtered int,data1 varchar,data2 varchar,data3 varchar,instance bigint,type int,foreignid bigint, PRIMARY KEY ((shardid, foreignid, instance, type),id) );";
 			assertEquals(expected3, cql3);
 		}
 
@@ -69,15 +69,15 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			//static table
 			assertEquals("INSERT INTO \"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(0));
 
-			assertEquals("INSERT INTO \"testtype__instance_type\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(1));
-			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype__instance_type', '222222:5', 160, '160:222222:5') USING TIMESTAMP 1;", actual.get(2));
+			assertEquals("INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(1));
+			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype6671808f3f51bcc53ddc76d2419c9060', '222222:5', 160, '160:222222:5') USING TIMESTAMP 1;", actual.get(2));
 
 
-			assertEquals("INSERT INTO \"testtype__foreignid_instance_type\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(3));
-			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype__foreignid_instance_type', '777:222222:5', 160, '160:777:222222:5') USING TIMESTAMP 1;", actual.get(4));
+			assertEquals("INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(3));
+			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtypef9bf3332bb4ec879849ec43c67776131', '777:222222:5', 160, '160:777:222222:5') USING TIMESTAMP 1;", actual.get(4));
 
 
-			assertEquals("INSERT INTO \"testtype__foreignid\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 1, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(5));
+			assertEquals("INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 1, 'This is data one', 'This is data two', 'This is data three', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(5));
 			//foreign has shard strategy None so we dont expect an insert into the shard index table
 
 			//test with ttl
@@ -95,15 +95,15 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			//static table
 			assertEquals("INSERT INTO \"testtype\" (id, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(0));
 
-			assertEquals("INSERT INTO \"testtype__instance_type\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(1));
-			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype__instance_type', '222222:5', 160, '160:222222:5') USING TIMESTAMP 1;", actual.get(2));
+			assertEquals("INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;", actual.get(1));
+			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype6671808f3f51bcc53ddc76d2419c9060', '222222:5', 160, '160:222222:5') USING TIMESTAMP 1;", actual.get(2));
 
 
-			assertEquals("INSERT INTO \"testtype__foreignid_instance_type\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(3));
-			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtype__foreignid_instance_type', '777:222222:5', 160, '160:777:222222:5') USING TIMESTAMP 1;", actual.get(4));
+			assertEquals("INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 160, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(3));
+			assertEquals("INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES ('testtypef9bf3332bb4ec879849ec43c67776131', '777:222222:5', 160, '160:777:222222:5') USING TIMESTAMP 1;", actual.get(4));
 
 
-			assertEquals("INSERT INTO \"testtype__foreignid\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(5));
+			assertEquals("INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 1, 'This is data one', 222222, 5, 777) USING TIMESTAMP 1;",actual.get(5));
 			//foreign has shard strategy None so we dont expect an insert into the shard index table
 
 
@@ -131,7 +131,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals("Number of CQL statements should be correct",2,actual.size());
 			//static table
 			assertEquals("INSERT INTO \"testtype\" (id, data1, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 'this is a test', 777) USING TIMESTAMP 1;", actual.get(0));
-			assertEquals("INSERT INTO \"testtype__foreignid\" (id, shardid, data1, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 'this is a test', 777) USING TIMESTAMP 1;",actual.get(1));
+			assertEquals("INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, data1, foreignid) VALUES (ada375b0-a2d9-11e2-99a3-3f36d3955e43, 1, 'this is a test', 777) USING TIMESTAMP 1;",actual.get(1));
 			//foreign has shard strategy None so we dont expect an insert into the shard index table
 		}
 
@@ -161,10 +161,10 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			indexkeys.put("type", "5");
 			indexkeys.put("instance", "222222");
 			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys, Long.valueOf(10));
-			expected = "SELECT * FROM \"testtype__foreignid_instance_type\" WHERE shardid = 1 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id <";
-			assertEquals(expected, actual.next().substring(0,131));
-			expected = "SELECT * FROM \"testtype__foreignid_instance_type\" WHERE shardid = 2 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id <";
-			assertEquals(expected, actual.next().substring(0,131));
+			expected = "SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 1 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id <";
+			assertEquals(expected, actual.next().substring(0,138));
+			expected = "SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 2 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id <";
+			assertEquals(expected, actual.next().substring(0,138));
 			assertEquals("Should be bounded query list", true, actual.isBounded());
 
 
@@ -176,7 +176,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			UUID start = UUID.fromString("a8a2abe0-a251-11e2-bcbb-adf1a79a327f");
 			UUID stop = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
 			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys, CObjectOrdering.DESCENDING, start, stop,Long.valueOf(10), false);
-			expected = "SELECT * FROM \"testtype__foreignid_instance_type\" WHERE shardid = 160 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id > a8a2abe0-a251-11e2-bcbb-adf1a79a327f AND id < ada375b0-a2d9-11e2-99a3-3f36d3955e43 ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
+			expected = "SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 160 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id > a8a2abe0-a251-11e2-bcbb-adf1a79a327f AND id < ada375b0-a2d9-11e2-99a3-3f36d3955e43 ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
 			assertTrue("Should be bounded query iterator", actual.isBounded());
 			assertTrue("Should be none remaining in the iterator", !actual.hasNext());
@@ -187,11 +187,11 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			stop = UUID.fromString("2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f"); //1/1/2012 long endd = 1325454439000L;
 			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys,CObjectOrdering.ASCENDING, start, stop,Long.valueOf(10), true);
 			assertEquals("Should be proper size for range", 13, actual.size()); //All of 2011 plus the first month of 2012
-			expected = "SELECT * FROM \"testtype__foreignid_instance_type\" WHERE shardid = 133 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 10 ALLOW FILTERING;";
+			expected = "SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 133 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
-			expected = "SELECT * FROM \"testtype__foreignid_instance_type\" WHERE shardid = 134 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 10 ALLOW FILTERING;";
+			expected = "SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 134 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
-			expected = "SELECT * FROM \"testtype__foreignid_instance_type\" WHERE shardid = 135 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 5 ALLOW FILTERING;";
+			expected = "SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 135 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 5 ALLOW FILTERING;";
 			assertTrue("Should have next when hinted less than the limit",actual.hasNext(5));
 			assertEquals("Should generate proper Limit adjustment when given the amount hint",expected,actual.next());
 			assertTrue("Should have no next when hinted more than or equal to the limit",!actual.hasNext(10));
@@ -201,11 +201,11 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			stop = UUID.fromString("2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f"); //1/1/2012 long endd = 1325454439000L;
 			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys,CObjectOrdering.DESCENDING, start, stop,Long.valueOf(10), true);
 			assertEquals("Descending: Should be proper size for range", 13, actual.size()); //All of 2011 plus the first month of 2012
-			expected = "SELECT * FROM \"testtype__foreignid_instance_type\" WHERE shardid = 145 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
+			expected = "SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 145 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Descending: Should generate proper CQL for wide table get by index values",expected,actual.next());
-			expected = "SELECT * FROM \"testtype__foreignid_instance_type\" WHERE shardid = 144 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
+			expected = "SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 144 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 10 ALLOW FILTERING;";
 			assertEquals("Descending: Should generate proper CQL for wide table get by index values",expected,actual.next());
-			expected = "SELECT * FROM \"testtype__foreignid_instance_type\" WHERE shardid = 143 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 5 ALLOW FILTERING;";
+			expected = "SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 143 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 5 ALLOW FILTERING;";
 			assertTrue("Descending: Should have next when hinted less than the limit",actual.hasNext(5));
 			assertEquals("Descending: Should generate proper Limit adjustment when given the amount hint",expected,actual.next());
 			assertTrue("Should have no next when hinted more than or equal to the limit",!actual.hasNext(10));
@@ -223,16 +223,36 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 
 			expected = "DELETE FROM testtype USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43;";
 			assertEquals(expected,result.next());
-			expected = "DELETE FROM testtype__instance_type USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 AND instance = 222222 AND type = 5;";
+			expected = "DELETE FROM testtype6671808f3f51bcc53ddc76d2419c9060 USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 AND instance = 222222 AND type = 5;";
 			assertEquals(expected,result.next());
-			expected = "DELETE FROM testtype__foreignid_instance_type USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 AND foreignid = 777 AND instance = 222222 AND type = 5;";
+			expected = "DELETE FROM testtypef9bf3332bb4ec879849ec43c67776131 USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 160 AND foreignid = 777 AND instance = 222222 AND type = 5;";
 			assertEquals(expected,result.next());
-			expected = "DELETE FROM testtype__foreignid USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 1 AND foreignid = 777;";
+			expected = "DELETE FROM testtype7f9bb4e56d3cae5b11c553547cfe5897 USING TIMESTAMP 111 WHERE id = ada375b0-a2d9-11e2-99a3-3f36d3955e43 AND shardid = 1 AND foreignid = 777;";
 			assertEquals(expected,result.next());
 			assertTrue(!result.hasNext());
 
 		}
 
+		public void testMakeIndexTableName(){
+
+			//First test right at the character limit
+			CDefinition def = new CDefinition();
+			def.setName("a123456789012345");
+			CIndex index = new CIndex();
+			index.setKey("this:is:some:key");
+			assertEquals("a123456789012345cfd257aab86bf8ae49f975e12d9636cd", makeIndexTableName(def,index));
+			assertEquals(48, makeIndexTableName(def,index).length());
+
+			//now test after the character limit
+			def.setName("a1234567890123423232323");
+			assertEquals("a123456789012342cf14e7ebcd6250a6d856375dc9aae588", makeIndexTableName(def,index));
+			assertEquals(48, makeIndexTableName(def,index).length());
+
+			//now test before the character limit
+			def.setName("short");
+			assertEquals("shortd7e4bfec2b32954decd1fdbc11052e9d", makeIndexTableName(def,index));
+			assertTrue(48 > makeIndexTableName(def,index).length());
+		}
 
 	}
 
@@ -291,6 +311,11 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 	public void testMakeCQLforDelete() throws CQLGenerationException, CObjectParseException, IOException {
 		Subject s = new Subject();
 		s.testMakeCQLforDelete();
+	}
+
+	public void testMakeIndexTableName() throws CQLGenerationException, CObjectParseException, IOException {
+		Subject s = new Subject();
+		s.testMakeIndexTableName();
 	}
 
 
