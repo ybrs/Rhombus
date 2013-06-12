@@ -7,7 +7,7 @@ import java.util.Iterator;
  * User: robrighter
  * Date: 4/13/13
  */
-public interface CQLStatementIterator extends Iterator<String>{
+public interface CQLStatementIterator extends Iterator<CQLStatement>{
 
 	public boolean hasNext(long currentResultCount);
 	public boolean isBounded();

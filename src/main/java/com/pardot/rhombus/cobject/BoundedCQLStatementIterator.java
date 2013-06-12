@@ -11,9 +11,9 @@ import java.util.Iterator;
 public class BoundedCQLStatementIterator implements CQLStatementIterator {
 
 	private long size = 0;
-	private Iterator<String> statementIterator;
+	private Iterator<CQLStatement> statementIterator;
 
-	public BoundedCQLStatementIterator(List<String> CQLStatements){
+	public BoundedCQLStatementIterator(List<CQLStatement> CQLStatements){
 		this.size = (long)CQLStatements.size();
 		this.statementIterator = CQLStatements.iterator();
 	}
@@ -28,7 +28,7 @@ public class BoundedCQLStatementIterator implements CQLStatementIterator {
 	}
 
 	@Override
-	public String next() {
+	public CQLStatement next() {
 		return statementIterator.next();
 	}
 

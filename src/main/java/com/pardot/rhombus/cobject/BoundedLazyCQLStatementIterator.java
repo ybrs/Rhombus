@@ -1,5 +1,8 @@
 package com.pardot.rhombus.cobject;
 
+import com.google.common.collect.Lists;
+
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -13,10 +16,10 @@ public class BoundedLazyCQLStatementIterator implements CQLStatementIterator {
 	private long limit = 0;
 	private long numberRemaining = 0;
 	private long size = 0;
-	private String CQLTemplate = null;
+	private CQLStatement CQLTemplate = null;
 	private Iterator<Long> shardIdIterator;
 
-	public BoundedLazyCQLStatementIterator(List<Long> shardIds, String CQLTemplate, long limit){
+	public BoundedLazyCQLStatementIterator(List<Long> shardIds, CQLStatement CQLTemplate, long limit){
 		this.size = (long)shardIds.size();
 		this.limit = limit;
 		this.numberRemaining = this.limit;
@@ -38,8 +41,16 @@ public class BoundedLazyCQLStatementIterator implements CQLStatementIterator {
 	}
 
 	@Override
-	public String next() {
-		return String.format( CQLTemplate, this.shardIdIterator.next().longValue(), numberRemaining);
+	public CQLStatement next() {
+		CQLStatement ret = new CQLStatement();
+		ret.setPreparable(true);
+		ret.setQuery(CQLTemplate.getQuery());
+		List values = Lists.newArrayList(ret.getValues());
+		//shardid is the first value and limit should be the last value
+		values.add(0,this.shardIdIterator.next());
+		values.add(Long.valueOf(numberRemaining));
+		ret.setValues(values.toArray());
+		return ret;
 	}
 
 	public boolean isBounded(){

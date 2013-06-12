@@ -2,8 +2,10 @@ package com.pardot.rhombus.cobject;
 
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -17,12 +19,12 @@ public class UnboundableCQLStatementIterator implements CQLStatementIterator {
 	private long limit = 0;
 	private long numberRemaining = 0;
 	private long size = 0;
-	private String CQLTemplate = null;
+	private CQLStatement CQLTemplate = null;
 	private Range<Long> keyRange;
 	private Iterator<Long> keyIterator = null;
 
 
-	public UnboundableCQLStatementIterator(Range<Long> shardKeyList, long limit, CObjectOrdering ordering, String CQLTemplate){
+	public UnboundableCQLStatementIterator(Range<Long> shardKeyList, long limit, CObjectOrdering ordering, CQLStatement CQLTemplate){
 		this.keyRange = shardKeyList;
 		ContiguousSet<Long> set = ContiguousSet.create(shardKeyList, DiscreteDomain.longs());
 		this.keyIterator = (ordering == CObjectOrdering.ASCENDING) ? set.iterator() : set.descendingIterator();
@@ -46,8 +48,17 @@ public class UnboundableCQLStatementIterator implements CQLStatementIterator {
 	}
 
 	@Override
-	public String next() {
-		return String.format( CQLTemplate, keyIterator.next().longValue(), numberRemaining);
+	public CQLStatement next() {
+		CQLStatement ret = new CQLStatement();
+		ret.setPreparable(true);
+		ret.setQuery(CQLTemplate.getQuery());
+		List values = Lists.newArrayList(ret.getValues());
+		//shardid is the first value and limit should be the last value
+		values.add(0,this.keyIterator.next());
+		values.add(Long.valueOf(numberRemaining));
+		ret.setValues(values.toArray());
+		return ret;
+		//return String.format( CQLTemplate, keyIterator.next().longValue(), numberRemaining);
 	}
 
 	public boolean isBounded(){

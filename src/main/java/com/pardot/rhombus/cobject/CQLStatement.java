@@ -14,6 +14,15 @@ public class CQLStatement {
 	private Object[] values;
 	private boolean isPreparable;
 
+	public CQLStatement(){
+	}
+
+	public CQLStatement(String query, Object[] values, boolean preparable){
+		this.query = query;
+		this.values = values;
+		this.isPreparable = preparable;
+	}
+
 	public String getQuery() {
 		return query;
 	}

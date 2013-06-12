@@ -1,9 +1,7 @@
 package com.pardot.rhombus;
 
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Lists;
@@ -27,12 +25,14 @@ public class ObjectMapper {
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
 	private static final int reasonableStatementLimit = 20;
 	private boolean logCql = false;
+	private Map<String,BoundStatement> boundStatementMap;
 
 	private Session session;
 	private CKeyspaceDefinition keyspaceDefinition;
 	private CObjectCQLGenerator cqlGenerator;
 
 	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition) {
+		this.boundStatementMap = Maps.newHashMap();
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
 		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(),null);
@@ -45,12 +45,12 @@ public class ObjectMapper {
 	 */
 	public void buildKeyspace(Boolean forceRebuild) {
 		//First build the shard index
-		String cql = CObjectCQLGenerator.makeCQLforShardIndexTableCreate();
+		CQLStatement cql = CObjectCQLGenerator.makeCQLforShardIndexTableCreate();
 		try {
 			executeCql(cql);
 		} catch(Exception e) {
 			if(forceRebuild) {
-				String dropCql = CObjectCQLGenerator.makeCQLforShardIndexTableDrop();
+				CQLStatement dropCql = CObjectCQLGenerator.makeCQLforShardIndexTableDrop();
 				logger.debug("Attempting to drop table with cql {}", dropCql);
 				executeCql(dropCql);
 				executeCql(cql);
@@ -65,7 +65,7 @@ public class ObjectMapper {
 				CQLStatementIterator dropStatementIterator = cqlGenerator.makeCQLforDrop(definition.getName());
 				while(statementIterator.hasNext()) {
 					cql = statementIterator.next();
-					String dropCql = dropStatementIterator.next();
+					CQLStatement dropCql = dropStatementIterator.next();
 					try {
 						executeCql(cql);
 					} catch (AlreadyExistsException e) {
@@ -86,11 +86,26 @@ public class ObjectMapper {
 	 * This should never be used outside of testing
 	 * @param cql String of cql to execute
 	 */
-	public ResultSet executeCql(String cql) {
+	public ResultSet executeCql(CQLStatement cql) {
 		if(logCql) {
-			logger.debug("Executing CQL: {}", cql);
+			logger.debug("Executing CQL: {}", cql.getQuery());
+			//TODO: log values
 		}
-		return session.execute(cql);
+		if(cql.isPreparable()){
+			//Do prepared statement
+			BoundStatement bs = boundStatementMap.get(cql.getQuery());
+			if(bs == null){
+				PreparedStatement statement = session.prepare(cql.getQuery());
+				bs = new BoundStatement(statement);
+				boundStatementMap.put(cql.getQuery(),bs);
+			}
+
+			return session.execute(bs.bind(cql.getValues()));
+		}
+		else{
+			//just run a normal execute without a prepared statement
+			return session.execute(cql.getQuery());
+		}
 	}
 
 
@@ -110,7 +125,7 @@ public class ObjectMapper {
 		long timestamp = System.currentTimeMillis();
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforInsert(objectType, values, key, timestamp);
 		while(statementIterator.hasNext()) {
-			String cql = statementIterator.next();
+			CQLStatement cql = statementIterator.next();
 			executeCql(cql);
 		}
 		return key;
@@ -210,9 +225,9 @@ public class ObjectMapper {
 		int statementNumber = 0;
 		int resultNumber = 0;
 		while(statementIterator.hasNext(resultNumber) ) {
-			String cql = statementIterator.next();
+			CQLStatement cql = statementIterator.next();
 			logger.debug("Executing CQL: " + cql);
-			ResultSet resultSet = session.execute(cql);
+			ResultSet resultSet = executeCql(cql);
 			for(Row row : resultSet) {
 				Map<String, String> result = mapResult(row, definition);
 				results.add(result);
