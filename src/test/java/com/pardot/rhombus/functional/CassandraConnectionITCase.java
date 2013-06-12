@@ -3,6 +3,7 @@ package com.pardot.rhombus.functional;
 import static org.junit.Assert.*;
 
 import com.datastax.driver.core.exceptions.InvalidConfigurationInQueryException;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.pardot.rhombus.helpers.TestHelpers;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class CassandraConnectionITCase {
 		//Drop the functional keyspace if it exists
 		try {
 			session.execute("DROP KEYSPACE functional_create");
-		} catch (InvalidConfigurationInQueryException e) {
+		} catch (InvalidQueryException e) {
 			//Ignore
 		}
 
@@ -37,7 +38,7 @@ public class CassandraConnectionITCase {
 		//Drop the functional keyspace
 		try {
 			session.execute("DROP KEYSPACE functional_create");
-		} catch (InvalidConfigurationInQueryException e) {
+		} catch (InvalidQueryException e) {
 			//Ignore
 		}
 
