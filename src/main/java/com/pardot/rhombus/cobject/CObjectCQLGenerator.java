@@ -516,6 +516,7 @@ public class CObjectCQLGenerator {
 			case TEXT:
 			case TIMESTAMP:
 			case VARCHAR:
+				value = value.replaceAll("'", "''");
 				return String.format(strTemplate, value);
 			default:
 				return value;
