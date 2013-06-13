@@ -49,16 +49,11 @@ public class UnboundableCQLStatementIterator implements CQLStatementIterator {
 
 	@Override
 	public CQLStatement next() {
-		CQLStatement ret = new CQLStatement();
-		ret.setPreparable(true);
-		ret.setQuery(CQLTemplate.getQuery());
-		List values = Lists.newArrayList(ret.getValues());
+		List values = Lists.newArrayList(CQLTemplate.getValues());
 		//shardid is the first value and limit should be the last value
 		values.add(0,this.keyIterator.next());
 		values.add(Long.valueOf(numberRemaining));
-		ret.setValues(values.toArray());
-		return ret;
-		//return String.format( CQLTemplate, keyIterator.next().longValue(), numberRemaining);
+		return CQLStatement.make(CQLTemplate.getQuery(),values.toArray());
 	}
 
 	public boolean isBounded(){

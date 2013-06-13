@@ -193,7 +193,7 @@ public class CObjectCQLGenerator {
 	 * @return String of single CQL statement required to create the Shard Index Table
 	 */
 	public static CQLStatement makeCQLforShardIndexTableCreate(){
-		return new CQLStatement(String.format(TEMPLATE_CREATE_WIDE_INDEX,CObjectShardList.SHARD_INDEX_TABLE_NAME), null, false);
+		return CQLStatement.make(String.format(TEMPLATE_CREATE_WIDE_INDEX,CObjectShardList.SHARD_INDEX_TABLE_NAME));
 	}
 
 	/**
@@ -201,7 +201,7 @@ public class CObjectCQLGenerator {
 	 * @return String of single CQL statement required to create the Shard Index Table
 	 */
 	public static CQLStatement makeCQLforShardIndexTableDrop(){
-		return new CQLStatement(String.format(TEMPLATE_DROP, CObjectShardList.SHARD_INDEX_TABLE_NAME), null, false);
+		return CQLStatement.make(String.format(TEMPLATE_DROP, CObjectShardList.SHARD_INDEX_TABLE_NAME));
 	}
 
 
@@ -236,7 +236,7 @@ public class CObjectCQLGenerator {
 			whereCQL,
 			ordering
 		);
-		return new CQLStatement(query,values.toArray(),true);
+		return CQLStatement.make(query, values.toArray());
 	}
 
 
@@ -280,14 +280,14 @@ public class CObjectCQLGenerator {
 			values.add(ttl);
 		}
 
-		return new CQLStatement(query,values.toArray(),true);
+		return CQLStatement.make(query, values.toArray());
 	}
 
 	protected static CQLStatement makeInsertStatementWide(String tableName, List<String> fields, List values, UUID uuid, long shardid, Long timestamp, Integer ttl){
 		fields.add(0,"shardid");
 		values.add(0,Long.valueOf(shardid));
-		fields.add(0,"id");
-		values.add(0,uuid);
+		//fields.add(0,"id");
+		//values.add(0,uuid);
 
 		String query = String.format(
 			TEMPLATE_INSERT_WIDE,
@@ -302,13 +302,13 @@ public class CObjectCQLGenerator {
 			values.add(ttl);
 		}
 
-		return new CQLStatement(query,values.toArray(),true);
+		return CQLStatement.make(query, values.toArray());
 	}
 
 	protected static CQLStatement makeInsertStatementWideIndex(String tableName, String targetTableName, long shardId, List<String> indexValues, Long timestamp){
 		String indexValuesString = makeIndexValuesString(indexValues);
 		Object[] values = {targetTableName, indexValuesString, Long.valueOf(shardId), shardId+":"+indexValuesString, timestamp};
-		return new CQLStatement(String.format(TEMPLATE_INSERT_WIDE_INDEX, tableName),values,true);
+		return CQLStatement.make(String.format(TEMPLATE_INSERT_WIDE_INDEX, tableName), values);
 	}
 
 	protected static CQLStatementIterator makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,String> data) throws CQLGenerationException{
@@ -372,11 +372,8 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static CQLStatementIterator makeCQLforGet(CDefinition def, UUID key){
-		CQLStatement statement = new CQLStatement();
-		statement.setPreparable(true);
-		statement.setQuery(String.format(TEMPLATE_SELECT_STATIC,def.getName(),"id = ?"));
 		Object[] values = {key};
-		statement.setValues(values);
+		CQLStatement statement = CQLStatement.make(String.format(TEMPLATE_SELECT_STATIC,def.getName(),"id = ?"), values);
 		return new BoundedCQLStatementIterator(Lists.newArrayList(statement));
 	}
 
@@ -392,7 +389,7 @@ public class CObjectCQLGenerator {
 		}
 		CQLStatement whereCQL = makeAndedEqualList(def,indexValues);
 		String whereQuery = whereCQL.getQuery();
-		List values = Arrays.asList(whereCQL.getValues());
+		List values = new ArrayList(Arrays.asList(whereCQL.getValues()));
 		if(start != null){
 			whereQuery +=  " AND id >"+(inclusive ? "= "  :  " ")+ "?";
 			values.add(start);
@@ -414,7 +411,7 @@ public class CObjectCQLGenerator {
 			ordering,
 			limitCQL);
 
-		CQLStatement templateCQLStatement = new CQLStatement(CQLTemplate, values.toArray(),true);
+		CQLStatement templateCQLStatement = CQLStatement.make(CQLTemplate, values.toArray());
 
 		Long starttime = (start == null) ? null : Long.valueOf(UUIDs.unixTimestamp(start));
 		Long endtime = (end == null) ? null : Long.valueOf(UUIDs.unixTimestamp(end));
@@ -464,11 +461,7 @@ public class CObjectCQLGenerator {
 
 	protected static CQLStatement makeCQLforDeleteUUIDFromStaticTable(CDefinition def, UUID uuid, Long timestamp){
 		Object[] values = {timestamp,uuid};
-		return new CQLStatement(
-			String.format(TEMPLATE_DELETE,makeTableName(def,null),"id = ?"),
-			values,
-			true
-		);
+		return CQLStatement.make(String.format(TEMPLATE_DELETE, makeTableName(def, null), "id = ?"), values);
 	}
 
 
@@ -479,11 +472,11 @@ public class CObjectCQLGenerator {
 		String whereCQL = String.format( "id = ? AND shardid = ? AND %s", wheres.getQuery());
 		String query = String.format(TEMPLATE_DELETE,makeTableName(def,index),whereCQL);
 		values.add(0,timestamp);
-		return new CQLStatement(query,values.toArray(),true);
+		return CQLStatement.make(query,values.toArray());
 	}
 
 	protected static CQLStatement makeTableDrop(String tableName){
-		return new CQLStatement(String.format(TEMPLATE_DROP, tableName), null, false);
+		return CQLStatement.make(String.format(TEMPLATE_DROP, tableName));
 	}
 
 	protected static CQLStatement makeStaticTableCreate(CDefinition def){
@@ -491,7 +484,7 @@ public class CObjectCQLGenerator {
 			TEMPLATE_CREATE_STATIC,
 			def.getName(),
 			makeFieldList(def.getFields().values(),true));
-		return new CQLStatement(query, null,false);
+		return CQLStatement.make(query);
 	}
 
 	protected static CQLStatement makeWideTableCreate(CDefinition def, CIndex index){
@@ -500,7 +493,7 @@ public class CObjectCQLGenerator {
 			makeTableName(def,index),
 			makeFieldList(def.getFields().values(), true),
 			makeCommaList(index.getCompositeKeyList()));
-		return new CQLStatement(query,null,false);
+		return CQLStatement.make(query);
 	}
 
 	public static String makeIndexValuesString(Collection<String> values){
@@ -548,8 +541,9 @@ public class CObjectCQLGenerator {
 			case TEXT:
 			case TIMESTAMP:
 			case VARCHAR:
-				value = value.replaceAll("'", "''");
-				return String.format(strTemplate, value);
+				//value = value.replaceAll("'", "''");
+				//return String.format(strTemplate, value);
+				return value;
 			default:
 				return value;
 		}
@@ -567,20 +561,21 @@ public class CObjectCQLGenerator {
 				query += " AND ";
 			}
 		}
-		return new CQLStatement(query, values.toArray(), true);
+		return CQLStatement.make(query, values.toArray());
 	}
 
-	protected static String makeCommaList(List<String> strings, boolean onlyQuestionMarks){
-		Iterator<String> it = strings.iterator();
+	protected static String makeCommaList(List strings, boolean onlyQuestionMarks){
+		Iterator<Object> it = strings.iterator();
 		String ret = "";
 		while(it.hasNext()){
-			String s = onlyQuestionMarks ? "?" : it.next();
+			String thenext = it.next().toString();
+			String s = onlyQuestionMarks ? "?" : thenext;
 			ret = ret + s +(it.hasNext() ? ", " : "");
 		}
 		return ret;
 	}
 
-	protected static String makeCommaList(List<String> strings){
+	protected static String makeCommaList(List strings){
 		return makeCommaList(strings, false);
 	}
 

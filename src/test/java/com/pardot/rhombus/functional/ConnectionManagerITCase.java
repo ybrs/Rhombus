@@ -7,6 +7,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.pardot.rhombus.ConnectionManager;
 import com.pardot.rhombus.ObjectMapper;
 import com.pardot.rhombus.cobject.CKeyspaceDefinition;
+import com.pardot.rhombus.cobject.CQLStatement;
 import com.pardot.rhombus.helpers.TestHelpers;
 import com.pardot.rhombus.util.JsonUtil;
 import org.junit.Test;
@@ -14,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -41,17 +44,17 @@ public class ConnectionManagerITCase {
 
 		//Create a table and insert a row
 		ObjectMapper om = cm.getObjectMapper(definition.getName());
-		om.executeCql("CREATE TABLE cmit (id UUID PRIMARY KEY);");
+		UUID uuid = UUIDs.timeBased();
+		om.executeCql(CQLStatement.make("CREATE TABLE cmit (id UUID PRIMARY KEY);"));
 		logger.debug("Created table");
-		String uuid = UUIDs.timeBased().toString();
-		om.executeCql("INSERT INTO cmit (id) VALUES (" + uuid + ");");
+		om.executeCql(CQLStatement.make("INSERT INTO cmit (id) VALUES (?);", Arrays.asList(uuid).toArray()) );
 		logger.debug("Inserted");
 
 		//Build the same keyspace but do not force a rebuild
 		cm.buildKeyspace(definition, false);
 
 		//Make sure that we can get back the value we inserted
-		ResultSet rs = om.executeCql("SELECT * FROM cmit WHERE id=" + uuid);
+		ResultSet rs = om.executeCql(CQLStatement.make("SELECT * FROM cmit WHERE id=?;",Arrays.asList(uuid).toArray()));
 		assertEquals(1, rs.all().size());
 	}
 
@@ -78,7 +81,7 @@ public class ConnectionManagerITCase {
 
 		//Select from the newly created table
 		ObjectMapper om = cm.getObjectMapper(definition2.getName());
-		ResultSet rs = om.executeCql("SELECT * FROM testtype__filtered");
+		ResultSet rs = om.executeCql(CQLStatement.make("SELECT * FROM testtype__filtered"));
 		assertEquals(0, rs.all().size());
 
 		//Build the keyspace again, but force a rebuild
@@ -86,6 +89,6 @@ public class ConnectionManagerITCase {
 
 		//Make sure that the additional index table no longer exists
 		om = cm.getObjectMapper(definition.getName());
-		om.executeCql("SELECT * FROM testtype__filtered");
+		om.executeCql(CQLStatement.make("SELECT * FROM testtype__filtered"));
 	}
 }
