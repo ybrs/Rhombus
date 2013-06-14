@@ -26,7 +26,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 		}
 
 		@Override
-		public List<Long> getShardIdList(CDefinition def, SortedMap<String, String> indexValues, CObjectOrdering ordering, @Nullable UUID start, @Nullable UUID end) {
+		public List<Long> getShardIdList(CDefinition def, SortedMap<String, Object> indexValues, CObjectOrdering ordering, @Nullable UUID start, @Nullable UUID end) {
 			return result;
 		}
 	}
@@ -68,7 +68,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 		public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = CDefinition.fromJsonString(json);
-			Map<String, String> data = TestHelpers.getTestObject(0);
+			Map<String, Object> data = TestHelpers.getTestObject(0);
 			UUID uuid = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
 			CQLStatementIterator result = Subject.makeCQLforInsert(def,data,uuid,Long.valueOf(1),null);
 			List<CQLStatement> actual = toList(result);
@@ -234,7 +234,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			CObjectShardList shardIdLists = new ShardListMock(Arrays.asList(1L,2L,3L,4L,5L));
 
 			//Wide table using shardIdList and therefore bounded
-			TreeMap<String,String> indexkeys = Maps.newTreeMap();
+			TreeMap<String,Object> indexkeys = Maps.newTreeMap();
 			indexkeys.put("foreignid","777");
 			indexkeys.put("type", "5");
 			indexkeys.put("instance", "222222");
@@ -299,7 +299,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 		public void testMakeCQLforDelete() throws CObjectParseException,CObjectParseException, CQLGenerationException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = CDefinition.fromJsonString(json);
-			Map<String, String> data = TestHelpers.getTestObject(0);
+			Map<String, Object> data = TestHelpers.getTestObject(0);
 			UUID uuid = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
 			CQLStatementIterator result = Subject.makeCQLforDelete(def,uuid,data,Long.valueOf(111));
 

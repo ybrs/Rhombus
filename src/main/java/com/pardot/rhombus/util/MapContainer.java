@@ -9,21 +9,21 @@ import java.util.Map;
  * Date: 5/14/13
  */
 public class MapContainer {
-	private List<Map<String, String>> values;
+	private List<Map<String, Object>> values;
 
 	public MapContainer() {
 
 	}
 
-	public MapContainer(List<Map<String, String>> values) {
+	public MapContainer(List<Map<String, Object>> values) {
 		this.values = values;
 	}
 
-	public List<Map<String, String>> getValues() {
+	public List<Map<String, Object>> getValues() {
 		return values;
 	}
 
-	public void setValues(List<Map<String, String>> values) {
+	public void setValues(List<Map<String, Object>> values) {
 		this.values = values;
 	}
 }

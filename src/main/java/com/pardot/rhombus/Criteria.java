@@ -17,7 +17,7 @@ import java.util.UUID;
 public class Criteria {
 	private static final Logger logger = LoggerFactory.getLogger(Criteria.class);
 
-	private SortedMap<String, String> indexKeys;
+	private SortedMap<String, Object> indexKeys;
 	private CObjectOrdering ordering;
 	private UUID startUuid;
 	private UUID endUuid;
@@ -36,11 +36,11 @@ public class Criteria {
 				.toString();
 	}
 
-	public SortedMap<String, String> getIndexKeys() {
+	public SortedMap<String, Object> getIndexKeys() {
 		return indexKeys;
 	}
 
-	public void setIndexKeys(SortedMap<String, String> indexKeys) {
+	public void setIndexKeys(SortedMap<String, Object> indexKeys) {
 		this.indexKeys = indexKeys;
 	}
 

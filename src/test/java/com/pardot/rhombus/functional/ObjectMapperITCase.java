@@ -42,11 +42,11 @@ public class ObjectMapperITCase {
 		ObjectMapper om = cm.getObjectMapper();
 
 		//Get a test object to insert
-		Map<String, String> testObject = TestHelpers.getTestObject(0);
+		Map<String, Object> testObject = TestHelpers.getTestObject(0);
 		UUID key = om.insert("testtype", testObject);
 
 		//Query to get back the object from the database
-		Map<String, String> dbObject = om.getByKey("testtype", key);
+		Map<String, Object> dbObject = om.getByKey("testtype", key);
 		for(String dbKey : dbObject.keySet()) {
 			//Verify that everything but the key is the same
 			if(!dbKey.equals("id")) {
@@ -59,7 +59,7 @@ public class ObjectMapperITCase {
 
 		//Query by foreign key
 		Criteria criteria = TestHelpers.getTestCriteria(0);
-		List<Map<String, String>> dbObjects = om.list("testtype", criteria);
+		List<Map<String, Object>> dbObjects = om.list("testtype", criteria);
 		assertEquals(2, dbObjects.size());
 
 		//Remove one of the objects we added
@@ -70,11 +70,11 @@ public class ObjectMapperITCase {
 		assertEquals(1, dbObjects.size());
 
 		//Update the values of one of the objects
-		Map<String, String> testObject2 = TestHelpers.getTestObject(2);
+		Map<String, Object> testObject2 = TestHelpers.getTestObject(2);
 		UUID key3 = om.update("testtype", key2, testObject2);
 
 		//Get the updated object back and make sure it matches
-		Map<String, String> dbObject2 = om.getByKey("testtype", key3);
+		Map<String, Object> dbObject2 = om.getByKey("testtype", key3);
 		for(String dbKey : dbObject2.keySet()) {
 			//Verify that everything but the key is the same
 			if(!dbKey.equals("id")) {
@@ -113,12 +113,12 @@ public class ObjectMapperITCase {
 		ObjectMapper om = cm.getObjectMapper();
 
 		//Insert in some values of each type
-		List<Map<String, String>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "ObjectMapperTypeTestData.js");
+		List<Map<String, Object>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "ObjectMapperTypeTestData.js");
 		UUID uuid = om.insert("testobjecttype", values.get(0));
 		assertNotNull(uuid);
 
 		//Get back the values
-		Map<String, String> returnedValues = om.getByKey("testobjecttype", uuid);
+		Map<String, Object> returnedValues = om.getByKey("testobjecttype", uuid);
 
 		//Verify that id is returned
 		assertNotNull(returnedValues.get("id"));
@@ -126,8 +126,8 @@ public class ObjectMapperITCase {
 		logger.debug("Returned values: {}", returnedValues);
 		for(String returnedKey : returnedValues.keySet()) {
 			if(!returnedKey.equals("id")) {
-				String insertValue = values.get(0).get(returnedKey);
-				String returnValue = returnedValues.get(returnedKey);
+				Object insertValue = values.get(0).get(returnedKey);
+				Object returnValue = returnedValues.get(returnedKey);
 				assertEquals(insertValue, returnValue);
 			}
 		}
@@ -152,22 +152,22 @@ public class ObjectMapperITCase {
 		ObjectMapper om = cm.getObjectMapper();
 
 		//Insert our test data
-		List<Map<String, String>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "DateRangeQueryTestData.js");
-		for(Map<String, String> object : values) {
-			Long createdAt = Long.parseLong(object.get("created_at"));
+		List<Map<String, Object>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "DateRangeQueryTestData.js");
+		for(Map<String, Object> object : values) {
+			Long createdAt = Long.parseLong((String)object.get("created_at"));
 			logger.debug("Inserting audit with created_at: {}", createdAt);
-			om.insert("object_audit", object, createdAt);
+			om.insert("object_audit", TestHelpers.convertStringsToRealTypes(definition.getDefinitions().get("object_audit"),object), createdAt);
 		}
 
 		//Make sure that we have the proper number of results
-		SortedMap<String, String> indexValues = Maps.newTreeMap();
+		SortedMap<String, Object> indexValues = Maps.newTreeMap();
 		indexValues.put("account_id", "00000003-0000-0030-0040-000000030000");
 		indexValues.put("object_type", "Account");
 		indexValues.put("object_id", "00000003-0000-0030-0040-000000030000");
 		Criteria criteria = new Criteria();
 		criteria.setIndexKeys(indexValues);
 		criteria.setLimit(50L);
-		List<Map<String, String>> results = om.list("object_audit", criteria);
+		List<Map<String, Object>> results = om.list("object_audit", criteria);
 		assertEquals(8, results.size());
 
 		//Now query for results since May 1 2013

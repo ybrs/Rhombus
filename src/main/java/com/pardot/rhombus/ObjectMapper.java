@@ -117,7 +117,7 @@ public class ObjectMapper {
 	 * @return
 	 * @throws CQLGenerationException
 	 */
-	public UUID insert(String objectType, Map<String, String> values, UUID key) throws CQLGenerationException {
+	public UUID insert(String objectType, Map<String, Object> values, UUID key) throws CQLGenerationException {
 		logger.debug("Insert {}", objectType);
 		if(key == null) {
 			key = UUIDs.timeBased();
@@ -138,7 +138,7 @@ public class ObjectMapper {
 	 * @return UUID of inserted object
 	 * @throws CQLGenerationException
 	 */
-	public UUID insert(String objectType, Map<String, String> values) throws CQLGenerationException {
+	public UUID insert(String objectType, Map<String, Object> values) throws CQLGenerationException {
 		return insert(objectType, values, (UUID)null);
 	}
 
@@ -150,7 +150,7 @@ public class ObjectMapper {
 	 * @param timestamp Timestamp to use to create the object UUID
 	 * @return the UUID of the newly inserted object
 	 */
-	public UUID insert(String objectType, Map<String, String> values, Long timestamp) throws CQLGenerationException {
+	public UUID insert(String objectType, Map<String, Object> values, Long timestamp) throws CQLGenerationException {
 		UUID uuid = UUIDs.startOf(timestamp);
 		return insert(objectType, values, uuid);
 	}
@@ -162,7 +162,7 @@ public class ObjectMapper {
 	 */
 	public void delete(String objectType, UUID key) {
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
-		Map<String, String> values = getByKey(objectType, key);
+		Map<String, Object> values = getByKey(objectType, key);
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforDelete(objectType, key, values, null);
 		mapResults(statementIterator, def, 0L);
 	}
@@ -175,7 +175,7 @@ public class ObjectMapper {
 	 * @return new UUID of the object
 	 * @throws CQLGenerationException
 	 */
-	public UUID update(String objectType, UUID key, Map<String, String> values) throws CQLGenerationException {
+	public UUID update(String objectType, UUID key, Map<String, Object> values) throws CQLGenerationException {
 		//Make a new key
 		UUID newKey = UUIDs.startOf(UUIDs.unixTimestamp(key));
 		//Delete
@@ -190,10 +190,10 @@ public class ObjectMapper {
 	 * @param key Key of object to get
 	 * @return Object of type with key or null if it does not exist
 	 */
-	public Map<String, String> getByKey(String objectType, UUID key) {
+	public Map<String, Object> getByKey(String objectType, UUID key) {
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforGet(objectType, key);
-		List<Map<String, String>> results = mapResults(statementIterator, def, 1L);
+		List<Map<String, Object>> results = mapResults(statementIterator, def, 1L);
 		if(results.size() > 0) {
 			return results.get(0);
 		} else {
@@ -207,7 +207,7 @@ public class ObjectMapper {
 	 * @return List of objects that match the specified type and criteria
 	 * @throws CQLGenerationException
 	 */
-	public List<Map<String, String>> list(String objectType, Criteria criteria) throws CQLGenerationException {
+	public List<Map<String, Object>> list(String objectType, Criteria criteria) throws CQLGenerationException {
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforGet(objectType, criteria);
 		return mapResults(statementIterator, def, criteria.getLimit());
@@ -220,8 +220,8 @@ public class ObjectMapper {
 	 * @param definition definition to execute the statements against
 	 * @return Ordered resultset concatenating results from statements in statement iterator.
 	 */
-	private List<Map<String, String>> mapResults(CQLStatementIterator statementIterator, CDefinition definition, Long limit) {
-		List<Map<String, String>> results = Lists.newArrayList();
+	private List<Map<String, Object>> mapResults(CQLStatementIterator statementIterator, CDefinition definition, Long limit) {
+		List<Map<String, Object>> results = Lists.newArrayList();
 		int statementNumber = 0;
 		int resultNumber = 0;
 		while(statementIterator.hasNext(resultNumber) ) {
@@ -229,7 +229,7 @@ public class ObjectMapper {
 			logger.debug("Executing CQL: " + cql);
 			ResultSet resultSet = executeCql(cql);
 			for(Row row : resultSet) {
-				Map<String, String> result = mapResult(row, definition);
+				Map<String, Object> result = mapResult(row, definition);
 				results.add(result);
 				resultNumber++;
 			}
@@ -247,8 +247,8 @@ public class ObjectMapper {
 	 * @param definition The definition to map the row on to
 	 * @return Data contained in a row mapped to the object described in definition.
 	 */
-	private Map<String, String> mapResult(Row row, CDefinition definition) {
-		Map<String, String> result = Maps.newHashMap();
+	private Map<String, Object> mapResult(Row row, CDefinition definition) {
+		Map<String, Object> result = Maps.newHashMap();
 		result.put("id", row.getUUID("id").toString());
 		for(CField field : definition.getFields().values()) {
 			result.put(field.getName(), getFieldValue(row, field));

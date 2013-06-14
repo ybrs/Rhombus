@@ -1,16 +1,18 @@
 package com.pardot.rhombus.helpers;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.pardot.rhombus.CassandraConfiguration;
 import com.pardot.rhombus.Criteria;
+import com.pardot.rhombus.cobject.CDefinition;
+import com.pardot.rhombus.cobject.CField;
 import com.pardot.rhombus.util.JsonUtil;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Pardot, An ExactTarget Company
@@ -19,7 +21,7 @@ import java.util.Map;
  */
 public class TestHelpers {
 
-	private static List<Map<String, String>> testObjects;
+	private static List<Map<String, Object>> testObjects;
 	private static CriteriaHolder criteriaHolder;
 
 	public static String readFileToString(Class testclass, String filename){
@@ -40,10 +42,10 @@ public class TestHelpers {
 		return JsonUtil.objectFromJsonResource(CassandraConfiguration.class, CassandraConfiguration.class.getClassLoader(), "cassandra-functional.js");
 	}
 
-	public static Map<String, String> getTestObject(int index) {
+	public static Map<String, Object> getTestObject(int index) {
 		if(testObjects == null) {
 			try {
-				testObjects = (List<Map<String, String>>)JsonUtil.objectFromJsonResource(List.class, TestHelpers.class.getClassLoader(), "TestObjects.js");
+				testObjects = (List<Map<String, Object>>)JsonUtil.objectFromJsonResource(List.class, TestHelpers.class.getClassLoader(), "TestObjects.js");
 			} catch (IOException e) {
 				testObjects = Lists.newArrayList();
 			}
@@ -72,5 +74,28 @@ public class TestHelpers {
 		void setCriteria(List<Criteria> criteria) {
 			this.criteria = criteria;
 		}
+	}
+
+	public static Map<String,Object> convertStringsToRealTypes(CDefinition def, Map<String,Object> values){
+		Map<String,Object> ret = Maps.newTreeMap();
+		for(String key : values.keySet()){
+			String valueAsString = (String)values.get(key);
+			if((def.getFields().get(key).getType() == CField.CDataType.UUID) || (def.getFields().get(key).getType() == CField.CDataType.TIMEUUID)){
+				ret.put(key, UUID.fromString(valueAsString));
+			}
+			else if( (def.getFields().get(key).getType() == CField.CDataType.TIMESTAMP) ||
+				(def.getFields().get(key).getType() == CField.CDataType.INT)
+			){
+				ret.put(key, Long.parseLong(valueAsString));
+			}
+			else if(def.getFields().get(key).getType() == CField.CDataType.BOOLEAN){
+				ret.put(key, Boolean.parseBoolean(valueAsString));
+			}
+			else{
+				ret.put(key,valueAsString);
+			}
+
+		}
+		return ret;
 	}
 }

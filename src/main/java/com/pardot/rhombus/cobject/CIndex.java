@@ -35,7 +35,7 @@ public class CIndex {
 	 * using this criteria"
 	 * @return boolean - true if it is queryable
 	 */
-	public boolean validateIndexKeys(Map<String,String> keys){
+	public boolean validateIndexKeys(Map<String,Object> keys){
 		if(keys.size() != compositeKeyList.size()){
 			//optimized return if we have a size mismatch
 			return false;
@@ -75,16 +75,16 @@ public class CIndex {
 		return compositeKeyList;
 	}
 
-	public List<String> getIndexValues(Map<String,String> allValues){
-		List<String> ret = Lists.newArrayList();
+	public List<Object> getIndexValues(Map<String,Object> allValues){
+		List<Object> ret = Lists.newArrayList();
 		for(String key : compositeKeyList){
 			ret.add(allValues.get(key));
 		}
 		return ret;
 	}
 
-	public SortedMap<String,String> getIndexKeyAndValues(Map<String,String> allValues){
-		SortedMap<String,String> ret = Maps.newTreeMap();
+	public SortedMap<String,Object> getIndexKeyAndValues(Map<String,Object> allValues){
+		SortedMap<String,Object> ret = Maps.newTreeMap();
 		for(String key : compositeKeyList){
 			ret.put(key, allValues.get(key));
 		}

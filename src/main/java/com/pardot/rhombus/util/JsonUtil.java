@@ -23,7 +23,7 @@ public class JsonUtil {
 		return returnObject;
 	}
 
-	public static List<Map<String, String>> rhombusMapFromResource(ClassLoader resourceClassLoader, String resourceLocation) throws IOException {
+	public static List<Map<String, Object>> rhombusMapFromResource(ClassLoader resourceClassLoader, String resourceLocation) throws IOException {
 		ObjectMapper om = new ObjectMapper();
 		InputStream inputStream = resourceClassLoader.getResourceAsStream(resourceLocation);
 		//System.out.println(inputStream.toString());

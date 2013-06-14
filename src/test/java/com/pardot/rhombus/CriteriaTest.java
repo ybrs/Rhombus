@@ -20,7 +20,7 @@ public class CriteriaTest {
 	@Test
 	public void testToString() {
 		Criteria criteria = new Criteria();
-		SortedMap<String, String> indexKeys = new TreeMap<String, String>();
+		SortedMap<String, Object> indexKeys = new TreeMap<String, Object>();
 		indexKeys.put("account_id", "3");
 		indexKeys.put("object_type", "account");
 		indexKeys.put("object_id", "3");

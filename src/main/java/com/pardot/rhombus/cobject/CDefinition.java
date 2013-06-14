@@ -76,7 +76,7 @@ public class CDefinition {
 		return ret.values();
 	}
 
-	public CIndex getIndex(SortedMap<String,String> indexValues){
+	public CIndex getIndex(SortedMap<String,Object> indexValues){
 		String key = Joiner.on(":").join(indexValues.keySet());
 		return indexesIndexedByFields.get(key);
 	}
