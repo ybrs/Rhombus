@@ -218,7 +218,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			CQLStatementIterator actual = Subject.makeCQLforCreate(def);
 			assertEquals("Should generate CQL statements for the static table plus all indexes", 4, actual.size());
 		}
-/*
+
 		public void testMakeCQLforGet() throws CObjectParseException,CObjectParseException, CQLGenerationException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = CDefinition.fromJsonString(json);
@@ -257,9 +257,10 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys, CObjectOrdering.DESCENDING, start, stop,Long.valueOf(10), false);
 			expected = CQLStatement.make(
 				"SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = ? AND foreignid = ? AND instance = ? AND type = ? AND id > ? AND id < ? ORDER BY id DESC LIMIT ? ALLOW FILTERING;",
-				Arrays.asList("160","777","222222","5", start, stop, 10).toArray()
+				Arrays.asList(Long.valueOf(160),"777","222222","5", start, stop, Long.valueOf(10)).toArray()
 			);
-			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
+			//"Should generate proper CQL for wide table get by index values"
+			assertEquals(expected,actual.next());
 			assertTrue("Should be bounded query iterator", actual.isBounded());
 			assertTrue("Should be none remaining in the iterator", !actual.hasNext());
 
@@ -269,31 +270,32 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			stop = UUID.fromString("2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f"); //1/1/2012 long endd = 1325454439000L;
 			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys,CObjectOrdering.ASCENDING, start, stop,Long.valueOf(10), true);
 			assertEquals("Should be proper size for range", 13, actual.size()); //All of 2011 plus the first month of 2012
-			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 133 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 10 ALLOW FILTERING;");
-			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
-			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 134 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 10 ALLOW FILTERING;");
-			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
-			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 135 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 5 ALLOW FILTERING;");
-			assertTrue("Should have next when hinted less than the limit",actual.hasNext(5));
-			assertEquals("Should generate proper Limit adjustment when given the amount hint",expected,actual.next());
-			assertTrue("Should have no next when hinted more than or equal to the limit",!actual.hasNext(10));
-
-			//wide table inclusive slice descending bounded
-			start = UUID.fromString("b4c10d80-15f0-11e0-8080-808080808080"); // 1/1/2011 long startd = 1293918439000L;
-			stop = UUID.fromString("2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f"); //1/1/2012 long endd = 1325454439000L;
-			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys,CObjectOrdering.DESCENDING, start, stop,Long.valueOf(10), true);
-			assertEquals("Descending: Should be proper size for range", 13, actual.size()); //All of 2011 plus the first month of 2012
-			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 145 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 10 ALLOW FILTERING;");
-			assertEquals("Descending: Should generate proper CQL for wide table get by index values",expected,actual.next());
-			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 144 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 10 ALLOW FILTERING;");
-			assertEquals("Descending: Should generate proper CQL for wide table get by index values",expected,actual.next());
-			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 143 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 5 ALLOW FILTERING;");
-			assertTrue("Descending: Should have next when hinted less than the limit",actual.hasNext(5));
-			assertEquals("Descending: Should generate proper Limit adjustment when given the amount hint",expected,actual.next());
-			assertTrue("Should have no next when hinted more than or equal to the limit",!actual.hasNext(10));
+//TODO:add this back after the functional tests start working
+//			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 133 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 10 ALLOW FILTERING;");
+//			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
+//			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 134 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 10 ALLOW FILTERING;");
+//			assertEquals("Should generate proper CQL for wide table get by index values",expected,actual.next());
+//			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 135 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id ASC LIMIT 5 ALLOW FILTERING;");
+//			assertTrue("Should have next when hinted less than the limit",actual.hasNext(5));
+//			assertEquals("Should generate proper Limit adjustment when given the amount hint",expected,actual.next());
+//			assertTrue("Should have no next when hinted more than or equal to the limit",!actual.hasNext(10));
+//
+//			//wide table inclusive slice descending bounded
+//			start = UUID.fromString("b4c10d80-15f0-11e0-8080-808080808080"); // 1/1/2011 long startd = 1293918439000L;
+//			stop = UUID.fromString("2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f"); //1/1/2012 long endd = 1325454439000L;
+//			actual = Subject.makeCQLforGet(shardIdLists, def, indexkeys,CObjectOrdering.DESCENDING, start, stop,Long.valueOf(10), true);
+//			assertEquals("Descending: Should be proper size for range", 13, actual.size()); //All of 2011 plus the first month of 2012
+//			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 145 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 10 ALLOW FILTERING;");
+//			assertEquals("Descending: Should generate proper CQL for wide table get by index values",expected,actual.next());
+//			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 144 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 10 ALLOW FILTERING;");
+//			assertEquals("Descending: Should generate proper CQL for wide table get by index values",expected,actual.next());
+//			expected = CQLStatement.make("SELECT * FROM \"testtypef9bf3332bb4ec879849ec43c67776131\" WHERE shardid = 143 AND foreignid = 777 AND instance = 222222 AND type = 5 AND id >= b4c10d80-15f0-11e0-8080-808080808080 AND id <= 2d87f48f-34c2-11e1-7f7f-7f7f7f7f7f7f ORDER BY id DESC LIMIT 5 ALLOW FILTERING;");
+//			assertTrue("Descending: Should have next when hinted less than the limit",actual.hasNext(5));
+//			assertEquals("Descending: Should generate proper Limit adjustment when given the amount hint",expected,actual.next());
+//			assertTrue("Should have no next when hinted more than or equal to the limit",!actual.hasNext(10));
 
 		}
-*/
+
 		public void testMakeCQLforDelete() throws CObjectParseException,CObjectParseException, CQLGenerationException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = CDefinition.fromJsonString(json);
@@ -393,7 +395,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 
 	public void testMakeCQLforGet() throws CQLGenerationException, CObjectParseException, IOException {
 		Subject s = new Subject();
-		//s.testMakeCQLforGet();
+		s.testMakeCQLforGet();
 	}
 
 	public void testMakeCQLforDelete() throws CQLGenerationException, CObjectParseException, IOException {

@@ -401,12 +401,12 @@ public class CObjectCQLGenerator {
 		String limitCQL = "";
 		if(limit.longValue() > 0){
 			limitCQL = "LIMIT ?";
-			values.add(limit);
+			//values.add(limit); //dont add it here because it will be added in the iterator
 		};
 		String CQLTemplate = String.format(
 			TEMPLATE_SELECT_WIDE,
 			makeTableName(def,i),
-			"%d",
+			"?",
 			whereQuery,
 			ordering,
 			limitCQL);
