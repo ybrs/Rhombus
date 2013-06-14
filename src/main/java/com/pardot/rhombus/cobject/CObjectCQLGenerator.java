@@ -272,7 +272,7 @@ public class CObjectCQLGenerator {
 				tableName,
 				makeCommaList(fields),
 				makeCommaList(values, true),
-				(ttl == null) ? "" : (" AND TTL " + ttl)
+				(ttl == null) ? "" : (" AND TTL ?")
 		);
 
 		values.add(timestamp);
@@ -286,15 +286,15 @@ public class CObjectCQLGenerator {
 	protected static CQLStatement makeInsertStatementWide(String tableName, List<String> fields, List values, UUID uuid, long shardid, Long timestamp, Integer ttl){
 		fields.add(0,"shardid");
 		values.add(0,Long.valueOf(shardid));
-		//fields.add(0,"id");
-		//values.add(0,uuid);
+		fields.add(0,"id");
+		values.add(0,uuid);
 
 		String query = String.format(
 			TEMPLATE_INSERT_WIDE,
 			tableName,
 			makeCommaList(fields),
 			makeCommaList(values,true),
-			(ttl == null) ? "" : (" AND TTL "+ ttl)
+			(ttl == null) ? "" : (" AND TTL ?")
 		);
 
 		values.add(timestamp);
@@ -330,8 +330,8 @@ public class CObjectCQLGenerator {
 		//Static Table
 		ret.add(makeInsertStatementStatic(
 				makeTableName(def,null),
-				fieldsAndValues.get("fields"),
-				fieldsAndValues.get("values"),
+				(List<String>)fieldsAndValues.get("fields").clone(),
+				(List<String>)fieldsAndValues.get("values").clone(),
 				uuid,
 				timestamp,
 				ttl
@@ -349,8 +349,8 @@ public class CObjectCQLGenerator {
 				long shardId = i.getShardingStrategy().getShardKey(uuid);
 				ret.add(makeInsertStatementWide(
 						makeTableName(def,i),
-						fieldsAndValues.get("fields"),
-						fieldsAndValues.get("values"),
+						(List<String>)fieldsAndValues.get("fields").clone(),
+						(List<String>)fieldsAndValues.get("values").clone(),
 						uuid,
 						shardId,
 						timestamp,
