@@ -25,14 +25,14 @@ public class ObjectMapper {
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
 	private static final int reasonableStatementLimit = 20;
 	private boolean logCql = false;
-	private Map<String,BoundStatement> boundStatementMap;
+	private Map<String,BoundStatement> boundStatementCache;
 
 	private Session session;
 	private CKeyspaceDefinition keyspaceDefinition;
 	private CObjectCQLGenerator cqlGenerator;
 
 	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition) {
-		this.boundStatementMap = Maps.newHashMap();
+		this.boundStatementCache = Maps.newHashMap();
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
 		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(),null);
@@ -93,11 +93,13 @@ public class ObjectMapper {
 		}
 		if(cql.isPreparable()){
 			//Do prepared statement
-			BoundStatement bs = boundStatementMap.get(cql.getQuery());
+			BoundStatement bs = boundStatementCache.get(cql.getQuery());
 			if(bs == null){
 				PreparedStatement statement = session.prepare(cql.getQuery());
 				bs = new BoundStatement(statement);
-				boundStatementMap.put(cql.getQuery(),bs);
+				if(cql.isCacheable()){
+					boundStatementCache.put(cql.getQuery(),bs);
+				}
 			}
 
 			return session.execute(bs.bind(cql.getValues()));

@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 public class CQLStatement implements Comparable<CQLStatement>{
 	private String query;
 	private Object[] values;
+	private boolean isCacheable = false;
 
 	public static CQLStatement make(String query){
 		return new CQLStatement(query);
@@ -109,5 +110,13 @@ public class CQLStatement implements Comparable<CQLStatement>{
 		ret+="\nPreparable: "+this.isPreparable();
 
 		return ret;
+	}
+
+	public boolean isCacheable() {
+		return isCacheable;
+	}
+
+	public void setCacheable(boolean cacheable) {
+		isCacheable = cacheable;
 	}
 }

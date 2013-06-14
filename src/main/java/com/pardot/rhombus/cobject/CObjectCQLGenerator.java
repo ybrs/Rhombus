@@ -393,9 +393,8 @@ public class CObjectCQLGenerator {
 		}
 		String limitCQL = "";
 		if(limit.longValue() > 0){
-			limitCQL = "LIMIT ?";
-			//values.add(limit); //dont add it here because it will be added in the iterator
-		};
+			limitCQL = "LIMIT "+ limit.toString();
+		}
 		String CQLTemplate = String.format(
 			TEMPLATE_SELECT_WIDE,
 			makeTableName(def,i),
@@ -405,6 +404,7 @@ public class CObjectCQLGenerator {
 			limitCQL);
 
 		CQLStatement templateCQLStatement = CQLStatement.make(CQLTemplate, values.toArray());
+		templateCQLStatement.setCacheable(true);
 
 		Long starttime = (start == null) ? null : Long.valueOf(UUIDs.unixTimestamp(start));
 		Long endtime = (end == null) ? null : Long.valueOf(UUIDs.unixTimestamp(end));

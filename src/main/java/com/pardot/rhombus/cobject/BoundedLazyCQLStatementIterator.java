@@ -48,6 +48,7 @@ public class BoundedLazyCQLStatementIterator implements CQLStatementIterator {
 		values.add(0,this.shardIdIterator.next());
 		values.add(Long.valueOf(numberRemaining));
 		ret.setValues(values.toArray());
+		ret.setCacheable(CQLTemplate.isCacheable());
 		return ret;
 	}
 
