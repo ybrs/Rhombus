@@ -76,26 +76,26 @@ public class TestHelpers {
 		}
 	}
 
-	public static Map<String,Object> convertStringsToRealTypes(CDefinition def, Map<String,Object> values){
-		Map<String,Object> ret = Maps.newTreeMap();
-		for(String key : values.keySet()){
-			String valueAsString = (String)values.get(key);
-			if((def.getFields().get(key).getType() == CField.CDataType.UUID) || (def.getFields().get(key).getType() == CField.CDataType.TIMEUUID)){
-				ret.put(key, UUID.fromString(valueAsString));
-			}
-			else if( (def.getFields().get(key).getType() == CField.CDataType.TIMESTAMP) ||
-				(def.getFields().get(key).getType() == CField.CDataType.INT)
-			){
-				ret.put(key, Long.parseLong(valueAsString));
-			}
-			else if(def.getFields().get(key).getType() == CField.CDataType.BOOLEAN){
-				ret.put(key, Boolean.parseBoolean(valueAsString));
-			}
-			else{
-				ret.put(key,valueAsString);
-			}
-
-		}
-		return ret;
-	}
+//	public static Map<String,Object> convertStringsToRealTypes(CDefinition def, Map<String,Object> values){
+//		Map<String,Object> ret = Maps.newTreeMap();
+//		for(String key : values.keySet()){
+//			String valueAsString = (String)values.get(key);
+//			if((def.getFields().get(key).getType() == CField.CDataType.UUID) || (def.getFields().get(key).getType() == CField.CDataType.TIMEUUID)){
+//				ret.put(key, UUID.fromString(valueAsString));
+//			}
+//			else if( (def.getFields().get(key).getType() == CField.CDataType.TIMESTAMP) ||
+//				(def.getFields().get(key).getType() == CField.CDataType.INT)
+//			){
+//				ret.put(key, Long.parseLong(valueAsString));
+//			}
+//			else if(def.getFields().get(key).getType() == CField.CDataType.BOOLEAN){
+//				ret.put(key, Boolean.parseBoolean(valueAsString));
+//			}
+//			else{
+//				ret.put(key,valueAsString);
+//			}
+//
+//		}
+//		return ret;
+//	}
 }

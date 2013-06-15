@@ -10,9 +10,12 @@ import com.pardot.rhombus.cobject.CField;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Pardot, an ExactTarget company
@@ -59,46 +62,64 @@ public class JsonUtil {
 			case VARCHAR:
 			case TEXT:
 				Preconditions.checkArgument(String.class.isAssignableFrom(jsonValue.getClass()));
-				fieldValue = jsonValue;
-				break;
+				return jsonValue;
 			case BIGINT:
 			case COUNTER:
-				fieldValue = longFromNumber(jsonValue);
-				break;
+				return longFromNumber(jsonValue);
 			case BLOB:
 				throw new IllegalArgumentException();
 			case BOOLEAN:
-				fieldValue = booleanFromNumber(jsonValue);
-				break;
-			case DECIMAL:
-				fieldValue = jsonValue.getDecimal(field.getName());
-				break;
-			case DOUBLE:
-				fieldValue = jsonValue.getDouble(field.getName());
-				break;
-			case FLOAT:
-				fieldValue = jsonValue.getFloat(field.getName());
-				break;
-			case INT:
-				fieldValue = jsonValue.getInt(field.getName());
-				break;
-			case TIMESTAMP:
-				fieldValue = jsonValue.getDate(field.getName());
-				if(fieldValue != null) {
-					fieldValue = ((Date)fieldValue).getTime();
+				if(jsonValue instanceof Boolean){
+					return jsonValue;
+				}else {
+					throw new IllegalArgumentException();
 				}
-				break;
+			case DECIMAL:
+				if(jsonValue instanceof Float){
+					return BigDecimal.valueOf(((Float)jsonValue).floatValue());
+				} else if(jsonValue instanceof Double) {
+					return BigDecimal.valueOf(((Double)jsonValue).doubleValue());
+				}else {
+					throw new IllegalArgumentException();
+				}
+			case DOUBLE:
+				if(jsonValue instanceof Double){
+					return Double.valueOf(((Float)jsonValue).floatValue());
+				} else {
+					throw new IllegalArgumentException();
+				}
+			case FLOAT:
+				if(jsonValue instanceof Double){
+					return Float.valueOf(((Float)jsonValue).floatValue());
+				} else {
+					throw new IllegalArgumentException();
+				}
+			case INT:
+				return intFromNumber(jsonValue);
+			case TIMESTAMP:
+				if(jsonValue instanceof Integer){
+					return new Date(((Integer)jsonValue).longValue());
+				} else if(jsonValue instanceof Long) {
+					return new Date(((Long)jsonValue).longValue());
+				} else {
+					throw new IllegalArgumentException("Wrong type for "+ jsonValue + " ("+jsonValue.getClass()+")");
+				}
 			case UUID:
 			case TIMEUUID:
-				fieldValue = jsonValue.getUUID(field.getName());
-				break;
+				if(jsonValue instanceof String){
+					return UUID.fromString((String)jsonValue);
+				} else {
+					throw new IllegalArgumentException();
+				}
 			case VARINT:
-				fieldValue = jsonValue.getVarint(field.getName());
-				break;
+				if(jsonValue instanceof String){
+					return BigInteger.valueOf(Long.parseLong((String)jsonValue));
+				} else {
+					throw new IllegalArgumentException();
+				}
 			default:
-				fieldValue = null;
+				return null;
 		}
-		return (fieldValue == null ? null : fieldValue.toString());
 	}
 
 	private static Long longFromNumber(Object number) {
@@ -108,6 +129,18 @@ public class JsonUtil {
 			return ((Integer)number).longValue();
 		} else if(Long.class.isAssignableFrom(number.getClass())) {
 			return (Long)number;
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+
+	private static Integer intFromNumber(Object number) {
+		if(Boolean.class.isAssignableFrom(number.getClass())) {
+			return ((Boolean)number ? 1 : 0);
+		} else if(Integer.class.isAssignableFrom(number.getClass())) {
+			return ((Integer)number).intValue();
+		} else if(Integer.class.isAssignableFrom(number.getClass())) {
+			return (Integer)number;
 		} else {
 			throw new IllegalArgumentException();
 		}

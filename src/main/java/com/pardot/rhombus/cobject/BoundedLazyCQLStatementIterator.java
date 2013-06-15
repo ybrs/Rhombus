@@ -46,7 +46,8 @@ public class BoundedLazyCQLStatementIterator implements CQLStatementIterator {
 		List values = Lists.newArrayList(ret.getValues());
 		//shardid is the first value and limit should be the last value
 		values.add(0,this.shardIdIterator.next());
-		values.add(Long.valueOf(numberRemaining));
+		//TODO: set the correct limit in the cql query template
+		//values.add(Long.valueOf(numberRemaining));
 		ret.setValues(values.toArray());
 		ret.setCacheable(CQLTemplate.isCacheable());
 		return ret;

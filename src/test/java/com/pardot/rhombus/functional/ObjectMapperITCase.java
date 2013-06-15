@@ -42,7 +42,7 @@ public class ObjectMapperITCase {
 		ObjectMapper om = cm.getObjectMapper();
 
 		//Get a test object to insert
-		Map<String, Object> testObject = TestHelpers.getTestObject(0);
+		Map<String, Object> testObject = JsonUtil.rhombusMapFromJsonMap(TestHelpers.getTestObject(0),definition.getDefinitions().get("testtype"));
 		UUID key = om.insert("testtype", testObject);
 
 		//Query to get back the object from the database
@@ -55,10 +55,11 @@ public class ObjectMapperITCase {
 		}
 
 		//Add another object with the same foreign key
-		UUID key2 = om.insert("testtype", TestHelpers.getTestObject(1));
+		UUID key2 = om.insert("testtype", JsonUtil.rhombusMapFromJsonMap(TestHelpers.getTestObject(1),definition.getDefinitions().get("testtype")));
 
 		//Query by foreign key
 		Criteria criteria = TestHelpers.getTestCriteria(0);
+		criteria.getIndexKeys().put("foreignid",((Integer)criteria.getIndexKeys().get("foreignid")).longValue());
 		List<Map<String, Object>> dbObjects = om.list("testtype", criteria);
 		assertEquals(2, dbObjects.size());
 
@@ -70,7 +71,9 @@ public class ObjectMapperITCase {
 		assertEquals(1, dbObjects.size());
 
 		//Update the values of one of the objects
-		Map<String, Object> testObject2 = TestHelpers.getTestObject(2);
+		Map<String, Object> testObject2 = JsonUtil.rhombusMapFromJsonMap(
+				TestHelpers.getTestObject(2),
+				definition.getDefinitions().get("testtype"));
 		UUID key3 = om.update("testtype", key2, testObject2);
 
 		//Get the updated object back and make sure it matches
@@ -88,6 +91,7 @@ public class ObjectMapperITCase {
 
 		//Get from the new index
 		Criteria criteria2 = TestHelpers.getTestCriteria(1);
+		criteria2.getIndexKeys().put("foreignid",((Integer)criteria2.getIndexKeys().get("foreignid")).longValue());
 		dbObjects = om.list("testtype", criteria2);
 		assertEquals(1, dbObjects.size());
 
@@ -154,16 +158,16 @@ public class ObjectMapperITCase {
 		//Insert our test data
 		List<Map<String, Object>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "DateRangeQueryTestData.js");
 		for(Map<String, Object> object : values) {
-			Long createdAt = Long.parseLong((String)object.get("created_at"));
+			Long createdAt = (Long)(object.get("created_at"));
 			logger.debug("Inserting audit with created_at: {}", createdAt);
-			om.insert("object_audit", TestHelpers.convertStringsToRealTypes(definition.getDefinitions().get("object_audit"),object), createdAt);
+			om.insert("object_audit", JsonUtil.rhombusMapFromJsonMap(object,definition.getDefinitions().get("object_audit")), createdAt);
 		}
 
 		//Make sure that we have the proper number of results
 		SortedMap<String, Object> indexValues = Maps.newTreeMap();
-		indexValues.put("account_id", "00000003-0000-0030-0040-000000030000");
+		indexValues.put("account_id", UUID.fromString("00000003-0000-0030-0040-000000030000"));
 		indexValues.put("object_type", "Account");
-		indexValues.put("object_id", "00000003-0000-0030-0040-000000030000");
+		indexValues.put("object_id", UUID.fromString("00000003-0000-0030-0040-000000030000"));
 		Criteria criteria = new Criteria();
 		criteria.setIndexKeys(indexValues);
 		criteria.setLimit(50L);

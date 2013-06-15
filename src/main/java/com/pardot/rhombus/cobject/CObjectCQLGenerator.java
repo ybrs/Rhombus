@@ -34,7 +34,7 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM \"%s\" WHERE %s;";
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM \"%s\" WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
 	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM \"%s\" WHERE tablename = ? AND indexvalues = ?%s ORDER BY shardid %s ALLOW FILTERING;";
-	protected static final String TEMPLATE_DELETE = "DELETE FROM %s USING TIMESTAMP ? WHERE %s;";
+	protected static final String TEMPLATE_DELETE = "DELETE FROM %s USING TIMESTAMP %s WHERE %s;";
 	protected Map<String, CDefinition> definitions;
 	protected CObjectShardList shardList;
 
@@ -453,8 +453,8 @@ public class CObjectCQLGenerator {
 	}
 
 	protected static CQLStatement makeCQLforDeleteUUIDFromStaticTable(CDefinition def, UUID uuid, Long timestamp){
-		Object[] values = {timestamp,uuid};
-		return CQLStatement.make(String.format(TEMPLATE_DELETE, makeTableName(def, null), "id = ?"), values);
+		Object[] values = {uuid};
+		return CQLStatement.make(String.format(TEMPLATE_DELETE, makeTableName(def, null),timestamp, "id = ?"), values);
 	}
 
 
@@ -463,8 +463,8 @@ public class CObjectCQLGenerator {
 		CQLStatement wheres = makeAndedEqualList(def, indexValues);
 		values.addAll(Arrays.asList(wheres.getValues()));
 		String whereCQL = String.format( "id = ? AND shardid = ? AND %s", wheres.getQuery());
-		String query = String.format(TEMPLATE_DELETE,makeTableName(def,index),whereCQL);
-		values.add(0,timestamp);
+		String query = String.format(TEMPLATE_DELETE,makeTableName(def,index),timestamp,whereCQL);
+		//values.add(0,timestamp);
 		return CQLStatement.make(query,values.toArray());
 	}
 

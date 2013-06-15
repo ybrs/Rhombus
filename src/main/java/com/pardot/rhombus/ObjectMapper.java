@@ -258,7 +258,7 @@ public class ObjectMapper {
 		return result;
 	}
 
-	private String getFieldValue(Row row, CField field) {
+	private Object getFieldValue(Row row, CField field) {
 		Object fieldValue;
 		switch(field.getType()) {
 			case ASCII:
@@ -304,7 +304,7 @@ public class ObjectMapper {
 			default:
 				fieldValue = null;
 		}
-		return (fieldValue == null ? null : fieldValue.toString());
+		return (fieldValue == null ? null : fieldValue);
 	}
 
 	public void setLogCql(boolean logCql) {
