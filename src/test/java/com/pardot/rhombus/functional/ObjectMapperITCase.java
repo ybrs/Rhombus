@@ -13,10 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -42,7 +40,7 @@ public class ObjectMapperITCase {
 		ObjectMapper om = cm.getObjectMapper();
 
 		//Get a test object to insert
-		Map<String, Object> testObject = JsonUtil.rhombusMapFromJsonMap(TestHelpers.getTestObject(0),definition.getDefinitions().get("testtype"));
+		Map<String, Object> testObject = JsonUtil.rhombusMapFromJsonMap(TestHelpers.getTestObject(0), definition.getDefinitions().get("testtype"));
 		UUID key = om.insert("testtype", testObject);
 
 		//Query to get back the object from the database
@@ -55,7 +53,7 @@ public class ObjectMapperITCase {
 		}
 
 		//Add another object with the same foreign key
-		UUID key2 = om.insert("testtype", JsonUtil.rhombusMapFromJsonMap(TestHelpers.getTestObject(1),definition.getDefinitions().get("testtype")));
+		UUID key2 = om.insert("testtype", JsonUtil.rhombusMapFromJsonMap(TestHelpers.getTestObject(1), definition.getDefinitions().get("testtype")));
 
 		//Query by foreign key
 		Criteria criteria = TestHelpers.getTestCriteria(0);
@@ -118,7 +116,13 @@ public class ObjectMapperITCase {
 
 		//Insert in some values of each type
 		List<Map<String, Object>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "ObjectMapperTypeTestData.js");
-		UUID uuid = om.insert("testobjecttype", values.get(0));
+		Map<String, Object> data = JsonUtil.rhombusMapFromJsonMap(values.get(0), definition.getDefinitions().get("testobjecttype"));
+		//values.get(0).put("decimalType", BigDecimal.valueOf(((Double)values.get(0).get("decimalType"))));
+		//values.get(0).put("floatType", ((Double) values.get(0).get("floatType")).floatValue());
+		//values.get(0).put("uuidType", UUID.fromString((String)values.get(0).get("uuidType")));
+		//values.get(0).put("timeuuidType", UUID.fromString((String)values.get(0).get("timeuuidType")));
+		//values.get(0).put("timestampType", new Date(((Integer) values.get(0).get("timestampType"))));
+		UUID uuid = om.insert("testobjecttype", data);
 		assertNotNull(uuid);
 
 		//Get back the values

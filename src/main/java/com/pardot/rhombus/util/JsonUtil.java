@@ -84,13 +84,20 @@ public class JsonUtil {
 				}
 			case DOUBLE:
 				if(jsonValue instanceof Double){
+					return jsonValue;
+				}
+				else if(jsonValue instanceof Float){
 					return Double.valueOf(((Float)jsonValue).floatValue());
-				} else {
+				}
+				else {
 					throw new IllegalArgumentException();
 				}
 			case FLOAT:
 				if(jsonValue instanceof Double){
-					return Float.valueOf(((Float)jsonValue).floatValue());
+					return Float.valueOf(((Double)jsonValue).floatValue());
+				}
+				else if(jsonValue instanceof Float){
+					return jsonValue;
 				} else {
 					throw new IllegalArgumentException();
 				}
