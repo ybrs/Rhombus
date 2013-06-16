@@ -100,7 +100,7 @@ public class CQLStatement implements Comparable<CQLStatement>{
 		if(values != null){
 			ret+= "[\n";
 			for(int i=0;i<this.getValues().length;i++){
-				ret+="    "+this.getValues()[i].toString()+ (i<this.getValues().length ? "," : "") +"\n";
+				ret+="    "+this.getValues()[i].toString()+" ("+this.getValues()[i].getClass()+") "+ (i+1<this.getValues().length ? "," : "") +"\n";
 			}
 			ret+="\n]";
 		}
