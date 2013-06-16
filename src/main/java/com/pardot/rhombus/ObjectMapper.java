@@ -290,9 +290,6 @@ public class ObjectMapper {
 				break;
 			case TIMESTAMP:
 				fieldValue = row.getDate(field.getName());
-				if(fieldValue != null) {
-					fieldValue = ((Date)fieldValue).getTime();
-				}
 				break;
 			case UUID:
 			case TIMEUUID:

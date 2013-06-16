@@ -52,9 +52,7 @@ public class UnboundableCQLStatementIterator implements CQLStatementIterator {
 		List values = Lists.newArrayList(CQLTemplate.getValues());
 		//shardid is the first value and limit should be the last value
 		values.add(0,this.keyIterator.next());
-		//TODO: replace the correct limit in the CQL tmeplate
-		//values.add(Long.valueOf(numberRemaining));
-		CQLStatement ret = CQLStatement.make(CQLTemplate.getQuery(),values.toArray());
+		CQLStatement ret = CQLStatement.make(String.format(CQLTemplate.getQuery(),numberRemaining),values.toArray());
 		ret.setCacheable(CQLTemplate.isCacheable());
 		return ret;
 	}

@@ -393,7 +393,7 @@ public class CObjectCQLGenerator {
 		}
 		String limitCQL = "";
 		if(limit.longValue() > 0){
-			limitCQL = "LIMIT "+ limit.toString();
+			limitCQL = "LIMIT %d";
 		}
 		String CQLTemplate = String.format(
 			TEMPLATE_SELECT_WIDE,

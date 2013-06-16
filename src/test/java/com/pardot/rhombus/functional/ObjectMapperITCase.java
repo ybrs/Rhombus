@@ -117,11 +117,6 @@ public class ObjectMapperITCase {
 		//Insert in some values of each type
 		List<Map<String, Object>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "ObjectMapperTypeTestData.js");
 		Map<String, Object> data = JsonUtil.rhombusMapFromJsonMap(values.get(0), definition.getDefinitions().get("testobjecttype"));
-		//values.get(0).put("decimalType", BigDecimal.valueOf(((Double)values.get(0).get("decimalType"))));
-		//values.get(0).put("floatType", ((Double) values.get(0).get("floatType")).floatValue());
-		//values.get(0).put("uuidType", UUID.fromString((String)values.get(0).get("uuidType")));
-		//values.get(0).put("timeuuidType", UUID.fromString((String)values.get(0).get("timeuuidType")));
-		//values.get(0).put("timestampType", new Date(((Integer) values.get(0).get("timestampType"))));
 		UUID uuid = om.insert("testobjecttype", data);
 		assertNotNull(uuid);
 
@@ -134,7 +129,7 @@ public class ObjectMapperITCase {
 		logger.debug("Returned values: {}", returnedValues);
 		for(String returnedKey : returnedValues.keySet()) {
 			if(!returnedKey.equals("id")) {
-				Object insertValue = values.get(0).get(returnedKey);
+				Object insertValue = data.get(returnedKey);
 				Object returnValue = returnedValues.get(returnedKey);
 				assertEquals(insertValue, returnValue);
 			}
