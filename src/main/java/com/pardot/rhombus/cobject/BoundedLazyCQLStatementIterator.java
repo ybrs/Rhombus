@@ -43,7 +43,7 @@ public class BoundedLazyCQLStatementIterator implements CQLStatementIterator {
 	@Override
 	public CQLStatement next() {
 		CQLStatement ret = CQLStatement.make(String.format(CQLTemplate.getQuery(),numberRemaining));
-		List values = Lists.newArrayList(ret.getValues());
+		List values = Lists.newArrayList(CQLTemplate.getValues());
 		//shardid is the first value and limit should be the last value
 		values.add(0,this.shardIdIterator.next());
 		ret.setValues(values.toArray());
