@@ -20,7 +20,8 @@
                 {"name": "timestampType", "type": "timestamp"},
                 {"name": "uuidType", "type": "uuid"},
                 {"name": "timeuuidType", "type": "timeuuid"},
-                {"name": "varintType", "type": "varint"}
+                {"name": "varintType", "type": "varint"},
+                {"name": "varintStringType", "type": "varint"}
             ]
         }
     ]

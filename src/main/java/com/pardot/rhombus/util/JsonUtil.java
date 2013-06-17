@@ -1,7 +1,5 @@
 package com.pardot.rhombus.util;
 
-import com.datastax.driver.core.Row;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -56,47 +54,49 @@ public class JsonUtil {
 		if(jsonValue == null) {
 			return null;
 		}
-		Object fieldValue;
 		switch(field.getType()) {
 			case ASCII:
 			case VARCHAR:
 			case TEXT:
-				Preconditions.checkArgument(String.class.isAssignableFrom(jsonValue.getClass()));
-				return jsonValue;
+				if(String.class.isAssignableFrom(jsonValue.getClass())) {
+					return jsonValue;
+				} else {
+					throw new IllegalArgumentException();
+				}
 			case BIGINT:
 			case COUNTER:
 				return longFromNumber(jsonValue);
 			case BLOB:
 				throw new IllegalArgumentException();
 			case BOOLEAN:
-				if(jsonValue instanceof Boolean){
+				if(Boolean.class.isAssignableFrom(jsonValue.getClass())){
 					return jsonValue;
 				}else {
 					throw new IllegalArgumentException();
 				}
 			case DECIMAL:
-				if(jsonValue instanceof Float){
-					return BigDecimal.valueOf(((Float)jsonValue).floatValue());
-				} else if(jsonValue instanceof Double) {
-					return BigDecimal.valueOf(((Double)jsonValue).doubleValue());
+				if(Float.class.isAssignableFrom(jsonValue.getClass())){
+					return BigDecimal.valueOf((Float)jsonValue);
+				} else if(Double.class.isAssignableFrom(jsonValue.getClass())) {
+					return BigDecimal.valueOf((Double)jsonValue);
 				}else {
 					throw new IllegalArgumentException();
 				}
 			case DOUBLE:
-				if(jsonValue instanceof Double){
+				if(Double.class.isAssignableFrom(jsonValue.getClass())){
 					return jsonValue;
 				}
-				else if(jsonValue instanceof Float){
-					return Double.valueOf(((Float)jsonValue).floatValue());
+				else if(Float.class.isAssignableFrom(jsonValue.getClass())){
+					return Double.valueOf((Float)jsonValue);
 				}
 				else {
 					throw new IllegalArgumentException();
 				}
 			case FLOAT:
-				if(jsonValue instanceof Double){
-					return Float.valueOf(((Double)jsonValue).floatValue());
+				if(Double.class.isAssignableFrom(jsonValue.getClass())){
+					return Double.valueOf((Double)jsonValue).floatValue();
 				}
-				else if(jsonValue instanceof Float){
+				else if(Float.class.isAssignableFrom(jsonValue.getClass())){
 					return jsonValue;
 				} else {
 					throw new IllegalArgumentException();
@@ -104,26 +104,29 @@ public class JsonUtil {
 			case INT:
 				return intFromNumber(jsonValue);
 			case TIMESTAMP:
-				if(jsonValue instanceof Integer){
+				if(Date.class.isAssignableFrom(jsonValue.getClass())) {
+					return jsonValue;
+				} else if(Integer.class.isAssignableFrom(jsonValue.getClass())){
 					return new Date(((Integer)jsonValue).longValue());
-				} else if(jsonValue instanceof Long) {
-					return new Date(((Long)jsonValue).longValue());
+				} else if(Long.class.isAssignableFrom(jsonValue.getClass())) {
+					return new Date((Long)jsonValue);
 				} else {
 					throw new IllegalArgumentException("Wrong type for "+ jsonValue + " ("+jsonValue.getClass()+")");
 				}
 			case UUID:
 			case TIMEUUID:
-				if(jsonValue instanceof String){
+				if(UUID.class.isAssignableFrom(jsonValue.getClass())) {
+					return jsonValue;
+				} else if(String.class.isAssignableFrom(jsonValue.getClass())){
 					return UUID.fromString((String)jsonValue);
 				} else {
 					throw new IllegalArgumentException();
 				}
 			case VARINT:
-				if(jsonValue instanceof String){
-					return BigInteger.valueOf(Long.parseLong((String)jsonValue));
-				} else {
-					throw new IllegalArgumentException();
+				if(String.class.isAssignableFrom(jsonValue.getClass())) {
+					return new BigInteger((String)jsonValue);
 				}
+				return BigInteger.valueOf(longFromNumber(jsonValue));
 			default:
 				return null;
 		}
@@ -144,8 +147,6 @@ public class JsonUtil {
 	private static Integer intFromNumber(Object number) {
 		if(Boolean.class.isAssignableFrom(number.getClass())) {
 			return ((Boolean)number ? 1 : 0);
-		} else if(Integer.class.isAssignableFrom(number.getClass())) {
-			return ((Integer)number).intValue();
 		} else if(Integer.class.isAssignableFrom(number.getClass())) {
 			return (Integer)number;
 		} else {

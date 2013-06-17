@@ -11,6 +11,7 @@
         "timestampType": 1368557982,
         "uuidType": "82937880-bcc8-11e2-9e96-0800200c9a66",
         "timeuuidType": "82937881-bcc8-11e2-9e96-0800200c9a66",
-        "varintType": "636334343434342"
+        "varintType": 636334343434342,
+        "varintStringType" : "636334343434342"
 }]
 }

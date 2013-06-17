@@ -7,6 +7,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pardot.rhombus.cobject.*;
+import com.pardot.rhombus.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -302,6 +303,10 @@ public class ObjectMapper {
 				fieldValue = null;
 		}
 		return (fieldValue == null ? null : fieldValue);
+	}
+
+	public Map<String, Object> coerceRhombusValuesFromJsonMap(String objectType, Map<String, Object> values) {
+		return JsonUtil.rhombusMapFromJsonMap(values, keyspaceDefinition.getDefinitions().get(objectType));
 	}
 
 	public void setLogCql(boolean logCql) {
