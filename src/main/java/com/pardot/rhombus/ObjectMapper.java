@@ -7,6 +7,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pardot.rhombus.cobject.*;
+import com.pardot.rhombus.cobject.async.StatementIteratorConsumer;
 import com.pardot.rhombus.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ public class ObjectMapper {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
 	private static final int reasonableStatementLimit = 20;
+	private boolean executeAsync = true;
 	private boolean logCql = false;
 	private Map<String,BoundStatement> boundStatementCache;
 
@@ -83,6 +85,25 @@ public class ObjectMapper {
 		}
 	}
 
+
+	public void executeStatements(CQLStatementIterator statementIterator) {
+		if(BoundedCQLStatementIterator.class.isAssignableFrom(statementIterator.getClass()) &&  this.executeAsync) {
+			logger.debug("Executing statements async");
+			//If this is a bounded statement iterator, send it through the async path
+			long start = System.nanoTime();
+			StatementIteratorConsumer consumer = new StatementIteratorConsumer(session, (BoundedCQLStatementIterator) statementIterator, boundStatementCache);
+			consumer.start();
+			consumer.join();
+			logger.debug("Async execution took {} ms", (System.nanoTime() - start) / 1000000);
+		} else {
+			long start = System.nanoTime();
+			while(statementIterator.hasNext()) {
+				executeCql(statementIterator.next());
+			}
+			logger.debug("Sync execution took {} ms", (System.nanoTime() - start) / 1000000);
+		}
+	}
+
 	/**
 	 * This should never be used outside of testing
 	 * @param cql String of cql to execute
@@ -127,10 +148,7 @@ public class ObjectMapper {
 		}
 		long timestamp = System.currentTimeMillis();
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforInsert(objectType, values, key, timestamp);
-		while(statementIterator.hasNext()) {
-			CQLStatement cql = statementIterator.next();
-			executeCql(cql);
-		}
+		executeStatements(statementIterator);
 		return key;
 	}
 
@@ -311,6 +329,14 @@ public class ObjectMapper {
 
 	public void setLogCql(boolean logCql) {
 		this.logCql = logCql;
+	}
+
+	public boolean isExecuteAsync() {
+		return executeAsync;
+	}
+
+	public void setExecuteAsync(boolean executeAsync) {
+		this.executeAsync = executeAsync;
 	}
 
 	public void teardown() {

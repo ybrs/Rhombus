@@ -184,7 +184,6 @@ public class ObjectMapperITCase {
 
 	}
 
-
 	private ConnectionManager getConnectionManager() throws IOException {
 		//Get a connection manager based on the test properties
 		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());

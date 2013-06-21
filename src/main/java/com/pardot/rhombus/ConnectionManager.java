@@ -38,6 +38,7 @@ public class ConnectionManager {
 		for(String contactPoint : contactPoints) {
 			builder.addContactPoint(contactPoint);
 		}
+
 		cluster = builder.build();
 	}
 
