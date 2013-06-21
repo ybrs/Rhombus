@@ -26,8 +26,9 @@ public class ObjectMapper {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
 	private static final int reasonableStatementLimit = 20;
-	private boolean executeAsync = true;
+	private boolean executeAsync = false;
 	private boolean logCql = false;
+	private boolean cacheBoundedQueries = false;
 	private Map<String,BoundStatement> boundStatementCache;
 
 	private Session session;
@@ -121,7 +122,7 @@ public class ObjectMapper {
 			if(bs == null){
 				PreparedStatement statement = session.prepare(cql.getQuery());
 				bs = new BoundStatement(statement);
-				if(cql.isCacheable()){
+				if(cacheBoundedQueries && cql.isCacheable()){
 					boundStatementCache.put(cql.getQuery(),bs);
 				}
 			}
@@ -343,5 +344,13 @@ public class ObjectMapper {
 
 	public void teardown() {
 		session.shutdown();
+	}
+
+	public boolean isCacheBoundedQueries() {
+		return cacheBoundedQueries;
+	}
+
+	public void setCacheBoundedQueries(boolean cacheBoundedQueries) {
+		this.cacheBoundedQueries = cacheBoundedQueries;
 	}
 }
