@@ -35,7 +35,7 @@ public class ObjectMapper {
 	private CObjectCQLGenerator cqlGenerator;
 
 	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition) {
-		this.boundStatementCache = Maps.newHashMap();
+		this.boundStatementCache = Maps.newConcurrentMap();
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
 		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(),null);
@@ -47,6 +47,8 @@ public class ObjectMapper {
 	 * does not contain any tables.
 	 */
 	public void buildKeyspace(Boolean forceRebuild) {
+		//we are about to rework the the keyspaces, so lets clear the bounded query cache
+		this.boundStatementCache.clear();
 		//First build the shard index
 		CQLStatement cql = CObjectCQLGenerator.makeCQLforShardIndexTableCreate();
 		try {
