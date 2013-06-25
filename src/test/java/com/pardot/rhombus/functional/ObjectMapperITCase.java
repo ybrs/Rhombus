@@ -181,7 +181,6 @@ public class ObjectMapperITCase {
 		criteria.setStartTimestamp(1368489600000L);
 		results = om.list("object_audit", criteria);
 		assertEquals(5, results.size());
-
 	}
 
 	private ConnectionManager getConnectionManager() throws IOException {

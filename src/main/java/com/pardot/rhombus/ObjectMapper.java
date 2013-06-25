@@ -12,7 +12,6 @@ import com.pardot.rhombus.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,14 +25,15 @@ public class ObjectMapper {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
 	private static final int reasonableStatementLimit = 20;
-	private boolean executeAsync = false;
+	private boolean executeAsync = true;
 	private boolean logCql = false;
-	private boolean cacheBoundedQueries = false;
+	private boolean cacheBoundedQueries = true;
 	private Map<String,BoundStatement> boundStatementCache;
 
 	private Session session;
 	private CKeyspaceDefinition keyspaceDefinition;
 	private CObjectCQLGenerator cqlGenerator;
+	private long statementTimeout = 5000;
 
 	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition) {
 		this.boundStatementCache = Maps.newConcurrentMap();
@@ -94,7 +94,7 @@ public class ObjectMapper {
 			logger.debug("Executing statements async");
 			//If this is a bounded statement iterator, send it through the async path
 			long start = System.nanoTime();
-			StatementIteratorConsumer consumer = new StatementIteratorConsumer(session, (BoundedCQLStatementIterator) statementIterator, boundStatementCache);
+			StatementIteratorConsumer consumer = new StatementIteratorConsumer(session, (BoundedCQLStatementIterator) statementIterator, boundStatementCache, statementTimeout);
 			consumer.start();
 			consumer.join();
 			logger.debug("Async execution took {} ms", (System.nanoTime() - start) / 1000000);
@@ -141,7 +141,7 @@ public class ObjectMapper {
 	 * @param objectType Type of object to insert
 	 * @param values Values to insert
 	 * @param key Time UUID to use as key
-	 * @return
+	 * @return ID if newly inserted object
 	 * @throws CQLGenerationException
 	 */
 	public UUID insert(String objectType, Map<String, Object> values, UUID key) throws CQLGenerationException {
@@ -352,5 +352,13 @@ public class ObjectMapper {
 
 	public void setCacheBoundedQueries(boolean cacheBoundedQueries) {
 		this.cacheBoundedQueries = cacheBoundedQueries;
+	}
+
+	/**
+	 * Set max execution time for insert statements run in parallel
+	 * @param statementTimeout MS to wait before timing out multi insert
+	 */
+	public void setStatementTimeout(long statementTimeout) {
+		this.statementTimeout = statementTimeout;
 	}
 }

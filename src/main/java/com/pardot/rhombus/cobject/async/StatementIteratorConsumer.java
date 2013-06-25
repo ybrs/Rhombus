@@ -8,6 +8,8 @@ import com.pardot.rhombus.cobject.CQLStatement;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import com.yammer.metrics.core.TimerContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -24,6 +26,7 @@ import static com.google.common.util.concurrent.Uninterruptibles.awaitUninterrup
  */
 public class StatementIteratorConsumer {
 
+	private static Logger logger = LoggerFactory.getLogger(StatementIteratorConsumer.class);
 	private static final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	public final Timer latencies = Metrics.newTimer(StatementIteratorConsumer.class, "latencies", TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
 
@@ -31,13 +34,16 @@ public class StatementIteratorConsumer {
 	private final BoundedCQLStatementIterator statementIterator;
 	private final Map<String,BoundStatement> boundStatementCache;
 	private final CountDownLatch shutdownLatch;
+	private final long statementTimeout;
 
 
-	public StatementIteratorConsumer(Session session, BoundedCQLStatementIterator statementIterator, Map<String,BoundStatement> boundStatementCache) {
+	public StatementIteratorConsumer(Session session, BoundedCQLStatementIterator statementIterator, Map<String,BoundStatement> boundStatementCache, long statementTimeout) {
 		this.session = session;
 		this.statementIterator = statementIterator;
 		this.boundStatementCache = boundStatementCache;
+		this.statementTimeout = statementTimeout;
 		shutdownLatch = new CountDownLatch((new Long(statementIterator.size())).intValue());
+
 	}
 
 	public void start() {
@@ -56,8 +62,8 @@ public class StatementIteratorConsumer {
 	}
 
 	public void join() {
-		//TODO add timeout
-		awaitUninterruptibly(shutdownLatch);
+		logger.debug("awaitUninterruptibly with timeout {}ms", statementTimeout);
+		awaitUninterruptibly(shutdownLatch, statementTimeout, TimeUnit.MILLISECONDS);
 	}
 
 	protected void handle(CQLStatement statement) {
