@@ -23,6 +23,10 @@
             <id>pardot-snapshot-repository</id>
             <url>scp://test.pardot.com/var/www/chef-repos/maven/snapshots</url>
         </repository>
+		<repository>
+			<id>pardot-release-repository</id>
+			<url>scp://test.pardot.com/var/www/chef-repos/maven/releases</url>
+		</repository>
     </repositories>
 
     <dependencies>
@@ -101,7 +105,7 @@
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.0-pardot</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
