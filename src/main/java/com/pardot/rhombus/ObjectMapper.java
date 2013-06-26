@@ -273,7 +273,7 @@ public class ObjectMapper {
 	 */
 	private Map<String, Object> mapResult(Row row, CDefinition definition) {
 		Map<String, Object> result = Maps.newHashMap();
-		result.put("id", row.getUUID("id").toString());
+		result.put("id", row.getUUID("id"));
 		for(CField field : definition.getFields().values()) {
 			result.put(field.getName(), getFieldValue(row, field));
 		}
