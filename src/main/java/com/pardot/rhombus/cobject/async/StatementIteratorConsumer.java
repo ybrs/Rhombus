@@ -4,6 +4,7 @@ import com.datastax.driver.core.*;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.pardot.rhombus.cobject.BoundedCQLStatementIterator;
+import com.pardot.rhombus.cobject.CQLExecutor;
 import com.pardot.rhombus.cobject.CQLStatement;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
@@ -30,17 +31,15 @@ public class StatementIteratorConsumer {
 	private static final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	public final Timer latencies = Metrics.newTimer(StatementIteratorConsumer.class, "latencies", TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
 
-	private final Session session;
 	private final BoundedCQLStatementIterator statementIterator;
-	private final Map<String,BoundStatement> boundStatementCache;
+	private CQLExecutor cqlExecutor;
 	private final CountDownLatch shutdownLatch;
 	private final long statementTimeout;
 
 
-	public StatementIteratorConsumer(Session session, BoundedCQLStatementIterator statementIterator, Map<String,BoundStatement> boundStatementCache, long statementTimeout) {
-		this.session = session;
+	public StatementIteratorConsumer(BoundedCQLStatementIterator statementIterator, CQLExecutor cqlExecutor, long statementTimeout) {
 		this.statementIterator = statementIterator;
-		this.boundStatementCache = boundStatementCache;
+		this.cqlExecutor = cqlExecutor;
 		this.statementTimeout = statementTimeout;
 		shutdownLatch = new CountDownLatch((new Long(statementIterator.size())).intValue());
 
@@ -68,23 +67,7 @@ public class StatementIteratorConsumer {
 
 	protected void handle(CQLStatement statement) {
 		final TimerContext timerContext = latencies.time();
-		ResultSetFuture future;
-		if(statement.isPreparable()){
-			//Do prepared statement
-			BoundStatement bs = boundStatementCache.get(statement.getQuery());
-			if(bs == null){
-				PreparedStatement preparedStatement = session.prepare(statement.getQuery());
-				bs = new BoundStatement(preparedStatement);
-				if(statement.isCacheable()){
-					boundStatementCache.put(statement.getQuery(),bs);
-				}
-			}
-
-			future = session.executeAsync(bs.bind(statement.getValues()));
-		} else {
-			//just run a normal execute without a prepared statement
-			future = session.executeAsync(statement.getQuery());
-		}
+		ResultSetFuture future = this.cqlExecutor.executeAsync(statement);
 		Futures.addCallback(future, new FutureCallback<ResultSet>() {
 			@Override
 			public void onSuccess(final ResultSet result) {

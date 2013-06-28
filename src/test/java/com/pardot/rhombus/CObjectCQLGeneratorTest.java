@@ -77,40 +77,40 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals("Should generate CQL statements for the static table plus all indexes including the filtered index", 6, actual.size());
 			//static table
 			expected = CQLStatement.make(
-					"INSERT INTO \"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP 1;",
+					"INSERT INTO \"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
 					Arrays.asList(uuid, 1, "This is data one", "This is data two", "This is data three", 222222, 5, 777).toArray()
 			);
 			assertEquals(expected, actual.get(0));
 			Object[] expectedValues = Arrays.asList(uuid, Long.valueOf(160),1, "This is data one", "This is data two", "This is data three", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-					"INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP 1;",
+					"INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
 					expectedValues
 			);
 			assertEquals(expected, actual.get(1));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 					Arrays.asList("testtype6671808f3f51bcc53ddc76d2419c9060","222222:5",Long.valueOf(160),"160:222222:5").toArray()
 			);
 			assertEquals(expected, actual.get(2));
 
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected,actual.get(3));
 
 
 			expected = CQLStatement.make(
-					"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?) USING TIMESTAMP 1;",
+					"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 					Arrays.asList("testtypef9bf3332bb4ec879849ec43c67776131","777:222222:5",Long.valueOf(160),"160:777:222222:5").toArray()
 			);
 			assertEquals(expected, actual.get(4));
 
 			expectedValues = Arrays.asList(uuid, Long.valueOf(1),1, "This is data one", "This is data two", "This is data three", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-					"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP 1;",
+					"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
 					expectedValues
 			);
 			assertEquals(expected,actual.get(5));
@@ -121,7 +121,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			actual = toList(result);
 			expectedValues = Arrays.asList(uuid, 1, "This is data one", "This is data two", "This is data three", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP 1 AND TTL 20;",
+				"INSERT INTO \"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?) USING TTL 20;",
 				expectedValues
 			);
 			assertEquals(expected, actual.get(0));
@@ -136,39 +136,39 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			//static table
 			expectedValues = Arrays.asList(uuid, 1, "This is data one", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype\" (id, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"testtype\" (id, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected, actual.get(0));
 
 			expectedValues = Arrays.asList(uuid, Long.valueOf(160), 1, "This is data one", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected, actual.get(1));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 				Arrays.asList("testtype6671808f3f51bcc53ddc76d2419c9060","222222:5",Long.valueOf(160),"160:222222:5").toArray()
 			);
 			assertEquals(expected, actual.get(2));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected,actual.get(3));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 				Arrays.asList("testtypef9bf3332bb4ec879849ec43c67776131","777:222222:5",Long.valueOf(160),"160:777:222222:5").toArray()
 			);
 			assertEquals(expected, actual.get(4));
 
 			expectedValues = Arrays.asList(uuid, Long.valueOf(1), 1, "This is data one", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected,actual.get(5));
@@ -199,13 +199,13 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals("Number of CQL statements should be correct",2,actual.size());
 			//static table
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype\" (id, data1, foreignid) VALUES (?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"testtype\" (id, data1, foreignid) VALUES (?, ?, ?);",
 				Arrays.asList(uuid, "this is a test", "777").toArray()
 			);
 			assertEquals(expected, actual.get(0));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, data1, foreignid) VALUES (?, ?, ?, ?) USING TIMESTAMP 1;",
+				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, data1, foreignid) VALUES (?, ?, ?, ?);",
 				Arrays.asList(uuid, Long.valueOf(1), "this is a test", "777").toArray()
 			);
 			assertEquals(expected,actual.get(1));
@@ -345,18 +345,18 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 
 			CQLStatement expected;
 
-			expected = CQLStatement.make("DELETE FROM testtype USING TIMESTAMP 111 WHERE id = ?;",Arrays.asList(uuid).toArray());
+			expected = CQLStatement.make("DELETE FROM testtype WHERE id = ?;",Arrays.asList(uuid).toArray());
 			assertEquals(expected,result.next());
 
 			expected = CQLStatement.make(
-				"DELETE FROM testtype6671808f3f51bcc53ddc76d2419c9060 USING TIMESTAMP 111 WHERE id = ? AND shardid = ? AND instance = ? AND type = ?;",
+				"DELETE FROM testtype6671808f3f51bcc53ddc76d2419c9060 WHERE id = ? AND shardid = ? AND instance = ? AND type = ?;",
 					Arrays.asList(uuid,Long.valueOf(160), 222222, 5).toArray());
 			assertEquals(expected,result.next());
 			expected = CQLStatement.make(
-				"DELETE FROM testtypef9bf3332bb4ec879849ec43c67776131 USING TIMESTAMP 111 WHERE id = ? AND shardid = ? AND foreignid = ? AND instance = ? AND type = ?;",
+				"DELETE FROM testtypef9bf3332bb4ec879849ec43c67776131 WHERE id = ? AND shardid = ? AND foreignid = ? AND instance = ? AND type = ?;",
 				Arrays.asList(uuid,Long.valueOf(160), 777, 222222, 5).toArray());
 			assertEquals(expected,result.next());
-			expected = CQLStatement.make("DELETE FROM testtype7f9bb4e56d3cae5b11c553547cfe5897 USING TIMESTAMP 111 WHERE id = ? AND shardid = ? AND foreignid = ?;",
+			expected = CQLStatement.make("DELETE FROM testtype7f9bb4e56d3cae5b11c553547cfe5897 WHERE id = ? AND shardid = ? AND foreignid = ?;",
 					Arrays.asList(uuid,Long.valueOf(1), 777).toArray());
 			assertEquals(expected,result.next());
 			assertTrue(!result.hasNext());

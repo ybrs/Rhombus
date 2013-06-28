@@ -45,16 +45,16 @@ public class ConnectionManagerITCase {
 		//Create a table and insert a row
 		ObjectMapper om = cm.getObjectMapper(definition.getName());
 		UUID uuid = UUIDs.timeBased();
-		om.executeCql(CQLStatement.make("CREATE TABLE cmit (id UUID PRIMARY KEY);"));
+		om.getCqlExecutor().executeSync(CQLStatement.make("CREATE TABLE cmit (id UUID PRIMARY KEY);"));
 		logger.debug("Created table");
-		om.executeCql(CQLStatement.make("INSERT INTO cmit (id) VALUES (?);", Arrays.asList(uuid).toArray()) );
+		om.getCqlExecutor().executeSync(CQLStatement.make("INSERT INTO cmit (id) VALUES (?);", Arrays.asList(uuid).toArray()) );
 		logger.debug("Inserted");
 
 		//Build the same keyspace but do not force a rebuild
 		cm.buildKeyspace(definition, false);
 
 		//Make sure that we can get back the value we inserted
-		ResultSet rs = om.executeCql(CQLStatement.make("SELECT * FROM cmit WHERE id=?;",Arrays.asList(uuid).toArray()));
+		ResultSet rs = om.getCqlExecutor().executeSync(CQLStatement.make("SELECT * FROM cmit WHERE id=?;",Arrays.asList(uuid).toArray()));
 		assertEquals(1, rs.all().size());
 	}
 
@@ -81,7 +81,7 @@ public class ConnectionManagerITCase {
 
 		//Select from the newly created table
 		ObjectMapper om = cm.getObjectMapper(definition2.getName());
-		ResultSet rs = om.executeCql(CQLStatement.make("SELECT * FROM testtype__filtered"));
+		ResultSet rs = om.getCqlExecutor().executeSync(CQLStatement.make("SELECT * FROM testtype__filtered"));
 		assertEquals(0, rs.all().size());
 
 		//Build the keyspace again, but force a rebuild
@@ -89,6 +89,6 @@ public class ConnectionManagerITCase {
 
 		//Make sure that the additional index table no longer exists
 		om = cm.getObjectMapper(definition.getName());
-		om.executeCql(CQLStatement.make("SELECT * FROM testtype__filtered"));
+		om.getCqlExecutor().executeSync(CQLStatement.make("SELECT * FROM testtype__filtered"));
 	}
 }

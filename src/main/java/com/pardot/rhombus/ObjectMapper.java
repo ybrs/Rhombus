@@ -28,15 +28,14 @@ public class ObjectMapper {
 	private boolean executeAsync = true;
 	private boolean logCql = false;
 	private boolean cacheBoundedQueries = true;
-	private Map<String,BoundStatement> boundStatementCache;
-
+	private CQLExecutor cqlExecutor;
 	private Session session;
 	private CKeyspaceDefinition keyspaceDefinition;
 	private CObjectCQLGenerator cqlGenerator;
 	private long statementTimeout = 5000;
 
 	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition) {
-		this.boundStatementCache = Maps.newConcurrentMap();
+		this.cqlExecutor = new CQLExecutor(session);
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
 		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(),null);
@@ -49,17 +48,17 @@ public class ObjectMapper {
 	 */
 	public void buildKeyspace(Boolean forceRebuild) {
 		//we are about to rework the the keyspaces, so lets clear the bounded query cache
-		this.boundStatementCache.clear();
+		cqlExecutor.clearStatementCache();
 		//First build the shard index
 		CQLStatement cql = CObjectCQLGenerator.makeCQLforShardIndexTableCreate();
 		try {
-			executeCql(cql);
+			cqlExecutor.executeSync(cql);
 		} catch(Exception e) {
 			if(forceRebuild) {
 				CQLStatement dropCql = CObjectCQLGenerator.makeCQLforShardIndexTableDrop();
 				logger.debug("Attempting to drop table with cql {}", dropCql);
-				executeCql(dropCql);
-				executeCql(cql);
+				cqlExecutor.executeSync(dropCql);
+				cqlExecutor.executeSync(cql);
 			} else {
 				logger.debug("Not dropping shard index table");
 			}
@@ -73,12 +72,12 @@ public class ObjectMapper {
 					cql = statementIterator.next();
 					CQLStatement dropCql = dropStatementIterator.next();
 					try {
-						executeCql(cql);
+						cqlExecutor.executeSync(cql);
 					} catch (AlreadyExistsException e) {
 						if(forceRebuild) {
 							logger.debug("ForceRebuild is on, dropping table");
-							executeCql(dropCql);
-							executeCql(cql);
+							cqlExecutor.executeSync(dropCql);
+							cqlExecutor.executeSync(cql);
 						} else {
 							logger.warn("Table already exists and will not be updated");
 						}
@@ -94,47 +93,18 @@ public class ObjectMapper {
 			logger.debug("Executing statements async");
 			//If this is a bounded statement iterator, send it through the async path
 			long start = System.nanoTime();
-			StatementIteratorConsumer consumer = new StatementIteratorConsumer(session, (BoundedCQLStatementIterator) statementIterator, boundStatementCache, statementTimeout);
+			StatementIteratorConsumer consumer = new StatementIteratorConsumer((BoundedCQLStatementIterator) statementIterator, cqlExecutor, statementTimeout);
 			consumer.start();
 			consumer.join();
 			logger.debug("Async execution took {} ms", (System.nanoTime() - start) / 1000000);
 		} else {
 			long start = System.nanoTime();
 			while(statementIterator.hasNext()) {
-				executeCql(statementIterator.next());
+				cqlExecutor.executeSync(statementIterator.next());
 			}
 			logger.debug("Sync execution took {} ms", (System.nanoTime() - start) / 1000000);
 		}
 	}
-
-	/**
-	 * This should never be used outside of testing
-	 * @param cql String of cql to execute
-	 */
-	public ResultSet executeCql(CQLStatement cql) {
-		if(logCql) {
-			logger.debug("Executing CQL: {}", cql.getQuery());
-			//TODO: log values
-		}
-		if(cql.isPreparable()){
-			//Do prepared statement
-			BoundStatement bs = boundStatementCache.get(cql.getQuery());
-			if(bs == null){
-				PreparedStatement statement = session.prepare(cql.getQuery());
-				bs = new BoundStatement(statement);
-				if(cacheBoundedQueries && cql.isCacheable()){
-					boundStatementCache.put(cql.getQuery(),bs);
-				}
-			}
-
-			return session.execute(bs.bind(cql.getValues()));
-		}
-		else{
-			//just run a normal execute without a prepared statement
-			return session.execute(cql.getQuery());
-		}
-	}
-
 
 	/**
 	 * Insert a new object with values and key
@@ -251,7 +221,7 @@ public class ObjectMapper {
 		while(statementIterator.hasNext(resultNumber) ) {
 			CQLStatement cql = statementIterator.next();
 			logger.debug("Executing CQL: " + cql);
-			ResultSet resultSet = executeCql(cql);
+			ResultSet resultSet = cqlExecutor.executeSync(cql);
 			for(Row row : resultSet) {
 				Map<String, Object> result = mapResult(row, definition);
 				results.add(result);
@@ -360,5 +330,9 @@ public class ObjectMapper {
 	 */
 	public void setStatementTimeout(long statementTimeout) {
 		this.statementTimeout = statementTimeout;
+	}
+
+	public CQLExecutor getCqlExecutor(){
+		return cqlExecutor;
 	}
 }

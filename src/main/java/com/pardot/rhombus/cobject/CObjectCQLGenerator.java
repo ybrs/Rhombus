@@ -28,13 +28,13 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_CREATE_WIDE = "CREATE TABLE \"%s\" (id timeuuid, shardid bigint, %s, PRIMARY KEY ((shardid, %s),id) );";
 	protected static final String TEMPLATE_CREATE_WIDE_INDEX = "CREATE TABLE \"%s\" (shardid bigint, tablename varchar, indexvalues varchar, targetrowkey varchar, PRIMARY KEY ((tablename, indexvalues),shardid) );";
 	protected static final String TEMPLATE_DROP = "DROP TABLE \"%s\";";
-	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO \"%s\" (%s) VALUES (%s) USING TIMESTAMP %s%s;";
-	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO \"%s\" (%s) VALUES (%s) USING TIMESTAMP %s%s;";
-	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO \"%s\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?) USING TIMESTAMP %s;";
+	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO \"%s\" (%s) VALUES (%s)%s;";//"USING TIMESTAMP %s%s;";//Add back when timestamps become preparable
+	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO \"%s\" (%s) VALUES (%s)%s;";//"USING TIMESTAMP %s%s;";//Add back when timestamps become preparable
+	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO \"%s\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);";//"USING TIMESTAMP %s;";//Add back when timestamps become preparable
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM \"%s\" WHERE %s;";
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM \"%s\" WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
 	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM \"%s\" WHERE tablename = ? AND indexvalues = ?%s ORDER BY shardid %s ALLOW FILTERING;";
-	protected static final String TEMPLATE_DELETE = "DELETE FROM %s USING TIMESTAMP %s WHERE %s;";
+	protected static final String TEMPLATE_DELETE = "DELETE FROM %s WHERE %s;";//"DELETE FROM %s USING TIMESTAMP %s WHERE %s;"; //Add back when timestamps become preparable
 	protected Map<String, CDefinition> definitions;
 	protected CObjectShardList shardList;
 
@@ -273,8 +273,8 @@ public class CObjectCQLGenerator {
 				tableName,
 				makeCommaList(fields),
 				makeCommaList(values, true),
-				timestamp.toString(),
-				(ttl == null) ? "" : (" AND TTL "+ttl)
+				//timestamp.toString(), //add timestamp back when timestamps become preparable
+				(ttl == null) ? "" : (" USING TTL "+ttl)//(" AND TTL "+ttl) //Revert this back to AND when timestamps are preparable
 		);
 
 		return CQLStatement.make(query, values.toArray());
@@ -291,8 +291,8 @@ public class CObjectCQLGenerator {
 			tableName,
 			makeCommaList(fields),
 			makeCommaList(values,true),
-			timestamp.toString(),
-			(ttl == null) ? "" : (" AND TTL "+ttl)
+			//timestamp.toString(), //add timestamp back when timestamps become preparable
+			(ttl == null) ? "" : (" USING TTL "+ttl)//(" AND TTL "+ttl) //Revert this back to AND when timestamps are preparable
 		);
 
 		return CQLStatement.make(query, values.toArray());
@@ -301,7 +301,11 @@ public class CObjectCQLGenerator {
 	protected static CQLStatement makeInsertStatementWideIndex(String tableName, String targetTableName, long shardId, List indexValues, Long timestamp) throws CQLGenerationException {
 		String indexValuesString = makeIndexValuesString(indexValues);
 		Object[] values = {targetTableName, indexValuesString, Long.valueOf(shardId), shardId+":"+indexValuesString};
-		return CQLStatement.make(String.format(TEMPLATE_INSERT_WIDE_INDEX, tableName, timestamp.toString()), values);
+		return CQLStatement.make(String.format(
+				TEMPLATE_INSERT_WIDE_INDEX,
+				tableName
+				//timestamp.toString() //Add back timestamp when timestamps become preparable
+			),values);
 	}
 
 	protected static CQLStatementIterator makeCQLforInsert(@NotNull CDefinition def, @NotNull Map<String,Object> data) throws CQLGenerationException{
@@ -454,7 +458,12 @@ public class CObjectCQLGenerator {
 
 	protected static CQLStatement makeCQLforDeleteUUIDFromStaticTable(CDefinition def, UUID uuid, Long timestamp){
 		Object[] values = {uuid};
-		return CQLStatement.make(String.format(TEMPLATE_DELETE, makeTableName(def, null),timestamp, "id = ?"), values);
+		return CQLStatement.make(String.format(
+				TEMPLATE_DELETE,
+				makeTableName(def, null),
+				//timestamp, //Add back when timestamps become preparable
+				"id = ?")
+			, values);
 	}
 
 
@@ -463,8 +472,12 @@ public class CObjectCQLGenerator {
 		CQLStatement wheres = makeAndedEqualList(def, indexValues);
 		values.addAll(Arrays.asList(wheres.getValues()));
 		String whereCQL = String.format( "id = ? AND shardid = ? AND %s", wheres.getQuery());
-		String query = String.format(TEMPLATE_DELETE,makeTableName(def,index),timestamp,whereCQL);
-		//values.add(0,timestamp);
+		String query = String.format(
+			TEMPLATE_DELETE,
+			makeTableName(def,index),
+			//timestamp, //Add back when timestamps become preparable
+			whereCQL);
+
 		return CQLStatement.make(query,values.toArray());
 	}
 
