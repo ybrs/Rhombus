@@ -89,7 +89,7 @@ public class ObjectMapper {
 
 
 	public void executeStatements(CQLStatementIterator statementIterator) {
-		if(BoundedCQLStatementIterator.class.isAssignableFrom(statementIterator.getClass()) &&  this.executeAsync) {
+		if(statementIterator.isBounded() &&  this.executeAsync) {
 			logger.debug("Executing statements async");
 			//If this is a bounded statement iterator, send it through the async path
 			long start = System.nanoTime();
