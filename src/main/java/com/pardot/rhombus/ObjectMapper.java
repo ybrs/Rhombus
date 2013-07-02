@@ -93,14 +93,18 @@ public class ObjectMapper {
 			logger.debug("Executing statements async");
 			//If this is a bounded statement iterator, send it through the async path
 			long start = System.nanoTime();
-			StatementIteratorConsumer consumer = new StatementIteratorConsumer((BoundedCQLStatementIterator) statementIterator, cqlExecutor, statementTimeout);
+			StatementIteratorConsumer consumer = new StatementIteratorConsumer((BoundedCQLStatementIterator) statementIterator, cqlExecutor, statementTimeout, logCql);
 			consumer.start();
 			consumer.join();
 			logger.debug("Async execution took {} ms", (System.nanoTime() - start) / 1000000);
 		} else {
 			long start = System.nanoTime();
 			while(statementIterator.hasNext()) {
-				cqlExecutor.executeSync(statementIterator.next());
+				CQLStatement statement = statementIterator.next();
+				if(logCql) {
+					logger.debug(statement.getQuery());
+				}
+				cqlExecutor.executeSync(statement);
 			}
 			logger.debug("Sync execution took {} ms", (System.nanoTime() - start) / 1000000);
 		}

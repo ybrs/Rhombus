@@ -35,13 +35,15 @@ public class StatementIteratorConsumer {
 	private CQLExecutor cqlExecutor;
 	private final CountDownLatch shutdownLatch;
 	private final long statementTimeout;
+	private final boolean logCql;
 
 
-	public StatementIteratorConsumer(BoundedCQLStatementIterator statementIterator, CQLExecutor cqlExecutor, long statementTimeout) {
+	public StatementIteratorConsumer(BoundedCQLStatementIterator statementIterator, CQLExecutor cqlExecutor, long statementTimeout, boolean logCql) {
 		this.statementIterator = statementIterator;
 		this.cqlExecutor = cqlExecutor;
 		this.statementTimeout = statementTimeout;
 		shutdownLatch = new CountDownLatch((new Long(statementIterator.size())).intValue());
+		this.logCql = logCql;
 
 	}
 
@@ -67,6 +69,10 @@ public class StatementIteratorConsumer {
 
 	protected void handle(CQLStatement statement) {
 		final TimerContext timerContext = latencies.time();
+		if(logCql) {
+			logger.debug(statement.getQuery());
+		}
+		cqlExecutor.executeSync(statement);
 		ResultSetFuture future = this.cqlExecutor.executeAsync(statement);
 		Futures.addCallback(future, new FutureCallback<ResultSet>() {
 			@Override

@@ -133,6 +133,8 @@ public class ObjectMapperITCase {
 				assertEquals(insertValue, returnValue);
 			}
 		}
+
+		cm.teardown();
 	}
 
 
@@ -181,7 +183,44 @@ public class ObjectMapperITCase {
 		criteria.setStartTimestamp(1368489600000L);
 		results = om.list("object_audit", criteria);
 		assertEquals(5, results.size());
+
+		cm.teardown();
 	}
+
+	@Test
+	public void testNullIndexValues() throws Exception {
+		logger.debug("Starting testNullIndexValues");
+
+		//Build the connection manager
+		ConnectionManager cm = getConnectionManager();
+
+		//Build our keyspace definition object
+		CKeyspaceDefinition definition = JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class, this.getClass().getClassLoader(), "AuditKeyspace.js");
+		assertNotNull(definition);
+
+		//Rebuild the keyspace and get the object mapper
+		cm.buildKeyspace(definition, true);
+		logger.debug("Built keyspace: {}", definition.getName());
+		cm.setDefaultKeyspace(definition);
+		ObjectMapper om = cm.getObjectMapper();
+		om.setLogCql(true);
+
+		//Insert our test data
+		List<Map<String, Object>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "NullIndexValuesTestData.js");
+		Map<String, Object> object = values.get(0);
+		Long createdAt = (Long)(object.get("created_at"));
+		logger.debug("Inserting audit with created_at: {}", createdAt);
+		UUID id = om.insert("object_audit", JsonUtil.rhombusMapFromJsonMap(object,definition.getDefinitions().get("object_audit")), createdAt);
+
+		//Get back the data and make sure things match
+		Map<String, Object> result = om.getByKey("object_audit", id);
+		assertEquals(object.get("user_id"), result.get("user_id"));
+		assertEquals(object.get("changes"), result.get("changes"));
+		for(String key : result.keySet()) {
+			logger.debug("{} Result: {}, Input: {}", key, result.get(key), object.get(key));
+		}
+	}
+
 
 	private ConnectionManager getConnectionManager() throws IOException {
 		//Get a connection manager based on the test properties
