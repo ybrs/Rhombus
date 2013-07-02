@@ -12,8 +12,10 @@ import com.pardot.rhombus.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.UUID;
 
 /**
@@ -21,7 +23,7 @@ import java.util.UUID;
  * User: Michael Frank
  * Date: 4/17/13
  */
-public class ObjectMapper {
+public class ObjectMapper implements CObjectShardList {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
 	private static final int reasonableStatementLimit = 20;
@@ -38,7 +40,7 @@ public class ObjectMapper {
 		this.cqlExecutor = new CQLExecutor(session);
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
-		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(),null);
+		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(), this);
 	}
 
 	/**
@@ -87,27 +89,69 @@ public class ObjectMapper {
 		}
 	}
 
-
 	public void executeStatements(CQLStatementIterator statementIterator) {
-		if(statementIterator.isBounded() &&  this.executeAsync) {
+		List<CQLStatementIterator> statementIterators = Lists.newArrayList();
+		statementIterators.add(statementIterator);
+		executeStatements(statementIterators);
+	}
+
+	public void executeStatements(List<CQLStatementIterator> statementIterators) {
+		boolean canExecuteAsync = true;
+		for(CQLStatementIterator statementIterator : statementIterators) {
+			if(!statementIterator.isBounded()) {
+				canExecuteAsync = false;
+				break;
+			}
+		}
+		if(canExecuteAsync &&  this.executeAsync) {
 			logger.debug("Executing statements async");
 			//If this is a bounded statement iterator, send it through the async path
 			long start = System.nanoTime();
-			StatementIteratorConsumer consumer = new StatementIteratorConsumer((BoundedCQLStatementIterator) statementIterator, cqlExecutor, statementTimeout, logCql);
-			consumer.start();
-			consumer.join();
+			List<StatementIteratorConsumer> consumers = Lists.newArrayList();
+			for(CQLStatementIterator statementIterator : statementIterators) {
+				StatementIteratorConsumer consumer = new StatementIteratorConsumer((BoundedCQLStatementIterator) statementIterator, cqlExecutor, statementTimeout, logCql);
+				consumer.start();
+				consumers.add(consumer);
+			}
+			for(StatementIteratorConsumer consumer : consumers) {
+				consumer.join();
+			}
 			logger.debug("Async execution took {} ms", (System.nanoTime() - start) / 1000000);
 		} else {
 			long start = System.nanoTime();
-			while(statementIterator.hasNext()) {
-				CQLStatement statement = statementIterator.next();
-				if(logCql) {
-					logger.debug(statement.getQuery());
+			for(CQLStatementIterator statementIterator : statementIterators) {
+				while(statementIterator.hasNext()) {
+					CQLStatement statement = statementIterator.next();
+					if(logCql) {
+						logger.debug(statement.getQuery());
+					}
+					cqlExecutor.executeSync(statement);
 				}
-				cqlExecutor.executeSync(statement);
 			}
 			logger.debug("Sync execution took {} ms", (System.nanoTime() - start) / 1000000);
 		}
+	}
+
+	/**
+	 * Insert a batch of mixed new object with values
+	 * @param object Objects to insert
+	 * @return ID of most recently inserted object
+	 * @throws CQLGenerationException
+	 */
+	public UUID insertBatchMixed(Map<String, List<Map<String, Object>>> objects) throws CQLGenerationException {
+		logger.debug("Insert batch mixed");
+		List<CQLStatementIterator> statementIterators = Lists.newArrayList();
+		UUID key = null;
+		for(String objectType : objects.keySet()) {
+			for(Map<String, Object> values : objects.get(objectType)) {
+				key = UUIDs.timeBased();
+				long timestamp = System.currentTimeMillis();
+				CQLStatementIterator statementIterator = cqlGenerator.makeCQLforInsert(objectType, values, key, timestamp);
+				statementIterators.add(statementIterator);
+			}
+		}
+		executeStatements(statementIterators);
+		return key;
 	}
 
 	/**
@@ -338,5 +382,11 @@ public class ObjectMapper {
 
 	public CQLExecutor getCqlExecutor(){
 		return cqlExecutor;
+	}
+
+	@Override
+	public List<Long> getShardIdList(CDefinition def, SortedMap<String, Object> indexValues, CObjectOrdering ordering, @Nullable UUID start, @Nullable UUID end) {
+		//String cql = "SELECT shardId from "
+		return null;
 	}
 }
