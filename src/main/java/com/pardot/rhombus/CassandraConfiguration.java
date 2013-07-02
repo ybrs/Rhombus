@@ -16,6 +16,9 @@ public class CassandraConfiguration {
 	@JsonProperty
 	private List<String> contactPoints;
 
+	@JsonProperty
+	private String localDatacenter;
+
 
 	public List<String> getContactPoints() {
 		return contactPoints;
@@ -23,5 +26,13 @@ public class CassandraConfiguration {
 
 	public void setContactPoints(List<String> contactPoints) {
 		this.contactPoints = contactPoints;
+	}
+
+	public String getLocalDatacenter() {
+		return localDatacenter;
+	}
+
+	public void setLocalDatacenter(String localDatacenter) {
+		this.localDatacenter = localDatacenter;
 	}
 }

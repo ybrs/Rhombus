@@ -2,6 +2,7 @@ package com.pardot.rhombus;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
 import com.google.common.collect.Maps;
 
 import com.pardot.rhombus.cobject.CKeyspaceDefinition;
@@ -20,7 +21,9 @@ public class ConnectionManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
 
+
 	private List<String> contactPoints;
+	private final String localDatacenter;
 	private Map<String, ObjectMapper> objectMappers = Maps.newHashMap();
 	private CKeyspaceDefinition defaultKeyspace;
 	private Cluster cluster;
@@ -28,6 +31,7 @@ public class ConnectionManager {
 
 	public ConnectionManager(CassandraConfiguration configuration) {
 		this.contactPoints = configuration.getContactPoints();
+		this.localDatacenter = configuration.getLocalDatacenter();
 	}
 
 	/**
@@ -38,7 +42,9 @@ public class ConnectionManager {
 		for(String contactPoint : contactPoints) {
 			builder.addContactPoint(contactPoint);
 		}
-
+		if(localDatacenter != null) {
+			builder.withLoadBalancingPolicy(new DCAwareRoundRobinPolicy(localDatacenter));
+		}
 		cluster = builder.build();
 	}
 
