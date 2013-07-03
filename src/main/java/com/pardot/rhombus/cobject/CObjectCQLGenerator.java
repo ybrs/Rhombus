@@ -269,9 +269,9 @@ public class CObjectCQLGenerator {
 		for(String k : newValues.keySet()){
 			completeValues.put(k, newValues.get(k));
 		}
+		Map<String,ArrayList> fieldsAndValues = makeFieldAndValueList(def,completeValues);
 
 		//(4) Insert into the new indexes like a new insert
-		Map<String,ArrayList> fieldsAndValues = makeFieldAndValueList(def,completeValues);
 		for(CIndex i: effectedIndexes){
 			addCQLStatmentsForIndexInsert(true, ret, def, completeValues, i, key, fieldsAndValues,timestamp, ttl);
 		}
@@ -282,8 +282,17 @@ public class CObjectCQLGenerator {
 		}
 
 		//(5) Update the static table (be sure to only update and not insert the completevalues just in case they are wrong, the background job will fix them later)
+		Map<String,ArrayList> fieldsAndValuesOnlyForChanges = makeFieldAndValueList(def,newValues);
+		ret.add(makeInsertStatementStatic(
+				makeTableName(def,null),
+				(List<String>)fieldsAndValuesOnlyForChanges.get("fields").clone(),
+				(List<Object>)fieldsAndValuesOnlyForChanges.get("values").clone(),
+				key,
+				timestamp,
+				ttl
+		));
 
-		//(6) Insert a list of current indexes for this id into the __index_updates
+		//(6) Insert a snapshot of the updated values for this id into the __index_updates
 
 		return new BoundedCQLStatementIterator(ret);
 	}
