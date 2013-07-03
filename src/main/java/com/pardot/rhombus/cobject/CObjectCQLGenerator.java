@@ -1,6 +1,7 @@
 package com.pardot.rhombus.cobject;
 
 import com.datastax.driver.core.utils.UUIDs;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -36,6 +37,7 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO \"%s\" (%s) VALUES (%s)%s;";//"USING TIMESTAMP %s%s;";//Add back when timestamps become preparable
 	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO \"%s\" (%s) VALUES (%s)%s;";//"USING TIMESTAMP %s%s;";//Add back when timestamps become preparable
 	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO \"%s\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);";//"USING TIMESTAMP %s;";//Add back when timestamps become preparable
+	protected static final String TEMPLATE_INSERT_INDEX_UPDATES = "INSERT INTO __index_updates (id, statictablename, instanceid, indexvalues) values (?, ?, ?, ?)";
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM \"%s\" WHERE %s;";
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM \"%s\" WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
 	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM \"%s\" WHERE tablename = ? AND indexvalues = ?%s ORDER BY shardid %s ALLOW FILTERING;";
@@ -293,7 +295,7 @@ public class CObjectCQLGenerator {
 		));
 
 		//(6) Insert a snapshot of the updated values for this id into the __index_updates
-
+		ret.add(makeInsertUpdateIndexStatement(def, key, def.makeIndexValues(completeValues)));
 		return new BoundedCQLStatementIterator(ret);
 	}
 
@@ -362,6 +364,20 @@ public class CObjectCQLGenerator {
 		);
 
 		return CQLStatement.make(query, values.toArray());
+	}
+
+	protected static CQLStatement makeInsertUpdateIndexStatement(CDefinition def, UUID instanceId, Map<String,Object> indexvalues) throws CQLGenerationException {
+		UUID id = UUIDs.timeBased();
+		String tableName = makeTableName(def,null);
+		String indexValuesAsJson;
+		try{
+			org.codehaus.jackson.map.ObjectMapper om = new org.codehaus.jackson.map.ObjectMapper();
+			indexValuesAsJson = om.writeValueAsString(indexvalues);
+		}
+		catch (Exception e){
+			throw new CQLGenerationException(e.getMessage());
+		}
+		return CQLStatement.make(TEMPLATE_INSERT_INDEX_UPDATES, Arrays.asList(id, tableName, instanceId, indexValuesAsJson).toArray() );
 	}
 
 	protected static CQLStatement makeInsertStatementWide(String tableName, List<String> fields, List<Object> values, UUID uuid, long shardid, Long timestamp, Integer ttl){
@@ -640,21 +656,6 @@ public class CObjectCQLGenerator {
 			}
 		}
 		return true;
-	}
-
-	protected static String getCQLValueString(CField f, String value){
-		String strTemplate = "'%s'";
-		switch (f.getType()){
-			case ASCII:
-			case TEXT:
-			case TIMESTAMP:
-			case VARCHAR:
-				//value = value.replaceAll("'", "''");
-				//return String.format(strTemplate, value);
-				return value;
-			default:
-				return value;
-		}
 	}
 
 	protected static CQLStatement makeAndedEqualList(CDefinition def, Map<String,Object> data){

@@ -76,6 +76,15 @@ public class CDefinition {
 		return ret.values();
 	}
 
+	public Map<String, Object> makeIndexValues(Map<String,Object> allValues){
+		Map<String,Object> ret = Maps.newTreeMap();
+		Collection<String> requiredFields = getRequiredFields();
+		for(String f: requiredFields){
+			ret.put(f, allValues.get(f));
+		}
+		return ret;
+	}
+
 	public CIndex getIndex(SortedMap<String,Object> indexValues){
 		String key = Joiner.on(":").join(indexValues.keySet());
 		return indexesIndexedByFields.get(key);
