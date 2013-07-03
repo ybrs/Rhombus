@@ -1,6 +1,8 @@
 package com.pardot.rhombus.functional;
 
 
+import com.datastax.driver.core.utils.UUIDs;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pardot.rhombus.ConnectionManager;
 import com.pardot.rhombus.Criteria;
@@ -219,6 +221,96 @@ public class ObjectMapperITCase {
 		for(String key : result.keySet()) {
 			logger.debug("{} Result: {}, Input: {}", key, result.get(key), object.get(key));
 		}
+	}
+
+	@Test
+	public void testMultiInsert() throws Exception {
+		logger.debug("Starting testMultiInsert");
+
+		//Build the connection manager
+		ConnectionManager cm = getConnectionManager();
+
+		//Build our keyspace definition object
+		CKeyspaceDefinition definition = JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class, this.getClass().getClassLoader(), "MultiInsertKeyspace.js");
+		assertNotNull(definition);
+
+		//Rebuild the keyspace and get the object mapper
+		cm.buildKeyspace(definition, true);
+		logger.debug("Built keyspace: {}", definition.getName());
+		cm.setDefaultKeyspace(definition);
+		ObjectMapper om = cm.getObjectMapper();
+		om.setLogCql(true);
+
+		//Set up test data
+		List<Map<String, Object>> values1 = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "MultiInsertTestData1.js");
+		List<Map<String, Object>> updatedValues1 = Lists.newArrayList();
+		for(Map<String, Object> baseValue : values1) {
+			updatedValues1.add(JsonUtil.rhombusMapFromJsonMap(baseValue, definition.getDefinitions().get("object1")));
+		}
+		List<Map<String, Object>> values2 = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "MultiInsertTestData2.js");
+		List<Map<String, Object>> updatedValues2 = Lists.newArrayList();
+		for(Map<String, Object> baseValue : values2) {
+			updatedValues2.add(JsonUtil.rhombusMapFromJsonMap(baseValue, definition.getDefinitions().get("object1")));
+		}
+		Map<String, List<Map<String, Object>>> multiInsertMap = Maps.newHashMap();
+		multiInsertMap.put("object1", updatedValues1);
+		multiInsertMap.put("object2", updatedValues2);
+
+		//Insert data
+		om.insertBatchMixed(multiInsertMap);
+
+		//Query it back out
+		//Make sure that we have the proper number of results
+		SortedMap<String, Object> indexValues = Maps.newTreeMap();
+		indexValues.put("account_id", UUID.fromString("00000003-0000-0030-0040-000000030000"));
+		indexValues.put("user_id", UUID.fromString("00000003-0000-0030-0040-000000030000"));
+		Criteria criteria = new Criteria();
+		criteria.setIndexKeys(indexValues);
+		criteria.setLimit(50L);
+		List<Map<String, Object>> results = om.list("object1", criteria);
+		assertEquals(3, results.size());
+		results = om.list("object2", criteria);
+		assertEquals(4, results.size());
+	}
+
+	@Test
+	public void testShardedQueries() throws Exception {
+		logger.debug("Starting testShardedQueries");
+
+		//Build the connection manager
+		ConnectionManager cm = getConnectionManager();
+
+		//Build our keyspace definition object
+		CKeyspaceDefinition definition = JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class, this.getClass().getClassLoader(), "ShardedKeyspace.js");
+		assertNotNull(definition);
+
+		//Rebuild the keyspace and get the object mapper
+		cm.buildKeyspace(definition, true);
+		logger.debug("Built keyspace: {}", definition.getName());
+		cm.setDefaultKeyspace(definition);
+		ObjectMapper om = cm.getObjectMapper();
+		om.setLogCql(true);
+
+		//Set up test data
+		List<Map<String, Object>> values = JsonUtil.rhombusMapFromResource(this.getClass().getClassLoader(), "ShardedTestData.js");
+		for(Map<String, Object> object : values) {
+			Map<String, Object> updatedObject = JsonUtil.rhombusMapFromJsonMap(object, definition.getDefinitions().get("object1"));
+			Long createdAt = ((Date)(updatedObject.get("created_at"))).getTime();
+			logger.debug("Inserting object with created_at: {}", createdAt);
+			UUID id = om.insert("object1", updatedObject, createdAt);
+			logger.debug("Inserted object with uuid unix time: {}", UUIDs.unixTimestamp(id));
+		}
+
+		//Query it back out
+		//Make sure that we have the proper number of results
+		SortedMap<String, Object> indexValues = Maps.newTreeMap();
+		indexValues.put("account_id", UUID.fromString("00000003-0000-0030-0040-000000030000"));
+		indexValues.put("user_id", UUID.fromString("00000003-0000-0030-0040-000000030000"));
+		Criteria criteria = new Criteria();
+		criteria.setIndexKeys(indexValues);
+		criteria.setLimit(50L);
+		List<Map<String, Object>> results = om.list("object1", criteria);
+		assertEquals(3, results.size());
 	}
 
 

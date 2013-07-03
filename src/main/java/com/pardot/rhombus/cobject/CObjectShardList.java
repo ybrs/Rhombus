@@ -14,5 +14,5 @@ public interface CObjectShardList {
 
 	public static String SHARD_INDEX_TABLE_NAME = "__shardindex";
 
-	List<Long> getShardIdList(CDefinition def, SortedMap<String,Object> indexValues, CObjectOrdering ordering,@Nullable UUID start, @Nullable UUID end);
+	List<Long> getShardIdList(CDefinition def, SortedMap<String,Object> indexValues, CObjectOrdering ordering,@Nullable UUID start, @Nullable UUID end) throws CQLGenerationException;
 }

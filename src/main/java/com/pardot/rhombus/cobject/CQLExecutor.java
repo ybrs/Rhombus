@@ -5,6 +5,8 @@ import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -19,9 +21,10 @@ public class CQLExecutor {
 	private boolean logCql = false;
 	private Session session;
 
-	public CQLExecutor(Session session){
+	public CQLExecutor(Session session, boolean logCql){
 		this.preparedStatementCache = Maps.newConcurrentMap();
 		this.session = session;
+		this.logCql = logCql;
 	}
 
 	public void clearStatementCache(){
@@ -45,7 +48,9 @@ public class CQLExecutor {
 	public ResultSet executeSync(CQLStatement cql){
 		if(logCql) {
 			logger.debug("Executing CQL: {}", cql.getQuery());
-			//TODO: log values
+			if(cql.getValues() != null) {
+				logger.debug("With values: {}", Arrays.asList(cql.getValues()));
+			}
 		}
 		if(cql.isPreparable()){
 			BoundStatement bs = getBoundStatement(session, cql);
@@ -60,7 +65,9 @@ public class CQLExecutor {
 	public ResultSetFuture executeAsync(CQLStatement cql){
 		if(logCql) {
 			logger.debug("Executing CQL: {}", cql.getQuery());
-			//TODO: log values
+			if(cql.getValues() != null) {
+				logger.debug("With values: {}", Arrays.asList(cql.getValues()));
+			}
 		}
 		if(cql.isPreparable()){
 			BoundStatement bs = getBoundStatement(session, cql);
@@ -70,5 +77,13 @@ public class CQLExecutor {
 			//just run a normal execute without a prepared statement
 			return session.executeAsync(cql.getQuery());
 		}
+	}
+
+	public boolean isLogCql() {
+		return logCql;
+	}
+
+	public void setLogCql(boolean logCql) {
+		this.logCql = logCql;
 	}
 }
