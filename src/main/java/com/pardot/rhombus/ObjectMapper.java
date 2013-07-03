@@ -37,7 +37,7 @@ public class ObjectMapper implements CObjectShardList {
 	private long statementTimeout = 5000;
 
 	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition) {
-		this.cqlExecutor = new CQLExecutor(session);
+		this.cqlExecutor = new CQLExecutor(session, logCql);
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
 		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(), this);
@@ -109,7 +109,7 @@ public class ObjectMapper implements CObjectShardList {
 			long start = System.nanoTime();
 			List<StatementIteratorConsumer> consumers = Lists.newArrayList();
 			for(CQLStatementIterator statementIterator : statementIterators) {
-				StatementIteratorConsumer consumer = new StatementIteratorConsumer((BoundedCQLStatementIterator) statementIterator, cqlExecutor, statementTimeout, logCql);
+				StatementIteratorConsumer consumer = new StatementIteratorConsumer((BoundedCQLStatementIterator) statementIterator, cqlExecutor, statementTimeout);
 				consumer.start();
 				consumers.add(consumer);
 			}
@@ -122,9 +122,6 @@ public class ObjectMapper implements CObjectShardList {
 			for(CQLStatementIterator statementIterator : statementIterators) {
 				while(statementIterator.hasNext()) {
 					CQLStatement statement = statementIterator.next();
-					if(logCql) {
-						logger.debug(statement.getQuery());
-					}
 					cqlExecutor.executeSync(statement);
 				}
 			}
@@ -132,9 +129,20 @@ public class ObjectMapper implements CObjectShardList {
 		}
 	}
 
+	@Override
+	public List<Long> getShardIdList(CDefinition def, SortedMap<String, Object> indexValues, CObjectOrdering ordering, @Nullable UUID start, @Nullable UUID end) throws CQLGenerationException {
+		CQLStatement shardIdGet = CObjectCQLGenerator.makeCQLforGetShardIndexList(def, indexValues, ordering, start, end);
+		ResultSet resultSet = cqlExecutor.executeSync(shardIdGet);
+		List<Long> shardIdList = Lists.newArrayList();
+		for(Row row : resultSet) {
+			shardIdList.add(row.getLong("shardid"));
+		}
+		return shardIdList;
+	}
+
 	/**
 	 * Insert a batch of mixed new object with values
-	 * @param object Objects to insert
+	 * @param objects Objects to insert
 	 * @return ID of most recently inserted object
 	 * @throws CQLGenerationException
 	 */
@@ -350,6 +358,7 @@ public class ObjectMapper implements CObjectShardList {
 
 	public void setLogCql(boolean logCql) {
 		this.logCql = logCql;
+		this.cqlExecutor.setLogCql(logCql);
 	}
 
 	public boolean isExecuteAsync() {
@@ -384,9 +393,4 @@ public class ObjectMapper implements CObjectShardList {
 		return cqlExecutor;
 	}
 
-	@Override
-	public List<Long> getShardIdList(CDefinition def, SortedMap<String, Object> indexValues, CObjectOrdering ordering, @Nullable UUID start, @Nullable UUID end) {
-		//String cql = "SELECT shardId from "
-		return null;
-	}
 }

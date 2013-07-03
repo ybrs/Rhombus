@@ -11,6 +11,8 @@ import com.pardot.rhombus.cobject.shardingstrategy.ShardingStrategyNone;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -23,6 +25,8 @@ import java.util.*;
  * Date: 4/8/13
  */
 public class CObjectCQLGenerator {
+
+	private static Logger logger = LoggerFactory.getLogger(CObjectCQLGenerator.class);
 
 	protected static final String TEMPLATE_CREATE_STATIC = "CREATE TABLE \"%s\" (id timeuuid PRIMARY KEY, %s);";
 	protected static final String TEMPLATE_CREATE_WIDE = "CREATE TABLE \"%s\" (id timeuuid, shardid bigint, %s, PRIMARY KEY ((shardid, %s),id) );";
@@ -224,11 +228,11 @@ public class CObjectCQLGenerator {
 
 		String whereCQL = "";
 		if(start != null){
-			whereCQL += " AND id >= ?";
+			whereCQL += " AND shardid >= ?";
 			values.add(Long.valueOf(i.getShardingStrategy().getShardKey(start)));
 		}
 		if(end != null){
-			whereCQL += " AND id <= ?";
+			whereCQL += " AND shardid <= ?";
 			values.add(Long.valueOf(i.getShardingStrategy().getShardKey(end)));
 		}
 		String query =  String.format(
@@ -237,6 +241,7 @@ public class CObjectCQLGenerator {
 			whereCQL,
 			ordering
 		);
+		logger.debug("Making statement with query: {} and values: {}", query, values);
 		return CQLStatement.make(query, values.toArray());
 	}
 

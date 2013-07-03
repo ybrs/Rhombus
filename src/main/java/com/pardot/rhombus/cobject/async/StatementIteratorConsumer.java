@@ -35,15 +35,13 @@ public class StatementIteratorConsumer {
 	private CQLExecutor cqlExecutor;
 	private final CountDownLatch shutdownLatch;
 	private final long statementTimeout;
-	private final boolean logCql;
 
 
-	public StatementIteratorConsumer(BoundedCQLStatementIterator statementIterator, CQLExecutor cqlExecutor, long statementTimeout, boolean logCql) {
+	public StatementIteratorConsumer(BoundedCQLStatementIterator statementIterator, CQLExecutor cqlExecutor, long statementTimeout) {
 		this.statementIterator = statementIterator;
 		this.cqlExecutor = cqlExecutor;
 		this.statementTimeout = statementTimeout;
 		shutdownLatch = new CountDownLatch((new Long(statementIterator.size())).intValue());
-		this.logCql = logCql;
 
 	}
 
@@ -69,10 +67,6 @@ public class StatementIteratorConsumer {
 
 	protected void handle(CQLStatement statement) {
 		final TimerContext timerContext = latencies.time();
-		if(logCql) {
-			logger.debug(statement.getQuery());
-		}
-		cqlExecutor.executeSync(statement);
 		ResultSetFuture future = this.cqlExecutor.executeAsync(statement);
 		Futures.addCallback(future, new FutureCallback<ResultSet>() {
 			@Override
@@ -82,7 +76,7 @@ public class StatementIteratorConsumer {
 			@Override
 			public void onFailure(final Throwable t) {
 				//TODO Stop processing and return error
-				System.err.println("Error during request: " + t);
+				logger.error("Error during async request: {}", t);
 				shutdownLatch.countDown();
 			}
 		}, executorService);
