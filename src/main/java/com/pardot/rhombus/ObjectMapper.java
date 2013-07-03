@@ -174,12 +174,15 @@ public class ObjectMapper {
 	 * @throws CQLGenerationException
 	 */
 	public UUID update(String objectType, UUID key, Map<String, Object> values) throws CQLGenerationException {
-		//Make a new key
-		UUID newKey = UUIDs.startOf(UUIDs.unixTimestamp(key));
-		//Delete
-		delete(objectType, key);
-		//Insert
-		return insert(objectType, values, newKey);
+		//New Version
+		//(1) Get the old version
+		Map<String, Object> oldversion = getByKey(objectType, key);
+
+		//(2) Pass it all into the cql generator so it can create the right statements
+		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
+		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforUpdate(def,key,oldversion,values);
+		executeStatements(statementIterator);
+		return key;
 	}
 
 	/**

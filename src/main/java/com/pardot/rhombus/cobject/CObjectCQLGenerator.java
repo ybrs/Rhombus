@@ -27,6 +27,7 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_CREATE_STATIC = "CREATE TABLE \"%s\" (id timeuuid PRIMARY KEY, %s);";
 	protected static final String TEMPLATE_CREATE_WIDE = "CREATE TABLE \"%s\" (id timeuuid, shardid bigint, %s, PRIMARY KEY ((shardid, %s),id) );";
 	protected static final String TEMPLATE_CREATE_WIDE_INDEX = "CREATE TABLE \"%s\" (shardid bigint, tablename varchar, indexvalues varchar, targetrowkey varchar, PRIMARY KEY ((tablename, indexvalues),shardid) );";
+	protected static final String TEMPLATE_CREATE_INDEX_UPDATES = "CREATE TABLE __index_updates (id timeuuid, statictablename varchar, instanceid timeuuid, indexvalues varchar, PRIMARY KEY ((statictablename,instanceid),id))";
 	protected static final String TEMPLATE_DROP = "DROP TABLE \"%s\";";
 	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO \"%s\" (%s) VALUES (%s)%s;";//"USING TIMESTAMP %s%s;";//Add back when timestamps become preparable
 	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO \"%s\" (%s) VALUES (%s)%s;";//"USING TIMESTAMP %s%s;";//Add back when timestamps become preparable
@@ -240,6 +241,77 @@ public class CObjectCQLGenerator {
 		return CQLStatement.make(query, values.toArray());
 	}
 
+	public static CQLStatementIterator makeCQLforIndexUpdateTableCreate(){
+		CQLStatement s = CQLStatement.make(TEMPLATE_CREATE_INDEX_UPDATES);
+		List<CQLStatement> ret = Lists.newArrayList();
+		ret.add(s);
+		return new BoundedCQLStatementIterator(ret);
+	}
+
+	public static CQLStatementIterator makeCQLforUpdate(CDefinition def, UUID key, Map<String,Object> oldValues, Map<String, Object> newValues, Long timestamp, Integer ttl) throws CQLGenerationException {
+		List<CQLStatement> ret = Lists.newArrayList();
+		//(1) Detect if there are any changed index values in values
+		List<CIndex> effectedIndexes =  getEffectedIndexes(def,oldValues,newValues);
+		List<CIndex> uneffectedIndexes =  getUneffectedIndexes(def,oldValues,newValues);
+
+		//(2) Delete from any indexes that are no longer applicable
+		for(CIndex i : effectedIndexes){
+			ret.add(makeCQLforDeleteUUIDFromIndex(def, i, key, i.getIndexKeyAndValues(oldValues), timestamp));
+		}
+
+		//(3) Construct a complete copy of the object
+		Map<String,Object> completeValues = Maps.newHashMap(oldValues);
+		for(String k : newValues.keySet()){
+			completeValues.put(k, newValues.get(k));
+		}
+
+		//(4) Insert into the new indexes like a new insert
+		Map<String,ArrayList> fieldsAndValues = makeFieldAndValueList(def,completeValues);
+		for(CIndex i: effectedIndexes){
+			//insert it into the index
+			addCQLStatmentsForIndexInsert(true, ret, def, completeValues, i, key, fieldsAndValues,timestamp, ttl);
+		}
+
+		//(4) Insert into the existing indexes without the shard index addition
+		for(CIndex i: uneffectedIndexes){
+			//insert it into the index
+			addCQLStatmentsForIndexInsert(false, ret, def, completeValues, i, key, fieldsAndValues,timestamp, ttl);
+		}
+
+		//(5) Update the static table (be sure to only update and not insert the completevalues just in case they are wrong, the background job will fix them later)
+
+		//(6) Insert a list of current indexes for this id into the __index_updates
+
+		return new BoundedCQLStatementIterator(ret);
+	}
+
+	public static List<CIndex> getEffectedIndexes(CDefinition def, Map<String,Object> oldValues, Map<String,Object> newValues){
+		List<CIndex> ret = Lists.newArrayList();
+		if(def.getIndexes() == null) {
+			return ret;
+		}
+		for(CIndex i : def.getIndexes().values()){
+			if(i.validateIndexKeys(newValues)){
+				//This change does indeed effect this index
+				ret.add(i);
+			}
+		}
+		return ret;
+	}
+
+	public static List<CIndex> getUneffectedIndexes(CDefinition def, Map<String,Object> oldValues, Map<String,Object> newValues){
+		List<CIndex> ret = Lists.newArrayList();
+		if(def.getIndexes() == null) {
+			return ret;
+		}
+		for(CIndex i : def.getIndexes().values()){
+			if(!i.validateIndexKeys(newValues)){
+				//This change does not effect this index
+				ret.add(i);
+			}
+		}
+		return ret;
+	}
 
 	protected static CQLStatementIterator makeCQLforCreate(CDefinition def){
 		List<CQLStatement> ret = Lists.newArrayList();
@@ -280,7 +352,7 @@ public class CObjectCQLGenerator {
 		return CQLStatement.make(query, values.toArray());
 	}
 
-	protected static CQLStatement makeInsertStatementWide(String tableName, List<String> fields, List values, UUID uuid, long shardid, Long timestamp, Integer ttl){
+	protected static CQLStatement makeInsertStatementWide(String tableName, List<String> fields, List<Object> values, UUID uuid, long shardid, Long timestamp, Integer ttl){
 		fields.add(0,"shardid");
 		values.add(0,Long.valueOf(shardid));
 		fields.add(0,"id");
@@ -343,29 +415,34 @@ public class CObjectCQLGenerator {
 					}
 				}
 				//insert it into the index
-				long shardId = i.getShardingStrategy().getShardKey(uuid);
-				ret.add(makeInsertStatementWide(
-						makeTableName(def,i),
-						(List<String>)fieldsAndValues.get("fields").clone(),
-						(List<String>)fieldsAndValues.get("values").clone(),
-						uuid,
-						shardId,
-						timestamp,
-						ttl
-				));
-				if(!(i.getShardingStrategy() instanceof ShardingStrategyNone)){
-					//record that we have made an insert into that shard
-					ret.add(makeInsertStatementWideIndex(
-							CObjectShardList.SHARD_INDEX_TABLE_NAME,
-							makeTableName(def,i),
-							shardId,
-							i.getIndexValues(data),
-							timestamp
-					));
-				}
+				addCQLStatmentsForIndexInsert(true, ret, def,data,i,uuid,fieldsAndValues,timestamp,ttl);
 			}
 		}
 		return new BoundedCQLStatementIterator(ret);
+	}
+
+	protected static void addCQLStatmentsForIndexInsert(boolean includeShardInsert, List<CQLStatement> statementListToAddTo, CDefinition def, @NotNull Map<String,Object> data, CIndex i, UUID uuid, Map<String,ArrayList> fieldsAndValues,Long timestamp, Integer ttl) throws CQLGenerationException {
+		//insert it into the index
+		long shardId = i.getShardingStrategy().getShardKey(uuid);
+		statementListToAddTo.add(makeInsertStatementWide(
+				makeTableName(def,i),
+				(List<String>)fieldsAndValues.get("fields").clone(),
+				(List<Object>)fieldsAndValues.get("values").clone(),
+				uuid,
+				shardId,
+				timestamp,
+				ttl
+		));
+		if(!(i.getShardingStrategy() instanceof ShardingStrategyNone)){
+			//record that we have made an insert into that shard
+			statementListToAddTo.add(makeInsertStatementWideIndex(
+					CObjectShardList.SHARD_INDEX_TABLE_NAME,
+					makeTableName(def,i),
+					shardId,
+					i.getIndexValues(data),
+					timestamp
+			));
+		}
 	}
 
 	protected static CQLStatementIterator makeCQLforGet(CDefinition def, UUID key){
