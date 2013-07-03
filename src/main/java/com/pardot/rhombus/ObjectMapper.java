@@ -65,6 +65,14 @@ public class ObjectMapper implements CObjectShardList {
 				logger.debug("Not dropping shard index table");
 			}
 		}
+		//Next build the update index
+		cql = CObjectCQLGenerator.makeCQLforIndexUpdateTableCreate();
+		try{
+			cqlExecutor.executeSync(cql);
+		}
+		catch(Exception e) {
+			logger.debug("Unable to create update index table. It may already exist");
+		}
 		//Now build the tables for each object if the definition contains tables
 		if(keyspaceDefinition.getDefinitions() != null) {
 			for(CDefinition definition : keyspaceDefinition.getDefinitions().values()) {
@@ -225,7 +233,7 @@ public class ObjectMapper implements CObjectShardList {
 	 * @return new UUID of the object
 	 * @throws CQLGenerationException
 	 */
-	public UUID update(String objectType, UUID key, Map<String, Object> values) throws CQLGenerationException {
+	public UUID update(String objectType, UUID key, Map<String, Object> values, Long timestamp, Integer ttl) throws CQLGenerationException {
 		//New Version
 		//(1) Get the old version
 		Map<String, Object> oldversion = getByKey(objectType, key);

@@ -73,15 +73,14 @@ public class ObjectMapperITCase {
 		Map<String, Object> testObject2 = JsonUtil.rhombusMapFromJsonMap(
 				TestHelpers.getTestObject(2),
 				definition.getDefinitions().get("testtype"));
-		UUID key3 = om.update("testtype", key2, testObject2);
+		UUID key3 = om.update("testtype", key2, testObject2, null, null);
 
 		//Get the updated object back and make sure it matches
 		Map<String, Object> dbObject2 = om.getByKey("testtype", key3);
+		testObject2.put("id", key2);
 		for(String dbKey : dbObject2.keySet()) {
-			//Verify that everything but the key is the same
-			if(!dbKey.equals("id")) {
-				assertEquals(testObject2.get(dbKey), dbObject2.get(dbKey));
-			}
+			//Verify that everything is the same
+			assertEquals(testObject2.get(dbKey), dbObject2.get(dbKey));
 		}
 
 		//Get from the original index

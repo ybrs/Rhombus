@@ -32,12 +32,12 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_CREATE_STATIC = "CREATE TABLE \"%s\" (id timeuuid PRIMARY KEY, %s);";
 	protected static final String TEMPLATE_CREATE_WIDE = "CREATE TABLE \"%s\" (id timeuuid, shardid bigint, %s, PRIMARY KEY ((shardid, %s),id) );";
 	protected static final String TEMPLATE_CREATE_WIDE_INDEX = "CREATE TABLE \"%s\" (shardid bigint, tablename varchar, indexvalues varchar, targetrowkey varchar, PRIMARY KEY ((tablename, indexvalues),shardid) );";
-	protected static final String TEMPLATE_CREATE_INDEX_UPDATES = "CREATE TABLE __index_updates (id timeuuid, statictablename varchar, instanceid timeuuid, indexvalues varchar, PRIMARY KEY ((statictablename,instanceid),id))";
+	protected static final String TEMPLATE_CREATE_INDEX_UPDATES = "CREATE TABLE \"__index_updates\" (id timeuuid, statictablename varchar, instanceid timeuuid, indexvalues varchar, PRIMARY KEY ((statictablename,instanceid),id))";
 	protected static final String TEMPLATE_DROP = "DROP TABLE \"%s\";";
 	protected static final String TEMPLATE_INSERT_STATIC = "INSERT INTO \"%s\" (%s) VALUES (%s)%s;";//"USING TIMESTAMP %s%s;";//Add back when timestamps become preparable
 	protected static final String TEMPLATE_INSERT_WIDE = "INSERT INTO \"%s\" (%s) VALUES (%s)%s;";//"USING TIMESTAMP %s%s;";//Add back when timestamps become preparable
 	protected static final String TEMPLATE_INSERT_WIDE_INDEX = "INSERT INTO \"%s\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);";//"USING TIMESTAMP %s;";//Add back when timestamps become preparable
-	protected static final String TEMPLATE_INSERT_INDEX_UPDATES = "INSERT INTO __index_updates (id, statictablename, instanceid, indexvalues) values (?, ?, ?, ?)";
+	protected static final String TEMPLATE_INSERT_INDEX_UPDATES = "INSERT INTO \"__index_updates\" (id, statictablename, instanceid, indexvalues) values (?, ?, ?, ?);";
 	protected static final String TEMPLATE_SELECT_STATIC = "SELECT * FROM \"%s\" WHERE %s;";
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM \"%s\" WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
 	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM \"%s\" WHERE tablename = ? AND indexvalues = ?%s ORDER BY shardid %s ALLOW FILTERING;";
@@ -248,14 +248,11 @@ public class CObjectCQLGenerator {
 		return CQLStatement.make(query, values.toArray());
 	}
 
-	public static CQLStatementIterator makeCQLforIndexUpdateTableCreate(){
-		CQLStatement s = CQLStatement.make(TEMPLATE_CREATE_INDEX_UPDATES);
-		List<CQLStatement> ret = Lists.newArrayList();
-		ret.add(s);
-		return new BoundedCQLStatementIterator(ret);
+	public static CQLStatement makeCQLforIndexUpdateTableCreate(){
+		return CQLStatement.make(TEMPLATE_CREATE_INDEX_UPDATES);
 	}
 
-	public static CQLStatementIterator makeCQLforUpdate(CDefinition def, UUID key, Map<String,Object> oldValues, Map<String, Object> newValues, Long timestamp, Integer ttl) throws CQLGenerationException {
+	public static CQLStatementIterator makeCQLforUpdate(CDefinition def, UUID key, Map<String,Object> oldValues, Map<String, Object> newValues) throws CQLGenerationException {
 		List<CQLStatement> ret = Lists.newArrayList();
 		//(1) Detect if there are any changed index values in values
 		List<CIndex> effectedIndexes =  getEffectedIndexes(def,oldValues,newValues);
@@ -263,7 +260,7 @@ public class CObjectCQLGenerator {
 
 		//(2) Delete from any indexes that are no longer applicable
 		for(CIndex i : effectedIndexes){
-			ret.add(makeCQLforDeleteUUIDFromIndex(def, i, key, i.getIndexKeyAndValues(oldValues), timestamp));
+			ret.add(makeCQLforDeleteUUIDFromIndex(def, i, key, i.getIndexKeyAndValues(oldValues), null));
 		}
 
 		//(3) Construct a complete copy of the object
@@ -275,12 +272,12 @@ public class CObjectCQLGenerator {
 
 		//(4) Insert into the new indexes like a new insert
 		for(CIndex i: effectedIndexes){
-			addCQLStatmentsForIndexInsert(true, ret, def, completeValues, i, key, fieldsAndValues,timestamp, ttl);
+			addCQLStatmentsForIndexInsert(true, ret, def, completeValues, i, key, fieldsAndValues,null, null);
 		}
 
 		//(4) Insert into the existing indexes without the shard index addition
 		for(CIndex i: uneffectedIndexes){
-			addCQLStatmentsForIndexInsert(false, ret, def, completeValues, i, key, fieldsAndValues,timestamp, ttl);
+			addCQLStatmentsForIndexInsert(false, ret, def, completeValues, i, key, fieldsAndValues,null, null);
 		}
 
 		//(5) Update the static table (be sure to only update and not insert the completevalues just in case they are wrong, the background job will fix them later)
@@ -290,8 +287,8 @@ public class CObjectCQLGenerator {
 				(List<String>)fieldsAndValuesOnlyForChanges.get("fields").clone(),
 				(List<Object>)fieldsAndValuesOnlyForChanges.get("values").clone(),
 				key,
-				timestamp,
-				ttl
+				null,
+				null
 		));
 
 		//(6) Insert a snapshot of the updated values for this id into the __index_updates
@@ -305,7 +302,7 @@ public class CObjectCQLGenerator {
 			return ret;
 		}
 		for(CIndex i : def.getIndexes().values()){
-			if(i.validateIndexKeys(newValues)){
+			if(i.areValuesAssociatedWithIndex(newValues)){
 				//This change does indeed effect this index
 				ret.add(i);
 			}
@@ -319,7 +316,7 @@ public class CObjectCQLGenerator {
 			return ret;
 		}
 		for(CIndex i : def.getIndexes().values()){
-			if(!i.validateIndexKeys(newValues)){
+			if(!i.areValuesAssociatedWithIndex(newValues)){
 				//This change does not effect this index
 				ret.add(i);
 			}

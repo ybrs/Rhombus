@@ -48,6 +48,15 @@ public class CIndex {
 		return true;
 	}
 
+	public boolean areValuesAssociatedWithIndex(Map<String,Object> values){
+		for(String key: compositeKeyList){
+			if(values.get(key) != null){
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public TimebasedShardingStrategy getShardingStrategy(){
 		return shardingStrategy;
 	}
