@@ -273,13 +273,11 @@ public class CObjectCQLGenerator {
 		//(4) Insert into the new indexes like a new insert
 		Map<String,ArrayList> fieldsAndValues = makeFieldAndValueList(def,completeValues);
 		for(CIndex i: effectedIndexes){
-			//insert it into the index
 			addCQLStatmentsForIndexInsert(true, ret, def, completeValues, i, key, fieldsAndValues,timestamp, ttl);
 		}
 
 		//(4) Insert into the existing indexes without the shard index addition
 		for(CIndex i: uneffectedIndexes){
-			//insert it into the index
 			addCQLStatmentsForIndexInsert(false, ret, def, completeValues, i, key, fieldsAndValues,timestamp, ttl);
 		}
 
@@ -438,7 +436,7 @@ public class CObjectCQLGenerator {
 				timestamp,
 				ttl
 		));
-		if(!(i.getShardingStrategy() instanceof ShardingStrategyNone)){
+		if( includeShardInsert && (!(i.getShardingStrategy() instanceof ShardingStrategyNone))){
 			//record that we have made an insert into that shard
 			statementListToAddTo.add(makeInsertStatementWideIndex(
 					CObjectShardList.SHARD_INDEX_TABLE_NAME,
