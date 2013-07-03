@@ -384,6 +384,107 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertTrue(48 > makeIndexTableName(def,index).length());
 		}
 
+		public void testMakeCQLforUpdate() throws CObjectParseException,CObjectParseException, CQLGenerationException, IOException{
+			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
+			CDefinition def = CDefinition.fromJsonString(json);
+			Map<String, Object> data = TestHelpers.getTestObject(0);
+			UUID uuid = UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43");
+			Map<String,Object> newdata = Maps.newHashMap();
+			newdata.put("type", Integer.valueOf(9));
+			CQLStatementIterator result = Subject.makeCQLforUpdate(def,uuid,data,newdata);
+			CQLStatement expected = CQLStatement.make(
+				"DELETE FROM testtype6671808f3f51bcc53ddc76d2419c9060 WHERE id = ? AND shardid = ? AND instance = ? AND type = ?;",
+				Arrays.asList(UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"), Long.valueOf(160), Integer.valueOf(222222), Integer.valueOf(5)).toArray()
+			);
+			assertEquals(expected, result.next());
+			expected = CQLStatement.make(
+				"DELETE FROM testtypef9bf3332bb4ec879849ec43c67776131 WHERE id = ? AND shardid = ? AND foreignid = ? AND instance = ? AND type = ?;",
+				Arrays.asList(UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"), Long.valueOf(160), Integer.valueOf(777), Integer.valueOf(222222), Integer.valueOf(5)).toArray()
+			);
+			assertEquals(expected, result.next());
+			expected = CQLStatement.make(
+				"INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+				Arrays.asList(
+					UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
+					Long.valueOf(160),
+					Integer.valueOf(1),
+					"This is data one",
+					"This is data two",
+					"This is data three",
+					Integer.valueOf(222222),
+					Integer.valueOf(9),
+					Integer.valueOf(777)).toArray()
+			);
+			assertEquals(expected, result.next());
+			expected = CQLStatement.make(
+				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
+				Arrays.asList(
+					"testtype6671808f3f51bcc53ddc76d2419c9060",
+					"222222:9",
+					Long.valueOf(160),
+					"160:222222:9").toArray()
+			);
+			assertEquals(expected, result.next());
+			expected = CQLStatement.make(
+				"INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+				Arrays.asList(
+					UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
+					Long.valueOf(160),
+					Integer.valueOf(1),
+					"This is data one",
+					"This is data two",
+					"This is data three",
+					Integer.valueOf(222222),
+					Integer.valueOf(9),
+					Integer.valueOf(777)).toArray()
+			);
+			assertEquals(expected, result.next());
+			expected = CQLStatement.make(
+				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
+				Arrays.asList(
+					"testtypef9bf3332bb4ec879849ec43c67776131",
+					"777:222222:9",
+					Long.valueOf(160),
+					"160:777:222222:9").toArray()
+			);
+			assertEquals(expected, result.next());
+			expected = CQLStatement.make(
+				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+				Arrays.asList(
+					UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
+					Long.valueOf(1),
+					Integer.valueOf(1),
+					"This is data one",
+					"This is data two",
+					"This is data three",
+					Integer.valueOf(222222),
+					Integer.valueOf(9),
+					Integer.valueOf(777)).toArray()
+			);
+			//verify that this last insert was on the uneffected index (which is why it does not have a matching __shardindex insert
+			assertEquals("testtype7f9bb4e56d3cae5b11c553547cfe5897",makeTableName(def,def.getIndexes().get("foreignid")));
+			assertEquals(expected, result.next());
+			expected = CQLStatement.make(
+				"INSERT INTO \"testtype\" (id, type) VALUES (?, ?);",
+				Arrays.asList(
+					UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
+					Integer.valueOf(9)).toArray()
+			);
+			assertEquals(expected, result.next());
+			CQLStatement next = result.next();
+			expected = CQLStatement.make(
+					"INSERT INTO \"__index_updates\" (id, statictablename, instanceid, indexvalues) values (?, ?, ?, ?);",
+					Arrays.asList(
+							(UUID)next.getValues()[0],
+							"testtype",
+							UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
+							"{\"foreignid\":777,\"instance\":222222,\"type\":9}").toArray()
+			);
+			assertEquals(expected, next);
+			//should be no results left
+			assertTrue(!result.hasNext());
+		}
+
 	}
 
 	public static List<CQLStatement> toList(CQLStatementIterator i){
@@ -446,6 +547,11 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 	public void testMakeIndexTableName() throws CQLGenerationException, CObjectParseException, IOException {
 		Subject s = new Subject();
 		s.testMakeIndexTableName();
+	}
+
+	public void testMakeCQLforUpdate() throws CQLGenerationException, CObjectParseException, IOException {
+		Subject s = new Subject();
+		s.testMakeCQLforUpdate();
 	}
 
 
