@@ -275,13 +275,13 @@ public class CObjectCQLGenerator {
 			addCQLStatmentsForIndexInsert(true, ret, def, completeValues, i, key, fieldsAndValues,null, null);
 		}
 
-		//(4) Insert into the existing indexes without the shard index addition
+		//(4) Insert into the existing indexes without the shard index addition and only update new values
+		Map<String,ArrayList> fieldsAndValuesOnlyForChanges = makeFieldAndValueList(def,newValues);
 		for(CIndex i: uneffectedIndexes){
-			addCQLStatmentsForIndexInsert(false, ret, def, completeValues, i, key, fieldsAndValues,null, null);
+			addCQLStatmentsForIndexInsert(false, ret, def, newValues, i, key, fieldsAndValuesOnlyForChanges,null, null);
 		}
 
 		//(5) Update the static table (be sure to only update and not insert the completevalues just in case they are wrong, the background job will fix them later)
-		Map<String,ArrayList> fieldsAndValuesOnlyForChanges = makeFieldAndValueList(def,newValues);
 		ret.add(makeInsertStatementStatic(
 				makeTableName(def,null),
 				(List<String>)fieldsAndValuesOnlyForChanges.get("fields").clone(),
@@ -291,8 +291,11 @@ public class CObjectCQLGenerator {
 				null
 		));
 
-		//(6) Insert a snapshot of the updated values for this id into the __index_updates
-		ret.add(makeInsertUpdateIndexStatement(def, key, def.makeIndexValues(completeValues)));
+		//(6) Insert a snapshot of the updated values for this id into the __index_updates if we needed to delete any indexes
+		if(effectedIndexes.size() > 0){
+			ret.add(makeInsertUpdateIndexStatement(def, key, def.makeIndexValues(completeValues)));
+		}
+
 		return new BoundedCQLStatementIterator(ret);
 	}
 

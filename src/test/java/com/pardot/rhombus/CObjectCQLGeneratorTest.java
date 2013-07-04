@@ -449,21 +449,15 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			);
 			assertEquals(expected, result.next());
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, type) VALUES (?, ?, ?);",
 				Arrays.asList(
 					UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
 					Long.valueOf(1),
-					Integer.valueOf(1),
-					"This is data one",
-					"This is data two",
-					"This is data three",
-					Integer.valueOf(222222),
-					Integer.valueOf(9),
-					Integer.valueOf(777)).toArray()
+					Integer.valueOf(9)).toArray()
 			);
+			assertEquals(expected, result.next());
 			//verify that this last insert was on the uneffected index (which is why it does not have a matching __shardindex insert
 			assertEquals("testtype7f9bb4e56d3cae5b11c553547cfe5897",makeTableName(def,def.getIndexes().get("foreignid")));
-			assertEquals(expected, result.next());
 			expected = CQLStatement.make(
 				"INSERT INTO \"testtype\" (id, type) VALUES (?, ?);",
 				Arrays.asList(
