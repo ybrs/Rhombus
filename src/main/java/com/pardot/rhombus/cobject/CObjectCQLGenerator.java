@@ -291,10 +291,8 @@ public class CObjectCQLGenerator {
 				null
 		));
 
-		//(6) Insert a snapshot of the updated values for this id into the __index_updates if we needed to delete any indexes
-		if(effectedIndexes.size() > 0){
-			ret.add(makeInsertUpdateIndexStatement(def, key, def.makeIndexValues(completeValues)));
-		}
+		//(6) Insert a snapshot of the updated values for this id into the __index_updates
+		ret.add(makeInsertUpdateIndexStatement(def, key, def.makeIndexValues(completeValues)));
 
 		return new BoundedCQLStatementIterator(ret);
 	}
