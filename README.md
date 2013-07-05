@@ -31,34 +31,35 @@ Define objects by creating a json document for each object type
 We call these objects CDefinitions. They are a very simple mapping of fields to types. It should also include a list of indexes which define the ways in which you intend to query the data. With Rhombus you can query data by any combination of fields. However, in order to make that possible, you need to indicate which field combinations you intend to query with at the time of definition.
 
 Example CDefinition:
-        {
-                "name": "home_runs",
-                "fields": [
-                    {"name": "player_name", "type": "bigint"},
-                    {"name": "players_on_base", "type": "int"},
-                    {"name": "player_team", "type": "varchar"},
-                    {"name": "baseball_stadium", "type": "varchar"},
-                    {"name": "pitcher_name", "type": "varchar"}
-                ],
-                "indexes" : [
-                    {
-                        "key": "player_team",
-                        "shardingStrategy": {"type": "ShardingStrategyMonthly"}
-                    },
-                    {
-                        "key": "baseball_stadium",
-                        "shardingStrategy": {"type": "ShardingStrategyMonthly"}
-                    },
-                    {
-                        "key": "player_team:players_on_base",
-                        "shardingStrategy": {"type": "ShardingStrategyNone"}
-                    },
-                    {
-                        "key": "player_name:baseball_stadium",
-                        "shardingStrategy": {"type": "ShardingStrategyNone"}
-                    }
-                ]
+
+    {
+        "name": "home_runs",
+        "fields": [
+            {"name": "player_name", "type": "bigint"},
+            {"name": "players_on_base", "type": "int"},
+            {"name": "player_team", "type": "varchar"},
+            {"name": "baseball_stadium", "type": "varchar"},
+            {"name": "pitcher_name", "type": "varchar"}
+        ],
+        "indexes" : [
+            {
+                "key": "player_team",
+                "shardingStrategy": {"type": "ShardingStrategyMonthly"}
+            },
+            {
+                "key": "baseball_stadium",
+                "shardingStrategy": {"type": "ShardingStrategyMonthly"}
+            },
+            {
+                "key": "player_team:players_on_base",
+                "shardingStrategy": {"type": "ShardingStrategyNone"}
+            },
+            {
+                "key": "player_name:baseball_stadium",
+                "shardingStrategy": {"type": "ShardingStrategyNone"}
             }
+        ]
+    }
 
 
 *Queries*
