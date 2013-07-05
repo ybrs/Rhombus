@@ -22,7 +22,7 @@ In summary, Rhombus is the right solution if you are storing huge amounts of tim
         created before some_other_date
         limit 10;
 
-    *note - you wont actually query data from Rhombus via sql, but since sql is something everybody understands it is used above.
+*note - you wont actually query data from Rhombus via sql, but since sql is something everybody understands it is used above.
 
 
 Define objects by creating a json document for each object type
@@ -31,55 +31,55 @@ Define objects by creating a json document for each object type
 We call these objects CDefinitions. They are a very simple mapping of fields to types. It should also include a list of indexes which define the ways in which you intend to query the data. With Rhombus you can query data by any combination of fields. However, in order to make that possible, you need to indicate which field combinations you intend to query with at the time of definition.
 
 Example CDefinition:
-    {
-            "name": "home_runs",
-            "fields": [
-                {"name": "player_name", "type": "bigint"},
-                {"name": "players_on_base", "type": "int"},
-                {"name": "player_team", "type": "varchar"},
-                {"name": "baseball_stadium", "type": "varchar"},
-                {"name": "pitcher_name", "type": "varchar"}
-            ],
-            "indexes" : [
-                {
-                    "key": "player_team",
-                    "shardingStrategy": {"type": "ShardingStrategyMonthly"}
-                },
-                {
-                    "key": "baseball_stadium",
-                    "shardingStrategy": {"type": "ShardingStrategyMonthly"}
-                },
-                {
-                    "key": "player_team:players_on_base",
-                    "shardingStrategy": {"type": "ShardingStrategyNone"}
-                },
-                {
-                    "key": "player_name:baseball_stadium",
-                    "shardingStrategy": {"type": "ShardingStrategyNone"}
-                }
-            ]
-        }
+        {
+                "name": "home_runs",
+                "fields": [
+                    {"name": "player_name", "type": "bigint"},
+                    {"name": "players_on_base", "type": "int"},
+                    {"name": "player_team", "type": "varchar"},
+                    {"name": "baseball_stadium", "type": "varchar"},
+                    {"name": "pitcher_name", "type": "varchar"}
+                ],
+                "indexes" : [
+                    {
+                        "key": "player_team",
+                        "shardingStrategy": {"type": "ShardingStrategyMonthly"}
+                    },
+                    {
+                        "key": "baseball_stadium",
+                        "shardingStrategy": {"type": "ShardingStrategyMonthly"}
+                    },
+                    {
+                        "key": "player_team:players_on_base",
+                        "shardingStrategy": {"type": "ShardingStrategyNone"}
+                    },
+                    {
+                        "key": "player_name:baseball_stadium",
+                        "shardingStrategy": {"type": "ShardingStrategyNone"}
+                    }
+                ]
+            }
 
 
 *Queries*
 
 I have created an object called a 'home_run'. With this definition of home run I have lots of options for quering, those options are:
 
-    1. Give me all the home runs by the 'Atlanta Braves'.
+1. Give me all the home runs by the 'Atlanta Braves'.
 
-    2. Give me all the home runs at 'Yankee Stadium' that occured yesterday
+2. Give me all the home runs at 'Yankee Stadium' that occured yesterday
 
-    3. Give me all the home runs at 'Yankee Stadium' over the last 4 years
+3. Give me all the home runs at 'Yankee Stadium' over the last 4 years
 
-    4. Give me all the home runs by the 'SF Giants' where they had 3 players on base
+4. Give me all the home runs by the 'SF Giants' where they had 3 players on base
 
-    5. Give me all the home runs by 'Barry Bonds' at 'AT&T Park' between 2000 and 2007
+5. Give me all the home runs by 'Barry Bonds' at 'AT&T Park' between 2000 and 2007
 
-    6. Give me all home runs ever (paginated)
+6. Give me all home runs ever (paginated)
 
-    7. Give me all home runs between the years 1930 - 2002 paginated.
+7. Give me all home runs between the years 1930 - 2002 paginated.
 
-    6. Each CDefinition has an implied object instance id. So I could say give me home run of id xxxxxxx.
+6. Each CDefinition has an implied object instance id. So I could say give me home run of id xxxxxxx.
 
 
 *What is a ShardStrategy?*
