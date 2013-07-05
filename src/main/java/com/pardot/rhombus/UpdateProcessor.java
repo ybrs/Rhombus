@@ -13,8 +13,6 @@ public class UpdateProcessor {
 		this.objectMapper = om;
 	}
 
-	public
-
 	public ObjectMapper getObjectMapper() {
 		return objectMapper;
 	}
