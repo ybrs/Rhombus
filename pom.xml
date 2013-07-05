@@ -18,6 +18,20 @@
         <findbugs.version>2.0.1</findbugs.version>
     </properties>
 
+    <licenses>
+        <license>
+            <name>The MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git@github.com:pardot/Rhombus.git</connection>
+        <developerConnection>scm:git:git@github.com:pardot/Rhombus.git</developerConnection>
+        <url>https://github.com/Pardot/Rhombus</url>
+    </scm>
+
     <dependencies>
         <!-- Jackson -->
         <dependency>
@@ -156,7 +170,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <skipTests>false</skipTests>
+                    <skipTests>true</skipTests>
                 </configuration>
             </plugin>
             <plugin>
