@@ -30,7 +30,7 @@ Define objects by creating a json document for each object type
 
 We call these objects CDefinitions. They are a very simple mapping of fields to types. It should also include a list of indexes which define the ways in which you intend to query the data. With Rhombus you can query data by any combination of fields. However, in order to make that possible, you need to indicate which field combinations you intend to query with at the time of definition.
 
-Example CDefinition:
+<strong>Example CDefinition:</strong>
 
     {
         "name": "home_runs",
@@ -62,7 +62,7 @@ Example CDefinition:
     }
 
 
-*Queries*
+<strong>Queries</strong>
 
 I have created an object called a 'home_run'. With this definition of home run I have lots of options for quering, those options are:
 
@@ -83,12 +83,13 @@ I have created an object called a 'home_run'. With this definition of home run I
 6. Each CDefinition has an implied object instance id. So I could say give me home run of id xxxxxxx.
 
 
-*What is a ShardStrategy?*
+<strong>What is a ShardStrategy?</strong>
 
 You will notice that each index has a ShardingStrategy. In cassandra wide rows have a limit on just how wide they can be (usually somewhere in the low millions of records). You can find more details on how large wide rows should be in this blog post: http://www.ebaytechblog.com/2012/08/14/cassandra-data-modeling-best-practices-part-2/ . ShardingStrategies in Rhombus
 will automatically take care of sharding for you. The only thing you need to do is provide a hint to indicate the size of your data growth. In the above example, we are expecting some amazing baseball. We estimate that a single MLB team will be hitting over a few million home runs every month. Therefore we decided to break up our wide rows for team and stadium on a monthly strategy. However, we are expecting a low number for the other 2 indexes and therefore used no sharding for those indexes. This means that we will include all of the entries for those last 2 indexes in a single wide row.
 
-*Updates*
+<strong>Updates</strong>
+
 In Rhombus you can only update objects by id. So you can say things like "Change home_run x to be in stadium 'Turner Field' instead of 'At&T Field'" but I cannot say "Make every home_run in 'Turner Field' now be 'AT&T Field'". Updates should be use sparingly. They will scale, but because cassandra is an eventually consistent datastore Rhombus needs to take extra care to avoid data inconsistencies. The updates are performed in a manner that will avoid 99% of all inconsistencies, however a background job will also need to run periodically to verify that no update inconsistencies get persisted.
 
 
