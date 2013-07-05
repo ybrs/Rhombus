@@ -129,14 +129,12 @@ For documentation regarding replication class and replication factors go to: htt
 
 (3) Build your keyspace definition object from the JSON document
 
-    //Build our keyspace definition object
     String json = TestHelpers.readFileToString(this.getClass(), "CKeyspaceTestData.js");
     CKeyspaceDefinition definition = CKeyspaceDefinition.fromJsonString(json);
     
 
 (4) If your making a new keyspace, build it
 
-    //Rebuild the keyspace and get the object mapper
     cm.buildKeyspace(definition, true);
 
 (5) Set default keyspace and build the object mapper
@@ -168,6 +166,10 @@ For documentation regarding replication class and replication factors go to: htt
     criteria.setLimit(50);
     List<Map<String, Object>> results = om.list("home_runs", criteria);
 
+
+
+For more usage examples check out the object mapper functional test:
+https://github.com/Pardot/Rhombus/blob/master/src/test/java/com/pardot/rhombus/functional/ObjectMapperITCase.java
 
 
 
