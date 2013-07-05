@@ -35,7 +35,7 @@ We call these objects CDefinitions. They are a very simple mapping of fields to 
     {
         "name": "home_runs",
         "fields": [
-            {"name": "player_name", "type": "bigint"},
+            {"name": "player_name", "type": "varchar"},
             {"name": "players_on_base", "type": "int"},
             {"name": "player_team", "type": "varchar"},
             {"name": "baseball_stadium", "type": "varchar"},
@@ -91,6 +91,82 @@ will automatically take care of sharding for you. The only thing you need to do 
 <strong>Updates</strong>
 
 In Rhombus you can only update objects by id. So you can say things like "Change home_run x to be in stadium 'Turner Field' instead of 'At&T Field'" but I cannot say "Make every home_run in 'Turner Field' now be 'AT&T Field'". Updates should be use sparingly. They will scale, but because cassandra is an eventually consistent datastore Rhombus needs to take extra care to avoid data inconsistencies. The updates are performed in a manner that will avoid 99% of all inconsistencies, however a background job will also need to run periodically to verify that no update inconsistencies get persisted.
+
+
+Example Usage
+==================
+
+(1) Make your CDefinitions (as defined above) and put them in a Keyspace definition file
+
+Keyspace Defintion Format:
+
+    {
+        "name" : "somekeyspacename",
+        "replicationClass" : "SimpleStrategy",
+        "replicationFactors" : {
+            "replication_factor" : 1
+        },
+        "definitions" : [
+            ..include an array of your CDefinitions here
+
+        ]
+    }
+
+For documentation regarding replication class and replication factors go to: http://www.datastax.com/docs/1.2/cluster_architecture/data_distribution#replication-strategy
+
+(2) Setup your connection
+
+    //Build the connection manager
+    CassandraConfiguration config = new CassandraConfiguration();
+    List contactPoints = new ArrayList();
+    contactPoints.add("127.0.0.1");
+    config.setContactPoints(contactPoints);
+    config.setLocalDatacenter("mydatacenter");
+    ConnectionManager cm = new ConnectionManager(config);
+    cm.setLogCql(true);
+    cm.buildCluster();
+
+
+(3) Build your keyspace definition object from the JSON document
+
+    //Build our keyspace definition object
+    String json = TestHelpers.readFileToString(this.getClass(), "CKeyspaceTestData.js");
+    CKeyspaceDefinition definition = CKeyspaceDefinition.fromJsonString(json);
+    
+
+(4) If your making a new keyspace, build it
+
+    //Rebuild the keyspace and get the object mapper
+    cm.buildKeyspace(definition, true);
+
+(5) Set default keyspace and build the object mapper
+
+    cm.setDefaultKeyspace(definition);
+    ObjectMapper om = cm.getObjectMapper();
+
+(6) Do an insert
+
+    Map<String, Object> firstHomeRun = new HashMap();
+    firstHomeRun.put("player_name", "Barry Bonds");
+    firstHomeRun.put("players_on_base", Integer.valueOf(3));
+    firstHomeRun.put("player_team", "SF Giants");
+    firstHomeRun.put("baseball_stadium", "AT&T Field");
+    firstHomeRun.put("pitcher_name", "Nolan Ryan");
+    UUID id = om.insert("home_runs", firstHomeRun);
+
+(7) Do a get query by id
+
+    Map<String, Object> theHomeRun = om.getByKey("home_runs", id);
+
+(8) Get all home runs at AT&T Field
+
+    Criteria criteria = new Criteria();
+    SortedMap values = new SortedMap();
+    values.put("baseball_stadium", "AT&T Field");
+    criteria.setIndexKeys(values);
+    criteria.setOrdering(CObjectOrdering.DESCENDING);
+    criteria.setLimit(50);
+    List<Map<String, Object>> results = om.list("home_runs", criteria);
 
 
 
