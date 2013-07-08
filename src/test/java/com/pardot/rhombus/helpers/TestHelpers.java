@@ -1,11 +1,9 @@
 package com.pardot.rhombus.helpers;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.pardot.rhombus.CassandraConfiguration;
+import com.pardot.rhombus.ConnectionManager;
 import com.pardot.rhombus.Criteria;
-import com.pardot.rhombus.cobject.CDefinition;
-import com.pardot.rhombus.cobject.CField;
 import com.pardot.rhombus.util.JsonUtil;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -23,6 +21,19 @@ public class TestHelpers {
 
 	private static List<Map<String, Object>> testObjects;
 	private static CriteriaHolder criteriaHolder;
+
+	public static ConnectionManager getTestConnectionManager() throws IOException {
+		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());
+		cm.setLogCql(false);
+		String nativeTransportPort = System.getProperty("cassandra.nativeTransportPort");
+		try {
+			Integer port = Integer.parseInt(nativeTransportPort);
+			cm.setNativeTransportPort(port);
+		} catch (Exception e) {
+			//Ignore
+		}
+		return cm;
+	}
 
 	public static String readFileToString(Class testclass, String filename){
 		String ret = "";

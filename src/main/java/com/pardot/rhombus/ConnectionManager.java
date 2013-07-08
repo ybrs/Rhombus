@@ -28,6 +28,7 @@ public class ConnectionManager {
 	private CKeyspaceDefinition defaultKeyspace;
 	private Cluster cluster;
 	private boolean logCql = false;
+	private Integer nativeTransportPort = null;
 
 	public ConnectionManager(CassandraConfiguration configuration) {
 		this.contactPoints = configuration.getContactPoints();
@@ -44,6 +45,10 @@ public class ConnectionManager {
 		}
 		if(localDatacenter != null) {
 			builder.withLoadBalancingPolicy(new DCAwareRoundRobinPolicy(localDatacenter));
+		}
+		if(this.nativeTransportPort != null) {
+			logger.debug("Setting native transport port to {}", this.nativeTransportPort);
+			builder.withPort(this.nativeTransportPort);
 		}
 		cluster = builder.build();
 	}
@@ -166,5 +171,13 @@ public class ConnectionManager {
 
 	public void setLogCql(boolean logCql) {
 		this.logCql = logCql;
+	}
+
+	public Integer getNativeTransportPort() {
+		return nativeTransportPort;
+	}
+
+	public void setNativeTransportPort(Integer nativeTransportPort) {
+		this.nativeTransportPort = nativeTransportPort;
 	}
 }

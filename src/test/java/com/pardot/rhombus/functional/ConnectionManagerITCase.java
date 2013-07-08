@@ -29,7 +29,7 @@ public class ConnectionManagerITCase {
 	public void testBuildKeyspace() throws Exception {
 		logger.debug("testBuildKeyspace");
 		// Set up a connection manager and build the cluster
-		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());
+		ConnectionManager cm = TestHelpers.getTestConnectionManager();
 		cm.setLogCql(true);
 		cm.buildCluster();
 		assertNotNull(cm);
@@ -62,7 +62,7 @@ public class ConnectionManagerITCase {
 	public void testForceRebuild() throws Exception {
 		logger.debug("testForceRebuild");
 		// Set up a connection manager and build the cluster
-		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());
+		ConnectionManager cm = TestHelpers.getTestConnectionManager();
 		cm.setLogCql(true);
 		cm.buildCluster();
 		assertNotNull(cm);

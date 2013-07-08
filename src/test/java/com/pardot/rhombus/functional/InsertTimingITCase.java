@@ -77,7 +77,7 @@ public class InsertTimingITCase {
 
 	private ConnectionManager getConnectionManager() throws IOException {
 		//Get a connection manager based on the test properties
-		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());
+		ConnectionManager cm = TestHelpers.getTestConnectionManager();
 		cm.setLogCql(false);
 		cm.buildCluster();
 		assertNotNull(cm);

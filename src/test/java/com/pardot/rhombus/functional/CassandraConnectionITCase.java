@@ -17,7 +17,7 @@ public class CassandraConnectionITCase {
 
 	@Test
 	public void testKeyspaceCreate() throws IOException {
-		ConnectionManager cm = new ConnectionManager(TestHelpers.getTestCassandraConfiguration());
+		ConnectionManager cm = TestHelpers.getTestConnectionManager();
 		cm.buildCluster();
 		Session session = cm.getEmptySession();
 		assertNotNull(session);
