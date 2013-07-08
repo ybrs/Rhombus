@@ -24,29 +24,6 @@ In summary, Rhombus is the right solution if you are storing huge amounts of tim
 
 *note - you wont actually query data from Rhombus via sql, but since sql is something everybody understands it is used above.
 
-How to get Rhombus
-===========================
-Rhombus can be built from source or is available via Maven snapshot releases hosted on the Sonatype Nexus repository.  To access these releases, you need to add an entry to the repositories section of your pom.xml as follows.
-
-    <repositories>
-        <repository>
-            <id>sonatype-nexus-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <releases><enabled>false</enabled></releases>
-            <snapshots><enabled>true</enabled></snapshots>
-        </repository>
-    </repositories>
-
-You can then add a dependency to Rhombus as follows:
-
-    <dependencies>
-        <dependency>
-            <groupId>com.pardot</groupId>
-            <artifactId>rhombus</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
-
 Define objects by creating a json document for each object type
 ================================================================
 
@@ -192,6 +169,29 @@ For documentation regarding replication class and replication factors go to: htt
 
 For more usage examples check out the object mapper functional test:
 https://github.com/Pardot/Rhombus/blob/master/src/test/java/com/pardot/rhombus/functional/ObjectMapperITCase.java
+
+How to get Rhombus
+===========================
+Rhombus can be built from source or is available via Maven snapshot releases hosted on the Sonatype Nexus repository.  To access these releases, you need to add an entry to the repositories section of your pom.xml as follows.
+
+    <repositories>
+        <repository>
+            <id>sonatype-nexus-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases><enabled>false</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
+
+You can then add a dependency to Rhombus as follows:
+
+    <dependencies>
+        <dependency>
+            <groupId>com.pardot</groupId>
+            <artifactId>rhombus</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 
 
