@@ -230,6 +230,8 @@ public class ObjectMapper implements CObjectShardList {
 	 * @param objectType Type of object to update
 	 * @param key Key of object to update
 	 * @param values Values to update
+	 * @param timestamp Timestamp to execute update at
+	 * @param ttl Time to live for update
 	 * @return new UUID of the object
 	 * @throws CQLGenerationException
 	 */
@@ -243,6 +245,18 @@ public class ObjectMapper implements CObjectShardList {
 		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforUpdate(def,key,oldversion,values);
 		executeStatements(statementIterator);
 		return key;
+	}
+
+	/**
+	 * Update objectType with key using values
+	 * @param objectType Type of object to update
+	 * @param key Key of object to update
+	 * @param values Values to update
+	 * @return new UUID of the object
+	 * @throws CQLGenerationException
+	 */
+	public UUID update(String objectType, UUID key, Map<String, Object> values) throws CQLGenerationException {
+		return update(objectType, key, values, null, null);
 	}
 
 	/**
