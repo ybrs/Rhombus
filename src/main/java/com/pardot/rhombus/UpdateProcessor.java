@@ -1,5 +1,11 @@
 package com.pardot.rhombus;
 
+import com.pardot.rhombus.cobject.CObjectCQLGenerator;
+import com.pardot.rhombus.cobject.CQLStatement;
+
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * Pardot, An ExactTarget Company
  * User: robrighter
@@ -8,6 +14,7 @@ package com.pardot.rhombus;
 public class UpdateProcessor {
 
 	private ObjectMapper objectMapper;
+	private UUID lastProcessed;
 
 	public UpdateProcessor(ObjectMapper om){
 		this.objectMapper = om;
@@ -20,6 +27,11 @@ public class UpdateProcessor {
 	public void setObjectMapper(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
 	}
+
+	public void process(){
+
+	}
+
 
 
 

@@ -42,9 +42,9 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM \"%s\" WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
 	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM \"%s\" WHERE tablename = ? AND indexvalues = ?%s ORDER BY shardid %s ALLOW FILTERING;";
 	protected static final String TEMPLATE_DELETE = "DELETE FROM %s WHERE %s;";//"DELETE FROM %s USING TIMESTAMP %s WHERE %s;"; //Add back when timestamps become preparable
-	protected static final String TEMPLATE_SELECT_FIRST_ELIGIBLE_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" WHERE id <= ? limit 1 allow filtering;";
-	protected static final String TEMPLATE_SELECT_NEXT_ELIGIBLE_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" where token(statictablename,instanceid) > token(?, ?) limit 1;";
-	protected static final String TEMPLATE_SELECT_ROW_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" where statictablename = ? AND instanceid = ?;";
+	protected static final String TEMPLATE_SELECT_FIRST_ELIGIBLE_INDEX_UPDATE = "SELECT token(statictablename,instanceid) FROM \"__index_updates\" WHERE id < ? limit 1 allow filtering;";
+	protected static final String TEMPLATE_SELECT_NEXT_ELIGIBLE_INDEX_UPDATE = "SELECT token(statictablename,instanceid) FROM \"__index_updates\" where token(statictablename,instanceid) > ? and id < ? limit 1;";
+	protected static final String TEMPLATE_SELECT_ROW_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" where token(statictablename,instanceid) = ?;";
 
 	protected Map<String, CDefinition> definitions;
 	protected CObjectShardList shardList;
@@ -200,16 +200,16 @@ public class CObjectCQLGenerator {
 		return makeCQLforDelete(this.definitions.get(objType), key, data, timestamp);
 	}
 
-	public CQLStatementIterator makeCQLforGetFirstEligibleIndexUpdate(Long consistencyHorizon){
-		return new BoundedCQLStatementIterator(Arrays.asList(makeGetFirstEligibleIndexUpdate(consistencyHorizon)));
+	public CQLStatementIterator makeCQLforGetFirstEligibleIndexUpdate(){
+		return new BoundedCQLStatementIterator(Arrays.asList(makeGetFirstEligibleIndexUpdate()));
 	}
 
-	public CQLStatementIterator makeCQLforGetNextEligibleIndexUpdate(String objType, UUID instanceid){
-		return new BoundedCQLStatementIterator(Arrays.asList(makeGetNextEligibleIndexUpdate(this.definitions.get(objType), instanceid)));
+	public CQLStatementIterator makeCQLforGetNextEligibleIndexUpdate(Long lastInstanceToken){
+		return new BoundedCQLStatementIterator(Arrays.asList(makeGetNextEligibleIndexUpdate(lastInstanceToken)));
 	}
 
-	public CQLStatementIterator makeCQLforGetRowIndexUpdate(String objType, UUID instanceid){
-		return new BoundedCQLStatementIterator(Arrays.asList(makeGetRowIndexUpdate(this.definitions.get(objType), instanceid)));
+	public CQLStatementIterator makeCQLforGetRowIndexUpdate(Long instanceToken){
+		return new BoundedCQLStatementIterator(Arrays.asList(makeGetRowIndexUpdate(instanceToken)));
 	}
 
 	/**
@@ -380,16 +380,20 @@ public class CObjectCQLGenerator {
 		return CQLStatement.make(query, values.toArray());
 	}
 
-	protected static CQLStatement makeGetFirstEligibleIndexUpdate(Long consistencyHorizon){
-		return CQLStatement.make(TEMPLATE_SELECT_FIRST_ELIGIBLE_INDEX_UPDATE, Arrays.asList(UUIDs.endOf(consistencyHorizon)).toArray());
+	protected static UUID getTimeUUIDAtEndOfConsistencyHorizion(){
+		return UUIDs.endOf(DateTime.now().getMillis() + 5000);//now plus 5 seconds
 	}
 
-	protected static CQLStatement makeGetNextEligibleIndexUpdate(CDefinition def, UUID instanceid){
-		return CQLStatement.make(TEMPLATE_SELECT_NEXT_ELIGIBLE_INDEX_UPDATE, Arrays.asList(makeTableName(def,null),instanceid).toArray());
+	protected static CQLStatement makeGetFirstEligibleIndexUpdate(){
+		return CQLStatement.make(TEMPLATE_SELECT_FIRST_ELIGIBLE_INDEX_UPDATE, Arrays.asList(getTimeUUIDAtEndOfConsistencyHorizion()).toArray());
 	}
 
-	protected static CQLStatement makeGetRowIndexUpdate(CDefinition def, UUID instanceid){
-		return CQLStatement.make(TEMPLATE_SELECT_ROW_INDEX_UPDATE, Arrays.asList(makeTableName(def,null),instanceid).toArray());
+	protected static CQLStatement makeGetNextEligibleIndexUpdate(Long lastInstanceToken){
+		return CQLStatement.make(TEMPLATE_SELECT_NEXT_ELIGIBLE_INDEX_UPDATE, Arrays.asList(lastInstanceToken,getTimeUUIDAtEndOfConsistencyHorizion()).toArray());
+	}
+
+	protected static CQLStatement makeGetRowIndexUpdate(Long instanceToken){
+		return CQLStatement.make(TEMPLATE_SELECT_ROW_INDEX_UPDATE, Arrays.asList(instanceToken).toArray());
 	}
 
 	protected static CQLStatement makeInsertUpdateIndexStatement(CDefinition def, UUID instanceId, Map<String,Object> indexvalues) throws CQLGenerationException {

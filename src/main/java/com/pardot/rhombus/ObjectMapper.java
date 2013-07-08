@@ -288,6 +288,11 @@ public class ObjectMapper implements CObjectShardList {
 		return mapResults(statementIterator, def, criteria.getLimit());
 	}
 
+	protected List<Map<String, Object>> getNextUpdateIndexRow(@Nullable UUID lastInstanceId){
+		CQLStatement cqlForNext = (lastInstanceId == null) ?
+			cqlGenerator.makeCQLforGetFirstEligibleIndexUpdate(10L) : cqlGenerator.makeCQLforGetNextEligibleIndexUpdate(lastInstanceId);
+	}
+
 
 	/**
 	 * Iterates through cql statements executing them in sequence and mapping the results until limit is reached
