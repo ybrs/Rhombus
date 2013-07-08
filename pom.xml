@@ -151,17 +151,6 @@
         </dependency>
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>pardot-release-repository</id>
-            <url>scp://test.pardot.com/var/www/chef-repos/maven/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>pardot-snapshot-repository</id>
-            <url>scp://test.pardot.com/var/www/chef-repos/maven/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <extensions>
             <extension>
