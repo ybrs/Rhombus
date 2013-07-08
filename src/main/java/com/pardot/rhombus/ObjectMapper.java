@@ -292,7 +292,7 @@ public class ObjectMapper implements CObjectShardList {
 		CQLStatement cqlForNext = (lastInstancetoken == null) ?
 			cqlGenerator.makeGetFirstEligibleIndexUpdate() : cqlGenerator.makeGetNextEligibleIndexUpdate(lastInstancetoken);
 		Map<String, Object> result = Maps.newHashMap();
-		ResultSet resultSet = cqlExecutor.executeSync(cqlForNext.next());
+		ResultSet resultSet = cqlExecutor.executeSync(cqlForNext);
 		Long nextInstanceToken = resultSet.one().getLong(0);
 
 		CQLStatement cqlForRow = cqlGenerator.makeGetRowIndexUpdate(nextInstanceToken);
