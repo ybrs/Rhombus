@@ -200,18 +200,6 @@ public class CObjectCQLGenerator {
 		return makeCQLforDelete(this.definitions.get(objType), key, data, timestamp);
 	}
 
-	public CQLStatementIterator makeCQLforGetFirstEligibleIndexUpdate(){
-		return new BoundedCQLStatementIterator(Arrays.asList(makeGetFirstEligibleIndexUpdate()));
-	}
-
-	public CQLStatementIterator makeCQLforGetNextEligibleIndexUpdate(Long lastInstanceToken){
-		return new BoundedCQLStatementIterator(Arrays.asList(makeGetNextEligibleIndexUpdate(lastInstanceToken)));
-	}
-
-	public CQLStatementIterator makeCQLforGetRowIndexUpdate(Long instanceToken){
-		return new BoundedCQLStatementIterator(Arrays.asList(makeGetRowIndexUpdate(instanceToken)));
-	}
-
 	/**
 	 *
 	 * @return String of single CQL statement required to create the Shard Index Table
@@ -384,15 +372,15 @@ public class CObjectCQLGenerator {
 		return UUIDs.endOf(DateTime.now().getMillis() + 5000);//now plus 5 seconds
 	}
 
-	protected static CQLStatement makeGetFirstEligibleIndexUpdate(){
+	public static CQLStatement makeGetFirstEligibleIndexUpdate(){
 		return CQLStatement.make(TEMPLATE_SELECT_FIRST_ELIGIBLE_INDEX_UPDATE, Arrays.asList(getTimeUUIDAtEndOfConsistencyHorizion()).toArray());
 	}
 
-	protected static CQLStatement makeGetNextEligibleIndexUpdate(Long lastInstanceToken){
+	public static CQLStatement makeGetNextEligibleIndexUpdate(Long lastInstanceToken){
 		return CQLStatement.make(TEMPLATE_SELECT_NEXT_ELIGIBLE_INDEX_UPDATE, Arrays.asList(lastInstanceToken,getTimeUUIDAtEndOfConsistencyHorizion()).toArray());
 	}
 
-	protected static CQLStatement makeGetRowIndexUpdate(Long instanceToken){
+	public static CQLStatement makeGetRowIndexUpdate(Long instanceToken){
 		return CQLStatement.make(TEMPLATE_SELECT_ROW_INDEX_UPDATE, Arrays.asList(instanceToken).toArray());
 	}
 

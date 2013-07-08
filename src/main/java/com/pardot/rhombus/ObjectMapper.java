@@ -288,9 +288,21 @@ public class ObjectMapper implements CObjectShardList {
 		return mapResults(statementIterator, def, criteria.getLimit());
 	}
 
-	protected List<Map<String, Object>> getNextUpdateIndexRow(@Nullable UUID lastInstanceId){
-		CQLStatement cqlForNext = (lastInstanceId == null) ?
-			cqlGenerator.makeCQLforGetFirstEligibleIndexUpdate(10L) : cqlGenerator.makeCQLforGetNextEligibleIndexUpdate(lastInstanceId);
+	protected Map<String, Object> getNextUpdateIndexRow(@Nullable Long lastInstancetoken){
+		CQLStatement cqlForNext = (lastInstancetoken == null) ?
+			cqlGenerator.makeGetFirstEligibleIndexUpdate() : cqlGenerator.makeGetNextEligibleIndexUpdate(lastInstancetoken);
+		Map<String, Object> result = Maps.newHashMap();
+		ResultSet resultSet = cqlExecutor.executeSync(cqlForNext.next());
+		Long nextInstanceToken = resultSet.one().getLong(0);
+
+		CQLStatement cqlForRow = cqlGenerator.makeGetRowIndexUpdate(nextInstanceToken);
+		resultSet = cqlExecutor.executeSync(cqlForRow);
+		Row row = resultSet.one();
+		result.put("id", row.getUUID("id"));
+		result.put("statictablename", row.getString("statictablename"));
+		result.put("instanceid", row.getUUID("instanceid"));
+		result.put("indexvalues", row.getString("indexvalues"));
+		return result;
 	}
 
 
