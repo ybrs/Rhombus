@@ -4,6 +4,8 @@ package com.pardot.rhombus;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.utils.UUIDs;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.pardot.rhombus.cobject.*;
@@ -13,10 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.UUID;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Pardot, an ExactTarget company
@@ -288,21 +288,42 @@ public class ObjectMapper implements CObjectShardList {
 		return mapResults(statementIterator, def, criteria.getLimit());
 	}
 
-	protected Map<String, Object> getNextUpdateIndexRow(@Nullable Long lastInstancetoken){
+	protected SortedMap<String,Object> unpackIndexValuesFromJson(CDefinition def, String json) throws IOException, JsonMappingException {
+		org.codehaus.jackson.map.ObjectMapper om = new org.codehaus.jackson.map.ObjectMapper();
+		TreeMap<String,Object> jsonMap = om.readValue(json, TreeMap.class);
+		return JsonUtil.rhombusMapFromJsonMap(jsonMap,def);
+	}
+
+	public IndexUpdateRow getNextUpdateIndexRow(@Nullable Long lastInstancetoken) throws IOException, JsonMappingException {
 		CQLStatement cqlForNext = (lastInstancetoken == null) ?
 			cqlGenerator.makeGetFirstEligibleIndexUpdate() : cqlGenerator.makeGetNextEligibleIndexUpdate(lastInstancetoken);
-		Map<String, Object> result = Maps.newHashMap();
 		ResultSet resultSet = cqlExecutor.executeSync(cqlForNext);
+		if(resultSet.isExhausted()){
+			return null;
+		}
 		Long nextInstanceToken = resultSet.one().getLong(0);
-
 		CQLStatement cqlForRow = cqlGenerator.makeGetRowIndexUpdate(nextInstanceToken);
 		resultSet = cqlExecutor.executeSync(cqlForRow);
-		Row row = resultSet.one();
-		result.put("id", row.getUUID("id"));
-		result.put("statictablename", row.getString("statictablename"));
-		result.put("instanceid", row.getUUID("instanceid"));
-		result.put("indexvalues", row.getString("indexvalues"));
-		return result;
+		List<Row> results = resultSet.all();
+		if(results.size() == 0 ){
+			return null;
+		}
+		String objectName = results.get(0).getString("statictablename");
+		CDefinition def = keyspaceDefinition.getDefinitions().get(objectName);
+		CIndex index = def.getIndex(unpackIndexValuesFromJson(def, results.get(0).getString("indexvalues")));
+
+		List<SortedMap<String,Object>> indexValueList = Lists.newArrayList();
+		for(Row row : results){
+			indexValueList.add(unpackIndexValuesFromJson(def,row.getString("indexvalues")));
+		}
+		return new IndexUpdateRow(
+			objectName,
+			results.get(0).getUUID("instanceid"),
+			nextInstanceToken,
+			index,
+			UUIDs.unixTimestamp(results.get(0).getUUID("id")),
+			indexValueList
+		);
 	}
 
 
@@ -432,6 +453,10 @@ public class ObjectMapper implements CObjectShardList {
 
 	public CQLExecutor getCqlExecutor(){
 		return cqlExecutor;
+	}
+
+	protected CKeyspaceDefinition getKeyspaceDefinition() {
+		return keyspaceDefinition;
 	}
 
 }

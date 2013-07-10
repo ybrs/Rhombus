@@ -7,9 +7,11 @@ import com.google.common.collect.Maps;
 import com.pardot.rhombus.ConnectionManager;
 import com.pardot.rhombus.Criteria;
 import com.pardot.rhombus.ObjectMapper;
+import com.pardot.rhombus.cobject.IndexUpdateRow;
 import com.pardot.rhombus.helpers.TestHelpers;
 import com.pardot.rhombus.cobject.CKeyspaceDefinition;
 import com.pardot.rhombus.util.JsonUtil;
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +95,15 @@ public class ObjectMapperITCase {
 		dbObjects = om.list("testtype", criteria2);
 		assertEquals(1, dbObjects.size());
 
+
+		//Test that we can retrieve the proper update rows
+		IndexUpdateRow row =  om.getNextUpdateIndexRow(null);
+		Thread.sleep(7000);
+		assertEquals("testtype", row.getObjectName());
+		assertEquals("foreignid:instance:type", row.getIndex().getKey());
+		logger.info("Timestamp of most recent update is: "+ new DateTime(row.getTimeStampOfMostCurrentUpdate()));
+
+		assertEquals(true,false);
 		//Teardown connections
 		cm.teardown();
 	}

@@ -10,10 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Pardot, an ExactTarget company
@@ -38,15 +35,14 @@ public class JsonUtil {
 		return mc.getValues();
 	}
 
-	public static Map<String, Object> rhombusMapFromJsonMap(Map<String, Object> jsonMap, CDefinition definition) {
-		Map<String, Object> rhombusMap = Maps.newHashMap();
+	public static SortedMap<String, Object> rhombusMapFromJsonMap(Map<String, Object> jsonMap, CDefinition definition) {
+		SortedMap<String, Object> rhombusMap = Maps.newTreeMap();
 		for(CField field : definition.getFields().values()) {
 			Object jsonValue = jsonMap.get(field.getName());
 			if(jsonValue != null) {
 				rhombusMap.put(field.getName(), typedObjectFromValueAndField(jsonValue, field));
 			}
 		}
-
 		return rhombusMap;
 	}
 
