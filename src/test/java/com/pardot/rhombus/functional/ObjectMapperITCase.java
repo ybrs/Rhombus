@@ -95,15 +95,36 @@ public class ObjectMapperITCase {
 		dbObjects = om.list("testtype", criteria2);
 		assertEquals(1, dbObjects.size());
 
+		//an imediate request should return null, because we didnt wait for consistency
+		assertEquals(null, om.getNextUpdateIndexRow(null));
+
+		//Do another update
+		Map<String, Object> testObject3 = Maps.newHashMap();
+		testObject3.put("type",Integer.valueOf(7));
+		UUID key4 = om.update("testtype", key2, testObject3, null, null);
+
+
+		//now wait for consistency
+		Thread.sleep(3000);
 
 		//Test that we can retrieve the proper update rows
 		IndexUpdateRow row =  om.getNextUpdateIndexRow(null);
-		Thread.sleep(7000);
 		assertEquals("testtype", row.getObjectName());
 		assertEquals("foreignid:instance:type", row.getIndex().getKey());
-		logger.info("Timestamp of most recent update is: "+ new DateTime(row.getTimeStampOfMostCurrentUpdate()));
+		assertEquals(2, row.getIndexValues().size());
+		assertEquals(5, row.getIndexValues().get(0).get("type"));
+		assertEquals(7, row.getIndexValues().get(1).get("type"));
+		assertEquals(778L, row.getIndexValues().get(0).get("foreignid"));
+		assertEquals(778L, row.getIndexValues().get(1).get("foreignid"));
+		assertEquals(333333L, row.getIndexValues().get(0).get("instance"));
+		assertEquals(333333L, row.getIndexValues().get(1).get("instance"));
 
-		assertEquals(true,false);
+		assertEquals(null, om.getNextUpdateIndexRow(row.getTimeStampOfMostCurrentUpdate()));
+
+
+
+
+
 		//Teardown connections
 		cm.teardown();
 	}

@@ -33,6 +33,10 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 
 	public class Subject extends CObjectCQLGenerator {
 
+		public Subject(Integer consistencyHorizon){
+			super(consistencyHorizon);
+		}
+
 		public void testMakeStaticTableCreate() throws CObjectParseException, IOException {
 			String json = TestHelpers.readFileToString(this.getClass(), "CObjectCQLGeneratorTestData.js");
 			CDefinition def = CDefinition.fromJsonString(json);
@@ -509,42 +513,42 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 	}
 
 	public void testMakeStaticTableCreate() throws CObjectParseException, IOException {
-		Subject s = new Subject();
+		Subject s = new Subject(0);
 		s.testMakeStaticTableCreate();
 	}
 
 	public void testMakeWideTableCreate() throws CObjectParseException, IOException {
-		Subject s = new Subject();
+		Subject s = new Subject(0);
 		s.testMakeWideTableCreate();
 	}
 
 	public void testMakeCQLforCreate() throws CObjectParseException, IOException {
-		Subject s = new Subject();
+		Subject s = new Subject(0);
 		s.testMakeCQLforCreate();
 	}
 
 	public void testMakeCQLforInsert() throws CQLGenerationException, CObjectParseException, IOException {
-		Subject s = new Subject();
+		Subject s = new Subject(0);
 		s.testMakeCQLforInsert();
 	}
 
 	public void testMakeCQLforGet() throws CQLGenerationException, CObjectParseException, IOException {
-		Subject s = new Subject();
+		Subject s = new Subject(0);
 		s.testMakeCQLforGet();
 	}
 
 	public void testMakeCQLforDelete() throws CQLGenerationException, CObjectParseException, IOException {
-		Subject s = new Subject();
+		Subject s = new Subject(0);
 		s.testMakeCQLforDelete();
 	}
 
 	public void testMakeIndexTableName() throws CQLGenerationException, CObjectParseException, IOException {
-		Subject s = new Subject();
+		Subject s = new Subject(0);
 		s.testMakeIndexTableName();
 	}
 
 	public void testMakeCQLforUpdate() throws CQLGenerationException, CObjectParseException, IOException {
-		Subject s = new Subject();
+		Subject s = new Subject(0);
 		s.testMakeCQLforUpdate();
 	}
 

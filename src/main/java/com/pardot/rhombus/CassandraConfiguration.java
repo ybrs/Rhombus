@@ -16,6 +16,10 @@ public class CassandraConfiguration {
 	@JsonProperty
 	private List<String> contactPoints;
 
+	@NotNull
+	@JsonProperty
+	private Integer consistencyHorizion;
+
 	@JsonProperty
 	private String localDatacenter;
 
@@ -34,5 +38,13 @@ public class CassandraConfiguration {
 
 	public void setLocalDatacenter(String localDatacenter) {
 		this.localDatacenter = localDatacenter;
+	}
+
+	public Integer getConsistencyHorizion() {
+		return consistencyHorizion;
+	}
+
+	public void setConsistencyHorizion(Integer consistencyHorizion) {
+		this.consistencyHorizion = consistencyHorizion;
 	}
 }

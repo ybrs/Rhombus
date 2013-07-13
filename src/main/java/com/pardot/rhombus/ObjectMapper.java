@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 import com.pardot.rhombus.cobject.*;
 import com.pardot.rhombus.cobject.async.StatementIteratorConsumer;
 import com.pardot.rhombus.util.JsonUtil;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,11 +37,11 @@ public class ObjectMapper implements CObjectShardList {
 	private CObjectCQLGenerator cqlGenerator;
 	private long statementTimeout = 5000;
 
-	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition) {
+	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition, Integer consistencyHorizon) {
 		this.cqlExecutor = new CQLExecutor(session, logCql);
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
-		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(), this);
+		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(), this, consistencyHorizon);
 	}
 
 	/**

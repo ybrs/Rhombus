@@ -29,10 +29,12 @@ public class ConnectionManager {
 	private Cluster cluster;
 	private boolean logCql = false;
 	private Integer nativeTransportPort = null;
+	private Integer consistencyHorizon = null;
 
 	public ConnectionManager(CassandraConfiguration configuration) {
 		this.contactPoints = configuration.getContactPoints();
 		this.localDatacenter = configuration.getLocalDatacenter();
+		this.consistencyHorizon = configuration.getConsistencyHorizion();
 	}
 
 	/**
@@ -70,7 +72,7 @@ public class ConnectionManager {
 		if(objectMapper == null) {
 			logger.debug("Connecting to keyspace {}", defaultKeyspace.getName());
 			Session session = cluster.connect(defaultKeyspace.getName());
-			objectMapper = new ObjectMapper(session, defaultKeyspace);
+			objectMapper = new ObjectMapper(session, defaultKeyspace, consistencyHorizon);
 			objectMapper.setLogCql(logCql);
 			objectMappers.put(keyspace, objectMapper);
 		}
@@ -92,7 +94,7 @@ public class ConnectionManager {
 		//Get a session for the new keyspace
 		Session session = getSessionForNewKeyspace(keyspaceDefinition, forceRebuild);
 		//Use this session to create an object mapper and build the keyspace
-		ObjectMapper mapper = new ObjectMapper(session, keyspaceDefinition);
+		ObjectMapper mapper = new ObjectMapper(session, keyspaceDefinition, consistencyHorizon);
 		mapper.setLogCql(logCql);
 		mapper.buildKeyspace(forceRebuild);
 		objectMappers.put(keyspaceDefinition.getName(), mapper);
