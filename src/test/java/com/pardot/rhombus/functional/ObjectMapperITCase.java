@@ -119,7 +119,8 @@ public class ObjectMapperITCase {
 		assertEquals(333333L, row.getIndexValues().get(0).get("instance"));
 		assertEquals(333333L, row.getIndexValues().get(1).get("instance"));
 
-		assertEquals(null, om.getNextUpdateIndexRow(row.getTimeStampOfMostCurrentUpdate()));
+		//verify that if we try to get the next row it returns null
+		assertEquals(null, om.getNextUpdateIndexRow(row.getRowKey()));
 
 
 
