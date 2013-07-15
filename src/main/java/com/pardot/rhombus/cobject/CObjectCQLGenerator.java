@@ -44,7 +44,7 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_DELETE = "DELETE FROM %s WHERE %s;";//"DELETE FROM %s USING TIMESTAMP %s WHERE %s;"; //Add back when timestamps become preparable
 	protected static final String TEMPLATE_SELECT_FIRST_ELIGIBLE_INDEX_UPDATE = "SELECT statictablename,instanceid FROM \"__index_updates\" WHERE id < ? limit 1 allow filtering;";
 	protected static final String TEMPLATE_SELECT_NEXT_ELIGIBLE_INDEX_UPDATE = "SELECT statictablename,instanceid FROM \"__index_updates\" where token(statictablename,instanceid) > token(?,?) and id < ? limit 1 allow filtering;";
-	protected static final String TEMPLATE_SELECT_ROW_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" where token(statictablename,instanceid) = token(?,?);";
+	protected static final String TEMPLATE_SELECT_ROW_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" where token(statictablename,instanceid) = token(?,?) order by id DESC;";
 
 	protected Map<String, CDefinition> definitions;
 	protected CObjectShardList shardList;
@@ -628,7 +628,7 @@ public class CObjectCQLGenerator {
 	}
 
 
-	protected static CQLStatement makeCQLforDeleteUUIDFromIndex(CDefinition def, CIndex index, UUID uuid, Map<String,Object> indexValues, Long timestamp){
+	public static CQLStatement makeCQLforDeleteUUIDFromIndex(CDefinition def, CIndex index, UUID uuid, Map<String,Object> indexValues, Long timestamp){
 		List values = Lists.newArrayList( uuid, Long.valueOf(index.getShardingStrategy().getShardKey(uuid)) );
 		CQLStatement wheres = makeAndedEqualList(def, indexValues);
 		values.addAll(Arrays.asList(wheres.getValues()));
@@ -638,7 +638,7 @@ public class CObjectCQLGenerator {
 			makeTableName(def,index),
 			//timestamp, //Add back when timestamps become preparable
 			whereCQL);
-
+	   //TODO: fix the issue with ignoring the timestamp this is very important for updates. Updates are broken until we can prepare the timestamp
 		return CQLStatement.make(query,values.toArray());
 	}
 

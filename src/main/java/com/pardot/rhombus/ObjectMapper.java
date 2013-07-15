@@ -226,6 +226,16 @@ public class ObjectMapper implements CObjectShardList {
 		mapResults(statementIterator, def, 0L);
 	}
 
+	public void deleteObsoleteIndex(IndexUpdateRow row, Map<String,Object> indexValues){
+		CQLStatement cql = cqlGenerator.makeCQLforDeleteUUIDFromIndex(
+			keyspaceDefinition.getDefinitions().get(row.getObjectName()),
+			row.getIndex(),
+			row.getInstanceId(),
+			indexValues,
+			row.getTimeStampOfMostCurrentUpdate());
+		cqlExecutor.executeSync(cql);
+	}
+
 	/**
 	 * Update objectType with key using values
 	 * @param objectType Type of object to update

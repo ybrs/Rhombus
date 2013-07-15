@@ -112,8 +112,9 @@ public class ObjectMapperITCase {
 		assertEquals("testtype", row.getObjectName());
 		assertEquals("foreignid:instance:type", row.getIndex().getKey());
 		assertEquals(2, row.getIndexValues().size());
-		assertEquals(5, row.getIndexValues().get(0).get("type"));
-		assertEquals(7, row.getIndexValues().get(1).get("type"));
+		//most recent should be at the front of the list
+		assertEquals(7, row.getIndexValues().get(0).get("type"));
+		assertEquals(5, row.getIndexValues().get(1).get("type"));
 		assertEquals(778L, row.getIndexValues().get(0).get("foreignid"));
 		assertEquals(778L, row.getIndexValues().get(1).get("foreignid"));
 		assertEquals(333333L, row.getIndexValues().get(0).get("instance"));
