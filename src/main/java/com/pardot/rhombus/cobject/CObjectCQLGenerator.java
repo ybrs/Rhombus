@@ -302,18 +302,39 @@ public class CObjectCQLGenerator {
 		}
 		Map<String,ArrayList> fieldsAndValues = makeFieldAndValueList(def,completeValues);
 
-		//(4) Insert into the new indexes like a new insert
+		//(4) Add index values to the new values list
+		Map<String,Object> newValuesAndIndexValues = Maps.newHashMap(newValues);
+		for(String s: def.getRequiredFields()){
+			if(newValuesAndIndexValues.get(s) == null){
+				newValuesAndIndexValues.put(s, completeValues.get(s));
+			}
+		}
+		Map<String,ArrayList> fieldsAndValuesForNewValuesAndIndexValues = makeFieldAndValueList(def,newValuesAndIndexValues);
+
+		//(5) Insert into the new indexes like a new insert
 		for(CIndex i: effectedIndexes){
+			if(def.isAllowNullPrimaryKeyInserts()){
+				//check if we have the necessary primary fields to insert on this index. If not just continue;
+				if(!i.validateIndexKeys(i.getIndexKeyAndValues(completeValues))){
+					continue;
+				}
+			}
 			addCQLStatmentsForIndexInsert(true, ret, def, completeValues, i, key, fieldsAndValues,null, null);
 		}
 
-		//(4) Insert into the existing indexes without the shard index addition and only update new values
-		Map<String,ArrayList> fieldsAndValuesOnlyForChanges = makeFieldAndValueList(def,newValues);
+		//(6) Insert into the existing indexes without the shard index addition
 		for(CIndex i: uneffectedIndexes){
-			addCQLStatmentsForIndexInsert(false, ret, def, newValues, i, key, fieldsAndValuesOnlyForChanges,null, null);
+			if(def.isAllowNullPrimaryKeyInserts()){
+				//check if we have the necessary primary fields to insert on this index. If not just continue;
+				if(!i.validateIndexKeys(i.getIndexKeyAndValues(newValuesAndIndexValues))){
+					continue;
+				}
+			}
+			addCQLStatmentsForIndexInsert(false, ret, def, newValuesAndIndexValues, i, key, fieldsAndValuesForNewValuesAndIndexValues,null, null);
 		}
 
-		//(5) Update the static table (be sure to only update and not insert the completevalues just in case they are wrong, the background job will fix them later)
+		//(7) Update the static table (be sure to only update and not insert the completevalues just in case they are wrong, the background job will fix them later)
+		Map<String,ArrayList> fieldsAndValuesOnlyForChanges = makeFieldAndValueList(def,newValues);
 		ret.add(makeInsertStatementStatic(
 				makeTableName(def,null),
 				(List<String>)fieldsAndValuesOnlyForChanges.get("fields").clone(),
@@ -323,7 +344,7 @@ public class CObjectCQLGenerator {
 				null
 		));
 
-		//(6) Insert a snapshot of the updated values for this id into the __index_updates
+		//(8) Insert a snapshot of the updated values for this id into the __index_updates
 		ret.add(makeInsertUpdateIndexStatement(def, key, def.makeIndexValues(completeValues)));
 
 		return new BoundedCQLStatementIterator(ret);

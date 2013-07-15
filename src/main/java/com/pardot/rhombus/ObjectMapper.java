@@ -28,7 +28,7 @@ public class ObjectMapper implements CObjectShardList {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapper.class);
 	private static final int reasonableStatementLimit = 20;
-	private boolean executeAsync = true;
+	private boolean executeAsync = false;
 	private boolean logCql = false;
 	private boolean cacheBoundedQueries = true;
 	private CQLExecutor cqlExecutor;
