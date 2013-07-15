@@ -12,29 +12,22 @@ import java.util.UUID;
  */
 public class IndexUpdateRow {
 
-	private String objectName;
-	private UUID instanceId;
 	private CIndex index;
 	private List<SortedMap<String,Object>> indexValues;
-	private Long rowKey;
+	private IndexUpdateRowKey rowKey;
 	private Long timeStampOfMostCurrentUpdate;
 
-	public IndexUpdateRow(String objectName, UUID instanceId, Long rowKey, CIndex index, Long timeStampOfMostCurrentUpdate, List<SortedMap<String,Object>> indexValues){
-	    this.objectName = objectName;
-		this.rowKey = rowKey;
+	public IndexUpdateRow(String objectName, UUID instanceId, CIndex index, Long timeStampOfMostCurrentUpdate, List<SortedMap<String,Object>> indexValues){
+	    this.rowKey = new IndexUpdateRowKey(objectName, instanceId);
 		this.index = index;
-		this.instanceId = instanceId;
 		this.indexValues = indexValues;
 		this.timeStampOfMostCurrentUpdate = timeStampOfMostCurrentUpdate;
 	}
 
 	public String getObjectName() {
-		return objectName;
+		return this.rowKey.getObjectName();
 	}
 
-	public void setObjectName(String objectName) {
-		this.objectName = objectName;
-	}
 
 	public CIndex getIndex() {
 		return index;
@@ -52,20 +45,16 @@ public class IndexUpdateRow {
 		this.indexValues = indexValues;
 	}
 
-	public Long getRowKey() {
+	public IndexUpdateRowKey getRowKey() {
 		return rowKey;
 	}
 
-	public void setRowKey(Long rowKey) {
+	public void setRowKey(IndexUpdateRowKey rowKey) {
 		this.rowKey = rowKey;
 	}
 
 	public UUID getInstanceId() {
-		return instanceId;
-	}
-
-	public void setInstanceId(UUID instanceId) {
-		this.instanceId = instanceId;
+		return this.rowKey.getInstanceId();
 	}
 
 	public Long getTimeStampOfMostCurrentUpdate() {

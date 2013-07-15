@@ -295,15 +295,15 @@ public class ObjectMapper implements CObjectShardList {
 		return JsonUtil.rhombusMapFromJsonMap(jsonMap,def);
 	}
 
-	public IndexUpdateRow getNextUpdateIndexRow(@Nullable Long lastInstancetoken) throws IOException, JsonMappingException {
-		CQLStatement cqlForNext = (lastInstancetoken == null) ?
-			cqlGenerator.makeGetFirstEligibleIndexUpdate() : cqlGenerator.makeGetNextEligibleIndexUpdate(lastInstancetoken);
+	public IndexUpdateRow getNextUpdateIndexRow(@Nullable IndexUpdateRowKey lastInstanceKey) throws IOException, JsonMappingException {
+		CQLStatement cqlForNext = (lastInstanceKey == null) ?
+			cqlGenerator.makeGetFirstEligibleIndexUpdate() : cqlGenerator.makeGetNextEligibleIndexUpdate(lastInstanceKey);
 		ResultSet resultSet = cqlExecutor.executeSync(cqlForNext);
 		if(resultSet.isExhausted()){
 			return null;
 		}
-		Long nextInstanceToken = resultSet.one().getLong(0);
-		CQLStatement cqlForRow = cqlGenerator.makeGetRowIndexUpdate(nextInstanceToken);
+		IndexUpdateRowKey nextInstanceKey = new IndexUpdateRowKey(resultSet.one());
+		CQLStatement cqlForRow = cqlGenerator.makeGetRowIndexUpdate(nextInstanceKey);
 		resultSet = cqlExecutor.executeSync(cqlForRow);
 		List<Row> results = resultSet.all();
 		if(results.size() == 0 ){
@@ -320,7 +320,6 @@ public class ObjectMapper implements CObjectShardList {
 		return new IndexUpdateRow(
 			objectName,
 			results.get(0).getUUID("instanceid"),
-			nextInstanceToken,
 			index,
 			UUIDs.unixTimestamp(results.get(0).getUUID("id")),
 			indexValueList
