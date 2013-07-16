@@ -236,6 +236,11 @@ public class ObjectMapper implements CObjectShardList {
 		cqlExecutor.executeSync(cql);
 	}
 
+	public void deleteObsoleteUpdateIndexColumn(IndexUpdateRowKey rowKey, UUID id){
+		CQLStatement cql = cqlGenerator.makeCQLforDeleteObsoleteUpdateIndexColumn(rowKey, id);
+		cqlExecutor.executeSync(cql);
+	}
+
 	/**
 	 * Update objectType with key using values
 	 * @param objectType Type of object to update
@@ -324,15 +329,18 @@ public class ObjectMapper implements CObjectShardList {
 		CIndex index = def.getIndex(unpackIndexValuesFromJson(def, results.get(0).getString("indexvalues")));
 
 		List<SortedMap<String,Object>> indexValueList = Lists.newArrayList();
+		List<UUID> ids = Lists.newArrayList();
 		for(Row row : results){
 			indexValueList.add(unpackIndexValuesFromJson(def,row.getString("indexvalues")));
+			ids.add(row.getUUID("id"));
 		}
 		return new IndexUpdateRow(
 			objectName,
 			results.get(0).getUUID("instanceid"),
 			index,
 			UUIDs.unixTimestamp(results.get(0).getUUID("id")),
-			indexValueList
+			indexValueList,
+			ids
 		);
 	}
 

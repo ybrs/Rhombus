@@ -16,12 +16,14 @@ public class IndexUpdateRow {
 	private List<SortedMap<String,Object>> indexValues;
 	private IndexUpdateRowKey rowKey;
 	private Long timeStampOfMostCurrentUpdate;
+	private List<UUID> ids;
 
-	public IndexUpdateRow(String objectName, UUID instanceId, CIndex index, Long timeStampOfMostCurrentUpdate, List<SortedMap<String,Object>> indexValues){
+	public IndexUpdateRow(String objectName, UUID instanceId, CIndex index, Long timeStampOfMostCurrentUpdate, List<SortedMap<String,Object>> indexValues, List<UUID> ids){
 	    this.rowKey = new IndexUpdateRowKey(objectName, instanceId);
 		this.index = index;
 		this.indexValues = indexValues;
 		this.timeStampOfMostCurrentUpdate = timeStampOfMostCurrentUpdate;
+		this.ids = ids;
 	}
 
 	public String getObjectName() {
@@ -63,6 +65,14 @@ public class IndexUpdateRow {
 
 	public void setTimeStampOfMostCurrentUpdate(Long timeStampOfMostCurrentUpdate) {
 		this.timeStampOfMostCurrentUpdate = timeStampOfMostCurrentUpdate;
+	}
+
+	public List<UUID> getIds() {
+		return ids;
+	}
+
+	public void setIds(List<UUID> ids) {
+		this.ids = ids;
 	}
 
 }

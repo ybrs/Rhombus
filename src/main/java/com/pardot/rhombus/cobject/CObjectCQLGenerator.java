@@ -42,6 +42,7 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_SELECT_WIDE = "SELECT * FROM \"%s\" WHERE shardid = %s AND %s ORDER BY id %s %s ALLOW FILTERING;";
 	protected static final String TEMPLATE_SELECT_WIDE_INDEX = "SELECT shardid FROM \"%s\" WHERE tablename = ? AND indexvalues = ?%s ORDER BY shardid %s ALLOW FILTERING;";
 	protected static final String TEMPLATE_DELETE = "DELETE FROM %s WHERE %s;";//"DELETE FROM %s USING TIMESTAMP %s WHERE %s;"; //Add back when timestamps become preparable
+	protected static final String TEMPLATE_DELETE_OBSOLETE_UPDATE_INDEX_COLUMN = "DELETE FROM \"__index_updates\" WHERE  statictablename = ? and instanceid = ? and id = ?";
 	protected static final String TEMPLATE_SELECT_FIRST_ELIGIBLE_INDEX_UPDATE = "SELECT statictablename,instanceid FROM \"__index_updates\" WHERE id < ? limit 1 allow filtering;";
 	protected static final String TEMPLATE_SELECT_NEXT_ELIGIBLE_INDEX_UPDATE = "SELECT statictablename,instanceid FROM \"__index_updates\" where token(statictablename,instanceid) > token(?,?) and id < ? limit 1 allow filtering;";
 	protected static final String TEMPLATE_SELECT_ROW_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" where token(statictablename,instanceid) = token(?,?) order by id DESC;";
@@ -201,6 +202,19 @@ public class CObjectCQLGenerator {
 	@NotNull
 	public CQLStatementIterator makeCQLforDelete(String objType, UUID key,  Map<String,Object> data, Long timestamp){
 		return makeCQLforDelete(this.definitions.get(objType), key, data, timestamp);
+	}
+
+	/**
+	 *
+	 * @param rowKey - Row key of the index_update row
+	 * @param id - Specific id of the item in the row to delete
+	 * @return Single CQLStatement that runs the delete
+	 */
+	@NotNull
+	public CQLStatement makeCQLforDeleteObsoleteUpdateIndexColumn(IndexUpdateRowKey rowKey, UUID id){
+		return CQLStatement.make(
+				TEMPLATE_DELETE_OBSOLETE_UPDATE_INDEX_COLUMN,
+				Arrays.asList(rowKey.getObjectName(), rowKey.getInstanceId(), id).toArray());
 	}
 
 	/**

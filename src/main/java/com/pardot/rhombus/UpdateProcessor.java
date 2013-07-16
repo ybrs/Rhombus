@@ -53,6 +53,7 @@ public class UpdateProcessor {
 		//make a list of all the updated indexes and subtract all the indexes that are current
 		Map<String,Object> mostRecentUpdate = row.getIndexValues().get(0);
 		row.getIndexValues().remove(0);
+		row.getIds().remove(0);
 		List<Map<String,Object>> listToDelete = Lists.newArrayList();
 		for(Map<String,Object> update: row.getIndexValues()){
 			if(!areIndexValuesEqual(mostRecentUpdate, update)){
@@ -63,6 +64,12 @@ public class UpdateProcessor {
 		for(Map<String,Object> iv : listToDelete){
 			objectMapper.deleteObsoleteIndex(row,iv);
 		}
+
+		//now delete the processed update columns in this row
+		for(UUID todelete: row.getIds()){
+			objectMapper.deleteObsoleteUpdateIndexColumn(row.getRowKey(),todelete);
+		}
+
 	}
 
 	protected boolean areIndexValuesEqual(Map<String,Object> a, Map<String,Object> b){
