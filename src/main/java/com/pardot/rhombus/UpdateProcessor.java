@@ -1,5 +1,6 @@
 package com.pardot.rhombus;
 
+import com.datastax.driver.core.utils.UUIDs;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Lists;
@@ -46,7 +47,11 @@ public class UpdateProcessor {
 			return;
 		}
 		if(row.getIndexValues().size() == 1){
-			//todo: if this is older than 2 times the consistency horizon, just delete it
+			//if this is older than the consistency horizon, just delete it
+			Long consistencyHorizon = UUIDs.unixTimestamp(objectMapper.getTimeUUIDAtEndOfConsistencyHorizion());
+			if(row.getTimeStampOfMostCurrentUpdate() > consistencyHorizon){
+				objectMapper.deleteObsoleteUpdateIndexColumn(row.getRowKey(),row.getIds().get(0));
+			}
 			return;
 		}
 

@@ -431,7 +431,7 @@ public class CObjectCQLGenerator {
 		return CQLStatement.make(query, values.toArray());
 	}
 
-	protected UUID getTimeUUIDAtEndOfConsistencyHorizion(){
+	public UUID getTimeUUIDAtEndOfConsistencyHorizion(){
 		UUID ret = UUIDs.startOf(DateTime.now().getMillis() - consistencyHorizon);//now minus 5 seconds
 		return ret;
 	}

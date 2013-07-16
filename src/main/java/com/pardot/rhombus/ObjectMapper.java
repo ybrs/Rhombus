@@ -98,6 +98,10 @@ public class ObjectMapper implements CObjectShardList {
 		}
 	}
 
+	public UUID getTimeUUIDAtEndOfConsistencyHorizion(){
+		return cqlGenerator.getTimeUUIDAtEndOfConsistencyHorizion();
+	}
+
 	public void executeStatements(CQLStatementIterator statementIterator) {
 		List<CQLStatementIterator> statementIterators = Lists.newArrayList();
 		statementIterators.add(statementIterator);
