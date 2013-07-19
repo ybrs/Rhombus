@@ -158,7 +158,7 @@ For documentation regarding replication class and replication factors go to: htt
 (8) Get all home runs at AT&T Field
 
     Criteria criteria = new Criteria();
-    SortedMap values = new SortedMap();
+    SortedMap values = values = Maps.newTreeMap();
     values.put("baseball_stadium", "AT&T Field");
     criteria.setIndexKeys(values);
     criteria.setOrdering(CObjectOrdering.DESCENDING);
