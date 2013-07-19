@@ -131,25 +131,25 @@ public class UpdateProcessorITCase {
 		//verify that the object is no longer present in the invalid indexes
 
 		//Should be missing from the bad index
-//		criteria = new Criteria();
-//		values = Maps.newTreeMap();
-//		values.put("foreignid", Long.valueOf(200));
-//		criteria.setIndexKeys(values);
-//		criteria.setLimit(0L);
-//		indexObjects = om.list("testtype", criteria);
-//		assertEquals(0, indexObjects.size());
-//
-//		//But is should be present in the correct index
-//		criteria = new Criteria();
-//		values = Maps.newTreeMap();
-//		values.put("foreignid", Long.valueOf(100));
-//		criteria.setIndexKeys(values);
-//		indexObjects = om.list("testtype", criteria);
-//		assertEquals(1, indexObjects.size());
-//		assertEquals(staticTableObject.get("data1"),indexObjects.get(0).get("data1"));
-//		assertEquals(100L,indexObjects.get(0).get("foreignid"));
-//		assertEquals(101,indexObjects.get(0).get("type"));
-//		assertEquals(103L,indexObjects.get(0).get("filtered"));
+		criteria = new Criteria();
+		values = Maps.newTreeMap();
+		values.put("foreignid", Long.valueOf(200));
+		criteria.setIndexKeys(values);
+		criteria.setLimit(0L);
+		indexObjects = om.list("testtype", criteria);
+		assertEquals(0, indexObjects.size());
+
+		//But is should be present in the correct index
+		criteria = new Criteria();
+		values = Maps.newTreeMap();
+		values.put("foreignid", Long.valueOf(100));
+		criteria.setIndexKeys(values);
+		indexObjects = om.list("testtype", criteria);
+		assertEquals(1, indexObjects.size());
+		assertEquals(staticTableObject.get("data1"),indexObjects.get(0).get("data1"));
+		assertEquals(100L,indexObjects.get(0).get("foreignid"));
+		assertEquals(101,indexObjects.get(0).get("type"));
+		assertEquals(103,indexObjects.get(0).get("filtered"));
 	}
 
 

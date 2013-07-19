@@ -21,7 +21,7 @@ public class Criteria {
 	private CObjectOrdering ordering;
 	private UUID startUuid;
 	private UUID endUuid;
-	private Long limit;
+	private Long limit = 0L;
 	private Boolean inclusive = true;
 
 

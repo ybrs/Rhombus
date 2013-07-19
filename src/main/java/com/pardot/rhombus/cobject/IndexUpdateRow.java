@@ -12,15 +12,13 @@ import java.util.UUID;
  */
 public class IndexUpdateRow {
 
-	private CIndex index;
 	private List<SortedMap<String,Object>> indexValues;
 	private IndexUpdateRowKey rowKey;
 	private Long timeStampOfMostCurrentUpdate;
 	private List<UUID> ids;
 
-	public IndexUpdateRow(String objectName, UUID instanceId, CIndex index, Long timeStampOfMostCurrentUpdate, List<SortedMap<String,Object>> indexValues, List<UUID> ids){
-	    this.rowKey = new IndexUpdateRowKey(objectName, instanceId);
-		this.index = index;
+	public IndexUpdateRow(String objectName, UUID instanceId, Long timeStampOfMostCurrentUpdate, List<SortedMap<String,Object>> indexValues, List<UUID> ids){
+		this.rowKey = new IndexUpdateRowKey(objectName, instanceId);
 		this.indexValues = indexValues;
 		this.timeStampOfMostCurrentUpdate = timeStampOfMostCurrentUpdate;
 		this.ids = ids;
@@ -28,15 +26,6 @@ public class IndexUpdateRow {
 
 	public String getObjectName() {
 		return this.rowKey.getObjectName();
-	}
-
-
-	public CIndex getIndex() {
-		return index;
-	}
-
-	public void setIndex(CIndex index) {
-		this.index = index;
 	}
 
 	public List<SortedMap<String, Object>> getIndexValues() {

@@ -4,9 +4,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Lists;
-import com.pardot.rhombus.cobject.CObjectCQLGenerator;
-import com.pardot.rhombus.cobject.CQLStatement;
-import com.pardot.rhombus.cobject.IndexUpdateRow;
+import com.pardot.rhombus.cobject.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -59,15 +57,22 @@ public class UpdateProcessor {
 		Map<String,Object> mostRecentUpdate = row.getIndexValues().get(0);
 		row.getIndexValues().remove(0);
 		row.getIds().remove(0);
-		List<Map<String,Object>> listToDelete = Lists.newArrayList();
+		List<CIndex> listOfIndexesToDelete = Lists.newArrayList();
+		List<Map<String,Object>> listOfValuesToDelete = Lists.newArrayList();
 		for(Map<String,Object> update: row.getIndexValues()){
 			if(!areIndexValuesEqual(mostRecentUpdate, update)){
-				listToDelete.add(update);
+				listOfValuesToDelete.add(update);
+				listOfIndexesToDelete.addAll(
+					getListOfEffectedIndexes(objectMapper.getKeyspaceDefinition().getDefinitions().get(row.getObjectName()),
+					mostRecentUpdate,
+					update));
 			}
 		}
 		//delete the list of indexes with a timestamp of the current update
-		for(Map<String,Object> iv : listToDelete){
-			objectMapper.deleteObsoleteIndex(row,iv);
+		for(CIndex index : listOfIndexesToDelete){
+			for(Map<String,Object> values: listOfValuesToDelete){
+				objectMapper.deleteObsoleteIndex(row,index, values);
+			}
 		}
 
 		//now delete the processed update columns in this row
@@ -77,6 +82,20 @@ public class UpdateProcessor {
 
 	}
 
+	//todo add unit test
+	protected List<CIndex> getListOfEffectedIndexes(CDefinition def, Map<String,Object> a, Map<String,Object> b){
+		List<CIndex> ret = Lists.newArrayList();
+		for(CIndex i: def.getIndexesAsList()){
+			Map<String,Object> aValues = i.getIndexKeyAndValues(a);
+			Map<String,Object> bValues = i.getIndexKeyAndValues(b);
+			if(!areIndexValuesEqual(aValues,bValues)){
+				ret.add(i);
+			}
+		}
+		return ret;
+	}
+
+	//todo add unit test
 	protected boolean areIndexValuesEqual(Map<String,Object> a, Map<String,Object> b){
 		if(a.keySet().size() != b.keySet().size()){
 			return false;

@@ -2,6 +2,7 @@ package com.pardot.rhombus.cobject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import java.io.IOException;
@@ -88,6 +89,14 @@ public class CDefinition {
 	public CIndex getIndex(SortedMap<String,Object> indexValues){
 		String key = Joiner.on(":").join(indexValues.keySet());
 		return indexesIndexedByFields.get(key);
+	}
+
+	public List<CIndex> getIndexesAsList(){
+		List<CIndex> ret = Lists.newArrayList();
+		for(String key: this.indexes.keySet()){
+			ret.add(this.indexes.get(key));
+		}
+		return ret;
 	}
 
 }

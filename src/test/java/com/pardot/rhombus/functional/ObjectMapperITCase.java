@@ -110,7 +110,6 @@ public class ObjectMapperITCase {
 		//Test that we can retrieve the proper update rows
 		IndexUpdateRow row =  om.getNextUpdateIndexRow(null);
 		assertEquals("testtype", row.getObjectName());
-		assertEquals("foreignid:instance:type", row.getIndex().getKey());
 		assertEquals(2, row.getIndexValues().size());
 		//most recent should be at the front of the list
 		assertEquals(7, row.getIndexValues().get(0).get("type"));
