@@ -45,7 +45,7 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_DELETE_OBSOLETE_UPDATE_INDEX_COLUMN = "DELETE FROM \"__index_updates\" WHERE  statictablename = ? and instanceid = ? and id = ?";
 	protected static final String TEMPLATE_SELECT_FIRST_ELIGIBLE_INDEX_UPDATE = "SELECT statictablename,instanceid FROM \"__index_updates\" WHERE id < ? limit 1 allow filtering;";
 	protected static final String TEMPLATE_SELECT_NEXT_ELIGIBLE_INDEX_UPDATE = "SELECT statictablename,instanceid FROM \"__index_updates\" where token(statictablename,instanceid) > token(?,?) and id < ? limit 1 allow filtering;";
-	protected static final String TEMPLATE_SELECT_ROW_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" where token(statictablename,instanceid) = token(?,?) order by id DESC;";
+	protected static final String TEMPLATE_SELECT_ROW_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" where statictablename = ? and instanceid = ? order by id DESC;";
 
 	protected Map<String, CDefinition> definitions;
 	protected CObjectShardList shardList;
