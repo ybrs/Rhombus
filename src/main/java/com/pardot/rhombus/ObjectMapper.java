@@ -477,6 +477,14 @@ public class ObjectMapper implements CObjectShardList {
 		return cqlExecutor;
 	}
 
+	public CObjectCQLGenerator getCqlGenerator_ONLY_FOR_TESTING(){
+		return cqlGenerator;
+	}
+
+	public CKeyspaceDefinition getKeyspaceDefinition_ONLY_FOR_TESTING(){
+		return keyspaceDefinition;
+	}
+
 	protected CKeyspaceDefinition getKeyspaceDefinition() {
 		return keyspaceDefinition;
 	}

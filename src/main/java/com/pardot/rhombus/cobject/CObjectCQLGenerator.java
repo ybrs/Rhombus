@@ -436,7 +436,7 @@ public class CObjectCQLGenerator {
 		return ret;
 	}
 
-	protected static CQLStatement makeInsertUpdateIndexStatement(CDefinition def, UUID instanceId, Map<String,Object> indexvalues) throws CQLGenerationException {
+	public static CQLStatement makeInsertUpdateIndexStatement(CDefinition def, UUID instanceId, Map<String,Object> indexvalues) throws CQLGenerationException {
 		UUID id = UUIDs.timeBased();
 		String tableName = makeTableName(def,null);
 		String indexValuesAsJson;
@@ -519,7 +519,7 @@ public class CObjectCQLGenerator {
 		return new BoundedCQLStatementIterator(ret);
 	}
 
-	protected static void addCQLStatmentsForIndexInsert(boolean includeShardInsert, List<CQLStatement> statementListToAddTo, CDefinition def, @NotNull Map<String,Object> data, CIndex i, UUID uuid, Map<String,ArrayList> fieldsAndValues,Long timestamp, Integer ttl) throws CQLGenerationException {
+	public static void addCQLStatmentsForIndexInsert(boolean includeShardInsert, List<CQLStatement> statementListToAddTo, CDefinition def, @NotNull Map<String,Object> data, CIndex i, UUID uuid, Map<String,ArrayList> fieldsAndValues,Long timestamp, Integer ttl) throws CQLGenerationException {
 		//insert it into the index
 		long shardId = i.getShardingStrategy().getShardKey(uuid);
 		statementListToAddTo.add(makeInsertStatementWide(
@@ -700,7 +700,7 @@ public class CObjectCQLGenerator {
 		throw new CQLGenerationException("Rhombus does not support indexes on fields of type " + value.getClass().toString());
 	}
 
-	protected static Map<String,ArrayList> makeFieldAndValueList(CDefinition def, Map<String,Object> data){
+	public static Map<String,ArrayList> makeFieldAndValueList(CDefinition def, Map<String,Object> data){
 		ArrayList fieldList = new ArrayList<String>(def.getFields().size());
 		ArrayList valueList = new ArrayList<Object>(def.getFields().size());
 		for(CField f : def.getFields().values()){
