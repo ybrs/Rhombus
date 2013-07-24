@@ -7,6 +7,7 @@ import com.pardot.rhombus.cobject.BoundedCQLStatementIterator;
 import com.pardot.rhombus.cobject.CQLExecutor;
 import com.pardot.rhombus.cobject.CQLStatement;
 import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.MetricsRegistry;
 import com.yammer.metrics.core.Timer;
 import com.yammer.metrics.core.TimerContext;
 import org.slf4j.Logger;
@@ -35,7 +36,6 @@ public class StatementIteratorConsumer {
 	private CQLExecutor cqlExecutor;
 	private final CountDownLatch shutdownLatch;
 	private final long statementTimeout;
-
 
 	public StatementIteratorConsumer(BoundedCQLStatementIterator statementIterator, CQLExecutor cqlExecutor, long statementTimeout) {
 		this.statementIterator = statementIterator;
@@ -71,6 +71,8 @@ public class StatementIteratorConsumer {
 		Futures.addCallback(future, new FutureCallback<ResultSet>() {
 			@Override
 			public void onSuccess(final ResultSet result) {
+				Host queriedHost = result.getExecutionInfo().getQueriedHost();
+				Metrics.defaultRegistry().newMeter(StatementIteratorConsumer.class, "queriedhost", queriedHost.getDatacenter(), TimeUnit.SECONDS).mark();
 				shutdownLatch.countDown();
 			}
 			@Override

@@ -46,6 +46,7 @@ public class ConnectionManager {
 			builder.addContactPoint(contactPoint);
 		}
 		if(localDatacenter != null) {
+			logger.debug("Creating with DCAwareRoundRobinPolicy: {}", localDatacenter);
 			builder.withLoadBalancingPolicy(new DCAwareRoundRobinPolicy(localDatacenter));
 		}
 		if(this.nativeTransportPort != null) {
