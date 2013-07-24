@@ -128,15 +128,17 @@ public class ConnectionManager {
 		sb.append(keyspace.getName());
 		sb.append(" WITH replication = { 'class' : '");
 		sb.append(keyspace.getReplicationClass());
+		sb.append("'");
 		for(String key : keyspace.getReplicationFactors().keySet()) {
-			sb.append("', '");
+			sb.append(", '");
 			sb.append(key);
 			sb.append("' : ");
 			sb.append(keyspace.getReplicationFactors().get(key));
 		}
 		sb.append("};");
 		try {
-			session.execute("CREATE KEYSPACE " + sb.toString());
+			String cql = "CREATE KEYSPACE " + sb.toString();
+			session.execute(cql);
 		} catch(Exception e) {
 			//TODO Catch only the specific exception for keyspace already exists
 			if(!forceRebuild) {
