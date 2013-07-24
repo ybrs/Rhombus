@@ -72,7 +72,8 @@ public class StatementIteratorConsumer {
 			@Override
 			public void onSuccess(final ResultSet result) {
 				Host queriedHost = result.getExecutionInfo().getQueriedHost();
-				Metrics.defaultRegistry().newMeter(StatementIteratorConsumer.class, "queriedhost", queriedHost.getDatacenter(), TimeUnit.SECONDS).mark();
+				logger.debug("queried host: {} in datacenter {}", queriedHost, queriedHost.getDatacenter());
+				Metrics.defaultRegistry().newMeter(StatementIteratorConsumer.class, "queriedhost." + queriedHost.getDatacenter(), queriedHost.getDatacenter(), TimeUnit.SECONDS).mark();
 				shutdownLatch.countDown();
 			}
 			@Override
