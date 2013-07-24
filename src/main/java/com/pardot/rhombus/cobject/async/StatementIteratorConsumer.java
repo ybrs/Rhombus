@@ -29,7 +29,7 @@ import static com.google.common.util.concurrent.Uninterruptibles.awaitUninterrup
 public class StatementIteratorConsumer {
 
 	private static Logger logger = LoggerFactory.getLogger(StatementIteratorConsumer.class);
-	private static final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	private static final ExecutorService executorService = Executors.newCachedThreadPool();
 	public final Timer latencies = Metrics.newTimer(StatementIteratorConsumer.class, "latencies", TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
 
 	private final BoundedCQLStatementIterator statementIterator;
@@ -66,7 +66,6 @@ public class StatementIteratorConsumer {
 	}
 
 	protected void handle(CQLStatement statement) {
-		final TimerContext timerContext = latencies.time();
 		ResultSetFuture future = this.cqlExecutor.executeAsync(statement);
 		Futures.addCallback(future, new FutureCallback<ResultSet>() {
 			@Override
