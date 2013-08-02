@@ -77,6 +77,6 @@ public class StatementIteratorConsumer {
 				logger.error("Error during async request: {}", t);
 				shutdownLatch.countDown();
 			}
-		});
+		}, executorService);
 	}
 }
