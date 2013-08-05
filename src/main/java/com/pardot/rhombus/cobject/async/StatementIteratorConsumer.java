@@ -62,6 +62,8 @@ public class StatementIteratorConsumer {
 	}
 
 	protected void handle(CQLStatement statement) {
+		final Timer asyncExecTimer = Metrics.defaultRegistry().newTimer(StatementIteratorConsumer.class, "asyncExec");
+		final TimerContext asyncExecTimerContext = asyncExecTimer.time();
 		ResultSetFuture future = this.cqlExecutor.executeAsync(statement);
 		Futures.addCallback(future, new FutureCallback<ResultSet>() {
 			@Override
@@ -69,7 +71,9 @@ public class StatementIteratorConsumer {
 				Host queriedHost = result.getExecutionInfo().getQueriedHost();
 				//logger.debug("queried host: {} in datacenter {}", queriedHost, queriedHost.getDatacenter());
 				Metrics.defaultRegistry().newMeter(StatementIteratorConsumer.class, "queriedhost." + queriedHost.getDatacenter(), queriedHost.getDatacenter(), TimeUnit.SECONDS).mark();
-				shutdownLatch.countDown();
+				asyncExecTimerContext.stop();
+				final Timer statementExecTimer = Metrics.defaultRegistry().newTimer(StatementIteratorConsumer.class, "statementExec");
+				statementExecTimer.update(result.getExecutionInfo().getQueryTrace().getDurationMicros(), TimeUnit.MICROSECONDS);
 			}
 			@Override
 			public void onFailure(final Throwable t) {
