@@ -8,7 +8,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.pardot.rhombus" level="DEBUG"/>
+    <logger name="com.pardot.rhombus" level="WARN"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />

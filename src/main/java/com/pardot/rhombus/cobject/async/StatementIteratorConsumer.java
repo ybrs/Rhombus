@@ -28,7 +28,7 @@ import static com.google.common.util.concurrent.Uninterruptibles.awaitUninterrup
 public class StatementIteratorConsumer {
 
 	private static Logger logger = LoggerFactory.getLogger(StatementIteratorConsumer.class);
-	private static ExecutorService executorService = Executors.newFixedThreadPool(400);
+	private static ExecutorService executorService = Executors.newFixedThreadPool(260);
 
 	private final BoundedCQLStatementIterator statementIterator;
 	private CQLExecutor cqlExecutor;
@@ -40,7 +40,7 @@ public class StatementIteratorConsumer {
 		this.cqlExecutor = cqlExecutor;
 		this.timeout = timeout;
 		this.shutdownLatch = new CountDownLatch((new Long(statementIterator.size())).intValue());
-
+		logger.trace("Created consumer with countdown {}", shutdownLatch.getCount());
 	}
 
 	public void start() {
@@ -57,23 +57,31 @@ public class StatementIteratorConsumer {
 	}
 
 	public void join() {
-		//logger.debug("awaitUninterruptibly with timeout {}ms", statementTimeout);
-		awaitUninterruptibly(shutdownLatch, timeout, TimeUnit.MILLISECONDS);
+		logger.trace("Awaiting shutdownLatch with timeout {}ms", timeout);
+		try {
+			boolean complete = shutdownLatch.await(timeout, TimeUnit.MILLISECONDS);
+			if(!complete) {
+				logger.warn("Timout executing statements asynch");
+				Metrics.defaultRegistry().newMeter(StatementIteratorConsumer.class, "asyncTimeout", "asyncTimeout", TimeUnit.SECONDS).mark();
+			}
+		} catch (InterruptedException e) {
+			logger.warn("Interrupted while executing statements asynch", e);
+		}
 	}
 
 	protected void handle(CQLStatement statement) {
 		final Timer asyncExecTimer = Metrics.defaultRegistry().newTimer(StatementIteratorConsumer.class, "asyncExec");
 		final TimerContext asyncExecTimerContext = asyncExecTimer.time();
+		final long startTime = System.nanoTime();
 		ResultSetFuture future = this.cqlExecutor.executeAsync(statement);
 		Futures.addCallback(future, new FutureCallback<ResultSet>() {
 			@Override
 			public void onSuccess(final ResultSet result) {
 				Host queriedHost = result.getExecutionInfo().getQueriedHost();
-				//logger.debug("queried host: {} in datacenter {}", queriedHost, queriedHost.getDatacenter());
 				Metrics.defaultRegistry().newMeter(StatementIteratorConsumer.class, "queriedhost." + queriedHost.getDatacenter(), queriedHost.getDatacenter(), TimeUnit.SECONDS).mark();
 				asyncExecTimerContext.stop();
-				final Timer statementExecTimer = Metrics.defaultRegistry().newTimer(StatementIteratorConsumer.class, "statementExec");
-				statementExecTimer.update(result.getExecutionInfo().getQueryTrace().getDurationMicros(), TimeUnit.MICROSECONDS);
+				logger.debug("Async exec time {}us", (System.nanoTime() - startTime) / 1000);
+				shutdownLatch.countDown();
 			}
 			@Override
 			public void onFailure(final Throwable t) {
@@ -81,6 +89,8 @@ public class StatementIteratorConsumer {
 				logger.error("Error during async request: {}", t);
 				shutdownLatch.countDown();
 			}
-		});
+		}
+		, executorService
+		);
 	}
 }

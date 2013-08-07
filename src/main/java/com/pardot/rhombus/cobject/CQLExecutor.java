@@ -19,6 +19,7 @@ public class CQLExecutor {
 	private Map<String, PreparedStatement> preparedStatementCache;
 	private static Logger logger = LoggerFactory.getLogger(CQLExecutor.class);
 	private boolean logCql = false;
+	private boolean enableTrace = false;
 	private Session session;
 
 	public CQLExecutor(Session session, boolean logCql){
@@ -39,9 +40,11 @@ public class CQLExecutor {
 				preparedStatementCache.put(cql.getQuery(), ps);
 			}
 		}
-
 		BoundStatement ret = new BoundStatement(ps);
 		ret.bind(cql.getValues());
+		if(enableTrace) {
+			ret.enableTracing();
+		}
 		return ret;
 	}
 
@@ -85,5 +88,13 @@ public class CQLExecutor {
 
 	public void setLogCql(boolean logCql) {
 		this.logCql = logCql;
+	}
+
+	public boolean isEnableTrace() {
+		return enableTrace;
+	}
+
+	public void setEnableTrace(boolean enableTrace) {
+		this.enableTrace = enableTrace;
 	}
 }

@@ -129,7 +129,7 @@ public class ObjectMapper implements CObjectShardList {
 			for(StatementIteratorConsumer consumer : consumers) {
 				consumer.join();
 			}
-			logger.debug("Async execution took {} ms", (System.nanoTime() - start) / 1000000);
+			logger.debug("Async execution took {}us", (System.nanoTime() - start) / 1000);
 		} else {
 			long start = System.nanoTime();
 			for(CQLStatementIterator statementIterator : statementIterators) {
