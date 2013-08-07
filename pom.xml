@@ -23,7 +23,6 @@
         <javax-validation.version>1.1.0.Final</javax-validation.version>
         <findbugs.version>2.0.1</findbugs.version>
         <java-driver.version>1.0.0</java-driver.version>
-        <cassandra.version>1.2.6</cassandra.version>
     </properties>
 
     <licenses>
@@ -293,6 +292,13 @@ native_transport_port: 9042]]>
 native_transport_port: ${cassandra.nativeTransportPort}]]>
                             </yaml>
                         </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.cassandra</groupId>
+                                <artifactId>cassandra-all</artifactId>
+                                <version>1.2.6</version>
+                            </dependency>
+                        </dependencies>
                     </plugin>
                 </plugins>
             </build>
