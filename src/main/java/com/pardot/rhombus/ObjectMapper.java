@@ -11,6 +11,8 @@ import com.google.common.collect.Maps;
 import com.pardot.rhombus.cobject.*;
 import com.pardot.rhombus.cobject.async.StatementIteratorConsumer;
 import com.pardot.rhombus.util.JsonUtil;
+import com.yammer.metrics.*;
+import com.yammer.metrics.core.*;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,7 +137,10 @@ public class ObjectMapper implements CObjectShardList {
 			for(CQLStatementIterator statementIterator : statementIterators) {
 				while(statementIterator.hasNext()) {
 					CQLStatement statement = statementIterator.next();
+					final com.yammer.metrics.core.Timer syncSingleExecTimer = com.yammer.metrics.Metrics.defaultRegistry().newTimer(ObjectMapper.class, "syncSingleExec");
+					final TimerContext syncSingleExecTimerContext = syncSingleExecTimer.time();
 					cqlExecutor.executeSync(statement);
+					syncSingleExecTimer.stop();
 				}
 			}
 			logger.debug("Sync execution took {} ms", (System.nanoTime() - start) / 1000000);
@@ -443,7 +448,7 @@ public class ObjectMapper implements CObjectShardList {
 		this.cqlExecutor.setLogCql(logCql);
 	}
 
-	public boolean isExecuteAsync() {
+	public boolean getExecuteAsync() {
 		return executeAsync;
 	}
 
