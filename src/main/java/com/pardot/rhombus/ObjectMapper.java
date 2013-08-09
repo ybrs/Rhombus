@@ -141,7 +141,7 @@ public class ObjectMapper implements CObjectShardList {
 					final com.yammer.metrics.core.Timer syncSingleExecTimer = com.yammer.metrics.Metrics.defaultRegistry().newTimer(ObjectMapper.class, "syncSingleExec");
 					final TimerContext syncSingleExecTimerContext = syncSingleExecTimer.time();
 					cqlExecutor.executeSync(statement);
-					syncSingleExecTimer.stop();
+					syncSingleExecTimerContext.stop();
 				}
 			}
 			logger.debug("Sync execution took {} ms", (System.nanoTime() - start) / 1000000);
