@@ -133,6 +133,7 @@ public class ObjectMapper implements CObjectShardList {
 			}
 			logger.debug("Async execution took {}us", (System.nanoTime() - start) / 1000);
 		} else {
+			logger.debug("Executing statements sync");
 			long start = System.nanoTime();
 			for(CQLStatementIterator statementIterator : statementIterators) {
 				while(statementIterator.hasNext()) {
@@ -453,6 +454,7 @@ public class ObjectMapper implements CObjectShardList {
 	}
 
 	public void setExecuteAsync(boolean executeAsync) {
+		logger.debug("{} setting executeAsync to {}", this.keyspaceDefinition.getName(), executeAsync);
 		this.executeAsync = executeAsync;
 	}
 
