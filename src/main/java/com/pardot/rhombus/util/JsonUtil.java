@@ -54,10 +54,11 @@ public class JsonUtil {
 			case ASCII:
 			case VARCHAR:
 			case TEXT:
-				if(String.class.isAssignableFrom(jsonValue.getClass())) {
-					return jsonValue;
-				} else {
-					throw new IllegalArgumentException();
+                String parsedString = String.valueOf(jsonValue);
+                if (parsedString == null) {
+                    throw new IllegalArgumentException();
+                } else {
+                    return parsedString;
 				}
 			case BIGINT:
 			case COUNTER:
