@@ -47,6 +47,7 @@ public class PDCAwareRoundRobinPolicy implements LoadBalancingPolicy {
 	private static final Logger logger = LoggerFactory.getLogger(PDCAwareRoundRobinPolicy.class);
 
 	private final ConcurrentMap<String, CopyOnWriteArrayList<Host>> perDcLiveHosts = new ConcurrentHashMap<String, CopyOnWriteArrayList<Host>>();
+	private CopyOnWriteArrayList<Host> unknownDcHosts = new CopyOnWriteArrayList<Host>();
 	private final AtomicInteger index = new AtomicInteger();
 	private final String localDc;
 	private final int usedHostsPerRemoteDc;
@@ -97,14 +98,14 @@ public class PDCAwareRoundRobinPolicy implements LoadBalancingPolicy {
 		for (Host host : hosts) {
 			String dc = safeDc(host);
 			if(dc == null) {
-				logger.warn("Null datacenter on cluster init for host {}", host);
-				dc = "F9EF26CD69FBC76473414ECE67251A40C4131651F49ABED984E3C210BBDC1257";
+				unknownDcHosts.addIfAbsent(host);
+			} else {
+				CopyOnWriteArrayList<Host> prev = perDcLiveHosts.get(dc);
+				if (prev == null)
+					perDcLiveHosts.put(dc, new CopyOnWriteArrayList<Host>(Collections.singletonList(host)));
+				else
+					prev.addIfAbsent(host);
 			}
-			CopyOnWriteArrayList<Host> prev = perDcLiveHosts.get(dc);
-			if (prev == null)
-				perDcLiveHosts.put(dc, new CopyOnWriteArrayList<Host>(Collections.singletonList(host)));
-			else
-				prev.addIfAbsent(host);
 		}
 	}
 
@@ -142,6 +143,10 @@ public class PDCAwareRoundRobinPolicy implements LoadBalancingPolicy {
 		String dc = dc(host);
 		if (dc.equals(localDc))
 			return HostDistance.LOCAL;
+
+		CopyOnWriteArrayList<Host> uHosts = (CopyOnWriteArrayList<Host>) unknownDcHosts.clone();
+		if(uHosts.contains(host))
+			return HostDistance.REMOTE;
 
 		CopyOnWriteArrayList<Host> dcHosts = perDcLiveHosts.get(dc);
 		if (dcHosts == null || usedHostsPerRemoteDc == 0)
@@ -181,6 +186,7 @@ public class PDCAwareRoundRobinPolicy implements LoadBalancingPolicy {
 
 			private int idx = startIdx;
 			private int remainingLocal = hosts.size();
+			private int remainingUnknown = unknownDcHosts.size();
 
 			// For remote Dcs
 			private Iterator<String> remoteDcs;
@@ -191,6 +197,13 @@ public class PDCAwareRoundRobinPolicy implements LoadBalancingPolicy {
 				if (remainingLocal > 0) {
 					remainingLocal--;
 					return hosts.get(idx++ % hosts.size());
+				}
+				
+				if(remainingUnknown > 0) {
+					remainingUnknown--;
+					Host host = hosts.get(remainingUnknown);
+					logger.warn("Returning a host from unknown datacenter: {}", host);
+					return host;
 				}
 
 				if (currentDcHosts != null && currentDcRemaining > 0) {
