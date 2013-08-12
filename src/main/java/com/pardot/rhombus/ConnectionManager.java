@@ -1,6 +1,7 @@
 package com.pardot.rhombus;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
 import com.datastax.driver.core.policies.TokenAwarePolicy;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Pardot, an ExactTarget company
@@ -43,7 +45,7 @@ public class ConnectionManager {
 	/**
 	 * Build the cluster based on the CassandraConfiguration passed in the constructor
 	 */
-	public void buildCluster() {
+	public Cluster buildCluster() {
 		Cluster.Builder builder = Cluster.builder();
 		for(String contactPoint : contactPoints) {
 			builder.addContactPoint(contactPoint);
@@ -57,6 +59,7 @@ public class ConnectionManager {
 			builder.withPort(this.nativeTransportPort);
 		}
 		cluster = builder.build();
+		return cluster;
 	}
 
 	/**
