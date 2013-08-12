@@ -7,6 +7,8 @@ import com.datastax.driver.core.policies.TokenAwarePolicy;
 import com.google.common.collect.Maps;
 
 import com.pardot.rhombus.cobject.CKeyspaceDefinition;
+import com.pardot.rhombus.driver.PDCAwareRoundRobinPolicy;
+import com.pardot.rhombus.driver.PTokenAwarePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +50,7 @@ public class ConnectionManager {
 		}
 		if(localDatacenter != null) {
 			logger.debug("Creating with DCAwareRoundRobinPolicy: {}", localDatacenter);
-			builder.withLoadBalancingPolicy(new TokenAwarePolicy(new DCAwareRoundRobinPolicy(localDatacenter)));
+			builder.withLoadBalancingPolicy(new PTokenAwarePolicy(new PDCAwareRoundRobinPolicy(localDatacenter), localDatacenter));
 		}
 		if(this.nativeTransportPort != null) {
 			logger.debug("Setting native transport port to {}", this.nativeTransportPort);
