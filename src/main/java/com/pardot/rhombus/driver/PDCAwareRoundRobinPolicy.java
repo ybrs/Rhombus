@@ -201,7 +201,7 @@ public class PDCAwareRoundRobinPolicy implements LoadBalancingPolicy {
 				
 				if(remainingUnknown > 0) {
 					remainingUnknown--;
-					Host host = hosts.get(remainingUnknown);
+					Host host = unknownDcHosts.get(remainingUnknown);
 					logger.warn("Returning a host from unknown datacenter: {}", host);
 					return host;
 				}
