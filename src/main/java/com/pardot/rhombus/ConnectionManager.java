@@ -1,21 +1,18 @@
 package com.pardot.rhombus;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
+import com.datastax.driver.core.policies.LoadBalancingPolicy;
 import com.datastax.driver.core.policies.TokenAwarePolicy;
 import com.google.common.collect.Maps;
 
 import com.pardot.rhombus.cobject.CKeyspaceDefinition;
-import com.pardot.rhombus.driver.PDCAwareRoundRobinPolicy;
-import com.pardot.rhombus.driver.PTokenAwarePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Pardot, an ExactTarget company
@@ -35,6 +32,7 @@ public class ConnectionManager {
 	private boolean logCql = false;
 	private Integer nativeTransportPort = null;
 	private Integer consistencyHorizon = null;
+	private LoadBalancingPolicy loadBalancingPolicy = null;
 
 	public ConnectionManager(CassandraConfiguration configuration) {
 		this.contactPoints = configuration.getContactPoints();
@@ -52,7 +50,10 @@ public class ConnectionManager {
 		}
 		if(localDatacenter != null) {
 			logger.debug("Creating with DCAwareRoundRobinPolicy: {}", localDatacenter);
-			builder.withLoadBalancingPolicy(new PTokenAwarePolicy(new PDCAwareRoundRobinPolicy(localDatacenter), localDatacenter));
+			if(loadBalancingPolicy == null) {
+				loadBalancingPolicy = new DCAwareRoundRobinPolicy(localDatacenter);
+			}
+			builder.withLoadBalancingPolicy(new TokenAwarePolicy(loadBalancingPolicy));
 		}
 		if(this.nativeTransportPort != null) {
 			logger.debug("Setting native transport port to {}", this.nativeTransportPort);
@@ -60,6 +61,14 @@ public class ConnectionManager {
 		}
 		cluster = builder.build();
 		return cluster;
+	}
+
+	public LoadBalancingPolicy getLoadBalancingPolicy() {
+		return loadBalancingPolicy;
+	}
+
+	public void setLoadBalancingPolicy(LoadBalancingPolicy loadBalancingPolicy) {
+		this.loadBalancingPolicy = loadBalancingPolicy;
 	}
 
 	/**
