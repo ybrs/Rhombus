@@ -3,6 +3,7 @@ package com.pardot.rhombus;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
+import com.datastax.driver.core.policies.TokenAwarePolicy;
 import com.google.common.collect.Maps;
 
 import com.pardot.rhombus.cobject.CKeyspaceDefinition;
@@ -47,7 +48,7 @@ public class ConnectionManager {
 		}
 		if(localDatacenter != null) {
 			logger.debug("Creating with DCAwareRoundRobinPolicy: {}", localDatacenter);
-			builder.withLoadBalancingPolicy(new DCAwareRoundRobinPolicy(localDatacenter));
+			builder.withLoadBalancingPolicy(new TokenAwarePolicy(new DCAwareRoundRobinPolicy(localDatacenter)));
 		}
 		if(this.nativeTransportPort != null) {
 			logger.debug("Setting native transport port to {}", this.nativeTransportPort);
