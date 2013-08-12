@@ -40,7 +40,7 @@ public class ObjectMapper implements CObjectShardList {
 	private long statementTimeout = 5000;
 
 	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition, Integer consistencyHorizon) {
-		this.cqlExecutor = new CQLExecutor(session, logCql);
+		this.cqlExecutor = new CQLExecutor(session, logCql, keyspaceDefinition.getConsistencyLevel());
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
 		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(), this, consistencyHorizon);

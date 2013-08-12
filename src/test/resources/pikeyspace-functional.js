@@ -5,6 +5,7 @@
         "SEATTLE" : 2,
         "DALLAS" : 2
     },
+    "consistencyLevel" : "QUORUM",
     "definitions" : [
         {
             "name": "object_audit",

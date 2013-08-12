@@ -1,5 +1,6 @@
 package com.pardot.rhombus.cobject;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 public class CKeyspaceDefinition {
 	private String name;
 	private String replicationClass;
+	private ConsistencyLevel consistencyLevel = ConsistencyLevel.ONE;
 	private Map<String, Integer> replicationFactors;
 	private Map<String, CDefinition> definitions;
 
@@ -62,5 +64,13 @@ public class CKeyspaceDefinition {
 
 	public void setReplicationFactors(Map<String, Integer> replicationFactors) {
 		this.replicationFactors = replicationFactors;
+	}
+
+	public ConsistencyLevel getConsistencyLevel() {
+		return consistencyLevel;
+	}
+
+	public void setConsistencyLevel(ConsistencyLevel consistencyLevel) {
+		this.consistencyLevel = consistencyLevel;
 	}
 }

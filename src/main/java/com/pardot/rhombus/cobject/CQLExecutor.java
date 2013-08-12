@@ -21,11 +21,13 @@ public class CQLExecutor {
 	private boolean logCql = false;
 	private boolean enableTrace = false;
 	private Session session;
+	private  ConsistencyLevel consistencyLevel;
 
-	public CQLExecutor(Session session, boolean logCql){
+	public CQLExecutor(Session session, boolean logCql, ConsistencyLevel consistencyLevel){
 		this.preparedStatementCache = Maps.newConcurrentMap();
 		this.session = session;
 		this.logCql = logCql;
+		this.consistencyLevel = consistencyLevel;
 	}
 
 	public void clearStatementCache(){
@@ -36,6 +38,7 @@ public class CQLExecutor {
 		PreparedStatement ps = preparedStatementCache.get(cql.getQuery());
 		if(ps == null){
 			ps = session.prepare(cql.getQuery());
+			ps.setConsistencyLevel(consistencyLevel);
 			if(cql.isCacheable()){
 				preparedStatementCache.put(cql.getQuery(), ps);
 			}
