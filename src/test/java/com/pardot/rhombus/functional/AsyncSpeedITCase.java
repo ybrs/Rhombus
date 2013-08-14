@@ -57,8 +57,8 @@ public class AsyncSpeedITCase {
 		//do an insert on an object
 		//make some objects to insert
 		List<Map<String,Object>> toInserts = Lists.newArrayList();
-		//int numberOfObjects = 9000;
-		int numberOfObjects = 100;
+		int numberOfObjects = 9000;
+		//int numberOfObjects = 100;
 		for(int i = 0; i < numberOfObjects; i++){
 			Map<String, Object> testObject = Maps.newTreeMap();
 			testObject.put("foreignid", Long.valueOf(i%100));
