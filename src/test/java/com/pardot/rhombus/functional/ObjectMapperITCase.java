@@ -60,9 +60,13 @@ public class ObjectMapperITCase {
 
 		//Query by foreign key
 		Criteria criteria = TestHelpers.getTestCriteria(0);
-		criteria.getIndexKeys().put("foreignid",((Integer)criteria.getIndexKeys().get("foreignid")).longValue());
+		long foreignKey = ((Integer)criteria.getIndexKeys().get("foreignid")).longValue();
+		criteria.getIndexKeys().put("foreignid", foreignKey);
 		List<Map<String, Object>> dbObjects = om.list("testtype", criteria);
 		assertEquals(2, dbObjects.size());
+		for(Map<String, Object> result : dbObjects) {
+			assertEquals(foreignKey, result.get("foreignid"));
+		}
 
 		//Remove one of the objects we added
 		om.delete("testtype", key);

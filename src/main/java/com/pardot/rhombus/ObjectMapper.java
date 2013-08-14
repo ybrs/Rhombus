@@ -494,4 +494,8 @@ public class ObjectMapper implements CObjectShardList {
 		return keyspaceDefinition;
 	}
 
+	public CDefinition getDefinition(String objectType) {
+		return keyspaceDefinition.getDefinitions().get(objectType);
+	}
+
 }

@@ -46,7 +46,7 @@ public class JsonUtil {
 		return rhombusMap;
 	}
 
-	protected static Object typedObjectFromValueAndField(Object jsonValue, CField field) throws IllegalArgumentException {
+	public static Object typedObjectFromValueAndField(Object jsonValue, CField field) throws IllegalArgumentException {
 		if(jsonValue == null) {
 			return null;
 		}

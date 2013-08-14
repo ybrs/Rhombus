@@ -4,8 +4,8 @@ import com.datastax.driver.core.*;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.pardot.rhombus.util.StringUtil;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -55,7 +55,8 @@ public class CQLExecutor {
 		if(logCql) {
 			logger.debug("Executing CQL: {}", cql.getQuery());
 			if(cql.getValues() != null) {
-				logger.debug("With values: {}", Arrays.asList(cql.getValues()));
+
+				logger.debug("With values: {}", StringUtil.detailedListToString(Arrays.asList(cql.getValues())));
 			}
 		}
 		if(cql.isPreparable()){

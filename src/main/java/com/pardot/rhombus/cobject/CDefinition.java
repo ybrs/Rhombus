@@ -99,4 +99,7 @@ public class CDefinition {
 		return ret;
 	}
 
+	public CField getField(String fieldName) {
+		return fields.get(fieldName);
+	}
 }
