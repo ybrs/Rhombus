@@ -2,6 +2,7 @@ package com.pardot.rhombus.cobject.async;
 
 import com.datastax.driver.core.*;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.pardot.rhombus.cobject.BoundedCQLStatementIterator;
@@ -14,8 +15,7 @@ import com.yammer.metrics.core.TimerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static com.google.common.util.concurrent.Uninterruptibles.awaitUninterruptibly;
@@ -34,6 +34,7 @@ public class StatementIteratorConsumer {
 	private CQLExecutor cqlExecutor;
 	private final CountDownLatch shutdownLatch;
 	private final long timeout;
+	private final Set<Future> futures = Collections.synchronizedSet(new HashSet<Future>());
 
 	public StatementIteratorConsumer(BoundedCQLStatementIterator statementIterator, CQLExecutor cqlExecutor, long timeout) {
 		this.statementIterator = statementIterator;
@@ -63,9 +64,21 @@ public class StatementIteratorConsumer {
 			if(!complete) {
 				logger.warn("Timout executing statements asynch");
 				Metrics.defaultRegistry().newMeter(StatementIteratorConsumer.class, "asyncTimeout", "asyncTimeout", TimeUnit.SECONDS).mark();
+				cancelFutures();
 			}
 		} catch (InterruptedException e) {
 			logger.warn("Interrupted while executing statements asynch", e);
+			cancelFutures();
+		}
+	}
+
+	private void cancelFutures() {
+		for(Future future : futures) {
+			try {
+				future.cancel(true);
+			} catch(Exception e) {
+				logger.warn("Exception when cancelling future", e);
+			}
 		}
 	}
 
@@ -74,6 +87,7 @@ public class StatementIteratorConsumer {
 		final TimerContext asyncExecTimerContext = asyncExecTimer.time();
 		final long startTime = System.nanoTime();
 		ResultSetFuture future = this.cqlExecutor.executeAsync(statement);
+		futures.add(future);
 		Futures.addCallback(future, new FutureCallback<ResultSet>() {
 			@Override
 			public void onSuccess(final ResultSet result) {
@@ -87,6 +101,7 @@ public class StatementIteratorConsumer {
 			public void onFailure(final Throwable t) {
 				//TODO Stop processing and return error
 				logger.error("Error during async request: {}", t);
+				asyncExecTimerContext.stop();
 				shutdownLatch.countDown();
 			}
 		}
