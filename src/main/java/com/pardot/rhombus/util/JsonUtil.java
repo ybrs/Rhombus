@@ -6,6 +6,7 @@ import com.google.common.primitives.*;
 import com.pardot.rhombus.cobject.CDefinition;
 import com.pardot.rhombus.cobject.CField;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -26,6 +27,13 @@ public class JsonUtil {
 		inputStream.close();
 		return returnObject;
 	}
+
+    public static <T> T objectFromJsonFile(Class<T> objectClass, ClassLoader resourceClassLoader, String filename) throws IOException {
+        ObjectMapper om = new ObjectMapper();
+        File f = new File(filename);
+        T returnObject = om.readValue(f, objectClass);
+        return returnObject;
+    }
 
 	public static List<Map<String, Object>> rhombusMapFromResource(ClassLoader resourceClassLoader, String resourceLocation) throws IOException {
 		ObjectMapper om = new ObjectMapper();
