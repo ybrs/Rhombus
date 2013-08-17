@@ -26,15 +26,20 @@ public class RhombusCli {
         Option cassConfig = OptionBuilder.withArgName( "filename" )
                 .hasArg()
                 .withDescription("Filename of json Cassandra Configuration")
-                .create( "cass-config" );
-        Option keyspaceDef = OptionBuilder.withArgName( "filename" )
+                .create( "cassconfig" );
+        Option keyspaceFile = OptionBuilder.withArgName( "filename" )
                 .hasArg()
                 .withDescription("Filename of json keyspace definition")
-                .create( "keyspace-def" );
+                .create( "keyspacefile" );
+        Option keyspaceResource = OptionBuilder.withArgName( "filename" )
+                .hasArg()
+                .withDescription("Filename of json keyspace definition")
+                .create( "keyspaceResource" );
         ret.addOption(help);
         ret.addOption(command);
         ret.addOption(cassConfig);
-        ret.addOption(keyspaceDef);
+        ret.addOption(keyspaceFile);
+        ret.addOption(keyspaceResource);
         return ret;
 
     }
@@ -47,17 +52,19 @@ public class RhombusCli {
             CommandLine line = parser.parse( makeCommandLineOptions(), args );
             // make sure they gave us a command
             if( !line.hasOption( "command" ) ||
-                !line.hasOption("keyspace-def") ) {
+                !(line.hasOption("keyspacefile") || line.hasOption("keyspaceresource"))) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp( "RhombusCli", makeCommandLineOptions() );
                 System.exit(1);
             }
 
-            String keyspaceFileName = line.getOptionValue("keyspace-def");
+            String keyspaceFileName = line.hasOption("keyspacefile") ? line.getOptionValue("keyspacefile") : line.getOptionValue("keyspaceresource");
             //make the keyspace definition
             CKeyspaceDefinition keyDef = null;
             try{
-                keyDef = JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class,CKeyspaceDefinition.class.getClassLoader(), keyspaceFileName);
+                keyDef = line.hasOption("keyspacefile") ?
+                    JsonUtil.objectFromJsonFile(CKeyspaceDefinition.class,CKeyspaceDefinition.class.getClassLoader(), keyspaceFileName) :
+                    JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class,CKeyspaceDefinition.class.getClassLoader(), keyspaceFileName);
             }
             catch (IOException e){
                 System.out.println("Could not parse keyspace file "+keyspaceFileName);

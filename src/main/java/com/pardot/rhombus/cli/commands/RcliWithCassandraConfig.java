@@ -5,10 +5,7 @@ import com.pardot.rhombus.ConnectionManager;
 import com.pardot.rhombus.cli.RhombusCommand;
 import com.pardot.rhombus.cobject.CKeyspaceDefinition;
 import com.pardot.rhombus.util.JsonUtil;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
+import org.apache.commons.cli.*;
 
 import java.io.IOException;
 
@@ -16,7 +13,7 @@ import java.io.IOException;
  * User: Rob Righter
  * Date: 8/17/13
  */
-public abstract class RcliWithCassandraConfig implements RhombusCommand {
+public class RcliWithCassandraConfig implements RhombusCommand {
 
     private ConnectionManager connectionManager = null;
 
@@ -25,7 +22,7 @@ public abstract class RcliWithCassandraConfig implements RhombusCommand {
         Option cassConfig = OptionBuilder.withArgName( "filename" )
                 .hasArg()
                 .withDescription("Filename of json Cassandra Configuration")
-                .create( "cass-config" );
+                .create( "cassconfig" );
         ret.addOption(cassConfig);
         return ret;
     }
@@ -35,14 +32,16 @@ public abstract class RcliWithCassandraConfig implements RhombusCommand {
     }
 
     public void executeCommand(CommandLine cl){
-        String cassConfigFileName = cl.getOptionValue("cass-config");
+        String cassConfigFileName = cl.getOptionValue("cassconfig");
         //make the keyspace definition
         CassandraConfiguration cassConfig = null;
         try{
             cassConfig = JsonUtil.objectFromJsonFile(CassandraConfiguration.class, CassandraConfiguration.class.getClassLoader(), cassConfigFileName);
         }
-        catch (IOException e){
+        catch (Exception e){
             System.out.println("Could not parse cassandra configuration file "+cassConfigFileName);
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp( "RhombusCli "+this.getClass().getName(), getCommandOptions() );
             System.exit(1);
         }
 
