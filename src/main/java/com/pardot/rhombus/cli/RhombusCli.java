@@ -12,21 +12,20 @@ import java.io.IOException;
  * Date: 8/17/13
  * Time: 11:06 AM
  */
-public class RhombusCli {
+public class RhombusCli implements  RhombusCommand {
 
-    public CommandLineParser commandLineParser;
+    public CKeyspaceDefinition keyspaceDefinition;
 
-    public static Options makeCommandLineOptions(){
+    public static Options makeBootstrapOptions(){
         Options ret = new Options();
         Option help = new Option( "help", "print this message" );
-        Option command = OptionBuilder.withArgName( "classname" )
-                .hasArg()
-                .withDescription("The Rhombus command class")
-                .create( "command" );
-        Option cassConfig = OptionBuilder.withArgName( "filename" )
-                .hasArg()
-                .withDescription("Filename of json Cassandra Configuration")
-                .create( "cassconfig" );
+        ret.addOption(help);
+        return ret;
+
+    }
+
+    public Options getCommandOptions(){
+        Options ret = makeBootstrapOptions();
         Option keyspaceFile = OptionBuilder.withArgName( "filename" )
                 .hasArg()
                 .withDescription("Filename of json keyspace definition")
@@ -35,50 +34,59 @@ public class RhombusCli {
                 .hasArg()
                 .withDescription("Filename of json keyspace definition")
                 .create( "keyspaceResource" );
-        ret.addOption(help);
-        ret.addOption(command);
-        ret.addOption(cassConfig);
         ret.addOption(keyspaceFile);
         ret.addOption(keyspaceResource);
         return ret;
+    }
 
+    public void executeCommand(CommandLine cl){
+        if(!(cl.hasOption("keyspacefile") || cl.hasOption("keyspaceresource"))){
+            displayHelpMessageAndExit();
+            return;
+        }
+
+        String keyspaceFileName = cl.hasOption("keyspacefile") ? cl.getOptionValue("keyspacefile") : cl.getOptionValue("keyspaceresource");
+        //make the keyspace definition
+        CKeyspaceDefinition keyDef = null;
+        try{
+            keyDef = cl.hasOption("keyspacefile") ?
+                    JsonUtil.objectFromJsonFile(CKeyspaceDefinition.class,CKeyspaceDefinition.class.getClassLoader(), keyspaceFileName) :
+                    JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class,CKeyspaceDefinition.class.getClassLoader(), keyspaceFileName);
+        }
+        catch (IOException e){
+            System.out.println("Could not parse keyspace file "+keyspaceFileName);
+            System.exit(1);
+        }
+
+        if(keyDef == null){
+            System.out.println("Could not parse keyspace file "+keyspaceFileName);
+            System.exit(1);
+        }
+
+        this.keyspaceDefinition = keyDef;
+
+    }
+
+    public void displayHelpMessageAndExit(){
+        HelpFormatter formatter = new HelpFormatter();
+        String cmdName = this.getClass().getName().replaceAll("com.pardot.rhombus.cli.commands.","");
+        formatter.printHelp( "RhombusCli "+cmdName, getCommandOptions());
+        System.exit(1);
     }
 
     public static void main( String[] args ) {
         // create the parser
-        CommandLineParser parser = new org.apache.commons.cli.BasicParser();
+        CommandLineParser parser = new BasicParser();
         try {
-            // parse the command line arguments
-            CommandLine line = parser.parse( makeCommandLineOptions(), args );
             // make sure they gave us a command
-            if( !line.hasOption( "command" ) ||
-                !(line.hasOption("keyspacefile") || line.hasOption("keyspaceresource"))) {
+            if( args.length == 0) {
                 HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp( "RhombusCli", makeCommandLineOptions() );
+                formatter.printHelp( "RhombusCli", makeBootstrapOptions() );
                 System.exit(1);
             }
-
-            String keyspaceFileName = line.hasOption("keyspacefile") ? line.getOptionValue("keyspacefile") : line.getOptionValue("keyspaceresource");
-            //make the keyspace definition
-            CKeyspaceDefinition keyDef = null;
-            try{
-                keyDef = line.hasOption("keyspacefile") ?
-                    JsonUtil.objectFromJsonFile(CKeyspaceDefinition.class,CKeyspaceDefinition.class.getClassLoader(), keyspaceFileName) :
-                    JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class,CKeyspaceDefinition.class.getClassLoader(), keyspaceFileName);
-            }
-            catch (IOException e){
-                System.out.println("Could not parse keyspace file "+keyspaceFileName);
-                System.exit(1);
-            }
-
-            if(keyDef == null){
-                System.out.println("Could not parse keyspace file "+keyspaceFileName);
-                System.exit(1);
-            }
-
             //Load up the class
             //if the class name is not fully qualified we assume its in com.pardot.rhombus.cli.commands
-            String className = line.getOptionValue("command").toString();
+            String className = args[0];
             if(!className.contains(".")){
                 className = "com.pardot.rhombus.cli.commands."+ className;
             }
@@ -86,9 +94,6 @@ public class RhombusCli {
             try{
                 RhombusCommand cmd = (RhombusCommand)(Class.forName(className)).newInstance();
                 Options commandOptions = cmd.getCommandOptions();
-                for(Object opt : makeCommandLineOptions().getOptions()){
-                    commandOptions.addOption((Option)opt);
-                }
                 cmd.executeCommand(parser.parse( commandOptions, args ));
             }
             catch (ClassNotFoundException e){

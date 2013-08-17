@@ -2,6 +2,7 @@ package com.pardot.rhombus.cli.commands;
 
 import com.pardot.rhombus.CassandraConfiguration;
 import com.pardot.rhombus.ConnectionManager;
+import com.pardot.rhombus.cli.RhombusCli;
 import com.pardot.rhombus.cli.RhombusCommand;
 import com.pardot.rhombus.cobject.CKeyspaceDefinition;
 import com.pardot.rhombus.util.JsonUtil;
@@ -13,12 +14,12 @@ import java.io.IOException;
  * User: Rob Righter
  * Date: 8/17/13
  */
-public class RcliWithCassandraConfig implements RhombusCommand {
+public class RcliWithCassandraConfig extends RhombusCli {
 
     private ConnectionManager connectionManager = null;
 
     public Options getCommandOptions(){
-        Options ret = new Options();
+        Options ret = super.getCommandOptions();
         Option cassConfig = OptionBuilder.withArgName( "filename" )
                 .hasArg()
                 .withDescription("Filename of json Cassandra Configuration")
@@ -32,6 +33,12 @@ public class RcliWithCassandraConfig implements RhombusCommand {
     }
 
     public void executeCommand(CommandLine cl){
+        super.executeCommand(cl);
+
+        if(!cl.hasOption("cassconfig")){
+            displayHelpMessageAndExit();
+        }
+
         String cassConfigFileName = cl.getOptionValue("cassconfig");
         //make the keyspace definition
         CassandraConfiguration cassConfig = null;
@@ -40,8 +47,6 @@ public class RcliWithCassandraConfig implements RhombusCommand {
         }
         catch (Exception e){
             System.out.println("Could not parse cassandra configuration file "+cassConfigFileName);
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp( "RhombusCli "+this.getClass().getName(), getCommandOptions() );
             System.exit(1);
         }
 
