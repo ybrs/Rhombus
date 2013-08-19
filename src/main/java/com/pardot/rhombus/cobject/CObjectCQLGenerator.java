@@ -46,6 +46,8 @@ public class CObjectCQLGenerator {
 	protected static final String TEMPLATE_SELECT_FIRST_ELIGIBLE_INDEX_UPDATE = "SELECT statictablename,instanceid FROM \"__index_updates\" WHERE id < ? limit 1 allow filtering;";
 	protected static final String TEMPLATE_SELECT_NEXT_ELIGIBLE_INDEX_UPDATE = "SELECT statictablename,instanceid FROM \"__index_updates\" where token(statictablename,instanceid) > token(?,?) and id < ? limit 1 allow filtering;";
 	protected static final String TEMPLATE_SELECT_ROW_INDEX_UPDATE = "SELECT * FROM \"__index_updates\" where statictablename = ? and instanceid = ? order by id DESC;";
+    protected static final String TEMPLATE_SET_COMPACTION_LEVELED = "ALTER TABLE \"%s\" WITH compaction = { 'class' :  'LeveledCompactionStrategy',  'sstable_size_in_mb' : %d }";
+    protected static final String TEMPLATE_SET_COMPACTION_TIERED = "ALTER TABLE \"%s\" WITH compaction = { 'class' :  'SizeTieredCompactionStrategy',  'min_threshold' : %d }";
 
 	protected Map<String, CDefinition> definitions;
 	protected CObjectShardList shardList;
@@ -293,6 +295,72 @@ public class CObjectCQLGenerator {
 		logger.debug("Making statement with query: {} and values: {}", query, values);
 		return CQLStatement.make(query, values.toArray());
 	}
+
+    private CQLStatementIterator makeCQLforLeveledCompaction(CKeyspaceDefinition keyspaceDefinition, Integer sstableSize){
+        List ret =  Lists.newArrayList();
+        //global tables
+        ret.add(makeCQLforLeveledCompaction("__shardindex", sstableSize));
+        ret.add(makeCQLforLeveledCompaction("__index_updates", sstableSize));
+
+        //CDefinition tables
+        for(CDefinition def : keyspaceDefinition.getDefinitions().values()){
+            //static table
+            ret.add(makeCQLforLeveledCompaction(makeTableName(def, null), sstableSize));
+            //indexes
+            for(CIndex index : def.getIndexes().values()){
+                ret.add(makeCQLforLeveledCompaction(makeTableName(def,index), sstableSize));
+            }
+        }
+        return new BoundedCQLStatementIterator(ret);
+    }
+
+    private CQLStatementIterator makeCQLforTieredCompaction(CKeyspaceDefinition keyspaceDefinition, Integer minThreshold){
+        List ret =  Lists.newArrayList();
+        //global tables
+        ret.add(makeCQLforTieredCompaction("__shardindex", minThreshold));
+        ret.add(makeCQLforTieredCompaction("__index_updates", minThreshold));
+
+        //CDefinition tables
+        for(CDefinition def : keyspaceDefinition.getDefinitions().values()){
+            //static table
+            ret.add(makeCQLforTieredCompaction(makeTableName(def, null), minThreshold));
+            //indexes
+            for(CIndex index : def.getIndexes().values()){
+                ret.add(makeCQLforTieredCompaction(makeTableName(def,index), minThreshold));
+            }
+        }
+        return new BoundedCQLStatementIterator(ret);
+    }
+
+    public CQLStatementIterator makeCQLforCompaction(CKeyspaceDefinition keyspaceDefinition, String strategy, Map<String,Object> options) throws CQLGenerationException {
+        if(strategy.equals("LeveledCompactionStrategy")){
+            Integer sstableSize = (options.get("sstable_size_in_mb") == null) ? 5 : (Integer)options.get("sstable_size_in_mb");
+            return makeCQLforLeveledCompaction(keyspaceDefinition,sstableSize);
+        }
+        else if(strategy.equals("SizeTieredCompactionStrategy")){
+            Integer minThreshold = (options.get("min_threshold") == null) ? 6 : (Integer)options.get("min_threshold");
+            return makeCQLforTieredCompaction(keyspaceDefinition,minThreshold);
+        }
+        throw new CQLGenerationException("Unknown Strategy " + strategy);
+    }
+
+    /**
+     * @param table - The table to update with the compaction strategy
+     * @param sstableSize - the size in MB of the ss tables
+     * @return String of single CQL statement required to set
+     */
+    public static CQLStatement makeCQLforLeveledCompaction(String table, Integer sstableSize){
+        return CQLStatement.make(String.format(TEMPLATE_SET_COMPACTION_LEVELED, table, sstableSize));
+    }
+
+    /**
+     * @param table - The table to update with the compaction strategy
+     * @param minThreshold - minimum number of SSTables to trigger a minor compaction
+     * @return String of single CQL statement required to set
+     */
+    public static CQLStatement makeCQLforTieredCompaction(String table, Integer minThreshold){
+        return CQLStatement.make(String.format(TEMPLATE_SET_COMPACTION_TIERED, table, minThreshold));
+    }
 
 	public static CQLStatement makeCQLforIndexUpdateTableCreate(){
 		return CQLStatement.make(TEMPLATE_CREATE_INDEX_UPDATES);

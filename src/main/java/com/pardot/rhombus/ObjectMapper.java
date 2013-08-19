@@ -497,6 +497,11 @@ public class ObjectMapper implements CObjectShardList {
 		this.statementTimeout = statementTimeout;
 	}
 
+    public void setCompaction(String strategy, Map<String,Object> options) throws CQLGenerationException {
+        CQLStatementIterator cql = cqlGenerator.makeCQLforCompaction(keyspaceDefinition, strategy, options);
+        executeStatements(cql);
+    }
+
 	public CQLExecutor getCqlExecutor(){
 		return cqlExecutor;
 	}
