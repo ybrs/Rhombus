@@ -114,6 +114,7 @@ public class ConnectionManager {
 		ObjectMapper mapper = new ObjectMapper(session, keyspaceDefinition, consistencyHorizon);
 		mapper.setLogCql(logCql);
 		mapper.buildKeyspace(forceRebuild);
+		mapper.prePrepareInsertStatements();
 		objectMappers.put(keyspaceDefinition.getName(), mapper);
 	}
 
