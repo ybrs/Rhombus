@@ -37,11 +37,7 @@ public class CQLExecutor {
 	public BoundStatement getBoundStatement(Session session, CQLStatement cql){
 		PreparedStatement ps = preparedStatementCache.get(cql.getQuery());
 		if(ps == null){
-			ps = session.prepare(cql.getQuery());
-			ps.setConsistencyLevel(consistencyLevel);
-			if(cql.isCacheable()){
-				preparedStatementCache.put(cql.getQuery(), ps);
-			}
+			ps = prepareStatement(session, cql);
 		}
 		BoundStatement ret = new BoundStatement(ps);
 		ret.bind(cql.getValues());
@@ -50,6 +46,15 @@ public class CQLExecutor {
 		}
 		return ret;
 	}
+
+    public PreparedStatement prepareStatement(Session session, CQLStatement cql){
+        PreparedStatement ret = session.prepare(cql.getQuery());
+        ret.setConsistencyLevel(consistencyLevel);
+        if(cql.isCacheable()){
+            preparedStatementCache.put(cql.getQuery(), ret);
+        }
+        return ret;
+    }
 
 	public ResultSet executeSync(CQLStatement cql){
 		if(logCql) {

@@ -1,5 +1,11 @@
 package com.pardot.rhombus.cobject;
 
+import com.datastax.driver.core.utils.UUIDs;
+
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.UUID;
+
 /**
  * Pardot, An ExactTarget Company.
  * User: robrighter
@@ -140,4 +146,38 @@ public class CField {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+    public Object getEmptyJavaObjectOfThisType(){
+        CDataType type = this.getType();
+        switch (type) {
+            case ASCII:
+            case VARCHAR:
+            case TEXT:
+                return "";
+            case INT:
+                return Integer.valueOf(1);
+            case BIGINT:
+            case COUNTER:
+                return Long.valueOf(1);
+            case BLOB:
+                throw new IllegalArgumentException();
+            case BOOLEAN:
+                return Boolean.valueOf(true);
+            case DECIMAL:
+            case FLOAT:
+                return Float.valueOf(1.0f);
+            case DOUBLE:
+                return Double.valueOf(1.0d);
+            case TIMESTAMP:
+                return new Date();
+            case UUID:
+            case TIMEUUID:
+                return UUIDs.random();
+            case VARINT:
+                return BigInteger.valueOf(1);
+            default:
+                return null;
+        }
+
+    }
 }

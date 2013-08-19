@@ -394,6 +394,25 @@ public class ObjectMapper implements CObjectShardList {
 		return result;
 	}
 
+    public void prePrepareInsertStatements() throws CQLGenerationException {
+        Map<String,CDefinition> defs = this.getKeyspaceDefinition().getDefinitions();
+        for(CDefinition def : defs.values()){
+            prePrepareInsertStatements(def);
+        }
+    }
+
+    public void prePrepareInsertStatements(CDefinition def) throws CQLGenerationException{
+        SortedMap<String, Object> values = Maps.newTreeMap();
+        for( CField f : def.getFields().values() ){
+            values.put(f.getName(), f.getEmptyJavaObjectOfThisType());
+        }
+        CQLStatementIterator sti = cqlGenerator.makeCQLforInsert(def.getName(),values,UUIDs.timeBased(),0L);
+        while(sti.hasNext()){
+            CQLStatement cql = sti.next();
+            cqlExecutor.prepareStatement(session,cql);
+        }
+    }
+
 	private Object getFieldValue(Row row, CField field) {
 		Object fieldValue;
 		switch(field.getType()) {
