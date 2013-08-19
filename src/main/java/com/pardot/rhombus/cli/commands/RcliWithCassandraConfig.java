@@ -24,7 +24,9 @@ public class RcliWithCassandraConfig extends RhombusCli {
                 .hasArg()
                 .withDescription("Filename of json Cassandra Configuration")
                 .create( "cassconfig" );
+        Option logcql = new Option( "c", "Log cql as it runs" );
         ret.addOption(cassConfig);
+        ret.addOption(logcql);
         return ret;
     }
 
@@ -56,6 +58,8 @@ public class RcliWithCassandraConfig extends RhombusCli {
         }
 
         connectionManager = new ConnectionManager(cassConfig);
+        connectionManager.setLogCql(cl.hasOption("c"));
+        connectionManager.buildCluster();
 
         if(connectionManager == null){
             System.out.println("Could create cassandra connection manager from file "+cassConfigFileName);
