@@ -1,6 +1,7 @@
 package com.pardot.rhombus.cli.commands;
 
 import com.google.common.collect.Maps;
+import com.pardot.rhombus.RhombusException;
 import com.pardot.rhombus.cobject.CQLGenerationException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -54,8 +55,10 @@ public class SetCompaction extends RcliWithCassandraConfig{
         }
         catch (CQLGenerationException e){
             System.out.println("Error encountered setting compaction: " + e.getMessage());
-        }
+        } catch (RhombusException e) {
+			System.out.println("Error encountered setting compaction: " + e.getMessage());
+		}
 
-    }
+	}
 
 }

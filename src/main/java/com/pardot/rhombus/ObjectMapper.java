@@ -104,13 +104,13 @@ public class ObjectMapper implements CObjectShardList {
 		return cqlGenerator.getTimeUUIDAtEndOfConsistencyHorizion();
 	}
 
-	public void executeStatements(CQLStatementIterator statementIterator) {
+	public void executeStatements(CQLStatementIterator statementIterator) throws RhombusException {
 		List<CQLStatementIterator> statementIterators = Lists.newArrayList();
 		statementIterators.add(statementIterator);
 		executeStatements(statementIterators);
 	}
 
-	public void executeStatements(List<CQLStatementIterator> statementIterators) {
+	public void executeStatements(List<CQLStatementIterator> statementIterators) throws RhombusException {
 		boolean canExecuteAsync = true;
 		for(CQLStatementIterator statementIterator : statementIterators) {
 			if(!statementIterator.isBounded()) {
@@ -165,7 +165,7 @@ public class ObjectMapper implements CObjectShardList {
 	 * @return ID of most recently inserted object
 	 * @throws CQLGenerationException
 	 */
-	public UUID insertBatchMixed(Map<String, List<Map<String, Object>>> objects) throws CQLGenerationException {
+	public UUID insertBatchMixed(Map<String, List<Map<String, Object>>> objects) throws CQLGenerationException, RhombusException {
 		logger.debug("Insert batch mixed");
 		List<CQLStatementIterator> statementIterators = Lists.newArrayList();
 		UUID key = null;
@@ -189,7 +189,7 @@ public class ObjectMapper implements CObjectShardList {
 	 * @return ID if newly inserted object
 	 * @throws CQLGenerationException
 	 */
-	public UUID insert(String objectType, Map<String, Object> values, UUID key) throws CQLGenerationException {
+	public UUID insert(String objectType, Map<String, Object> values, UUID key) throws CQLGenerationException, RhombusException {
 		logger.debug("Insert {}", objectType);
 		if(key == null) {
 			key = UUIDs.timeBased();
@@ -207,7 +207,7 @@ public class ObjectMapper implements CObjectShardList {
 	 * @return UUID of inserted object
 	 * @throws CQLGenerationException
 	 */
-	public UUID insert(String objectType, Map<String, Object> values) throws CQLGenerationException {
+	public UUID insert(String objectType, Map<String, Object> values) throws CQLGenerationException, RhombusException {
 		return insert(objectType, values, (UUID)null);
 	}
 
@@ -219,7 +219,7 @@ public class ObjectMapper implements CObjectShardList {
 	 * @param timestamp Timestamp to use to create the object UUID
 	 * @return the UUID of the newly inserted object
 	 */
-	public UUID insert(String objectType, Map<String, Object> values, Long timestamp) throws CQLGenerationException {
+	public UUID insert(String objectType, Map<String, Object> values, Long timestamp) throws CQLGenerationException, RhombusException {
 		UUID uuid = UUIDs.startOf(timestamp);
 		return insert(objectType, values, uuid);
 	}
@@ -261,7 +261,7 @@ public class ObjectMapper implements CObjectShardList {
 	 * @return new UUID of the object
 	 * @throws CQLGenerationException
 	 */
-	public UUID update(String objectType, UUID key, Map<String, Object> values, Long timestamp, Integer ttl) throws CQLGenerationException {
+	public UUID update(String objectType, UUID key, Map<String, Object> values, Long timestamp, Integer ttl) throws CQLGenerationException, RhombusException {
 		//New Version
 		//(1) Get the old version
 		Map<String, Object> oldversion = getByKey(objectType, key);
@@ -281,7 +281,7 @@ public class ObjectMapper implements CObjectShardList {
 	 * @return new UUID of the object
 	 * @throws CQLGenerationException
 	 */
-	public UUID update(String objectType, UUID key, Map<String, Object> values) throws CQLGenerationException {
+	public UUID update(String objectType, UUID key, Map<String, Object> values) throws CQLGenerationException, RhombusException {
 		return update(objectType, key, values, null, null);
 	}
 
@@ -396,9 +396,11 @@ public class ObjectMapper implements CObjectShardList {
 
     public void prePrepareInsertStatements() throws CQLGenerationException {
         Map<String,CDefinition> defs = this.getKeyspaceDefinition().getDefinitions();
-        for(CDefinition def : defs.values()){
-            prePrepareInsertStatements(def);
-        }
+		if(defs != null) {
+			for(CDefinition def : defs.values()){
+				prePrepareInsertStatements(def);
+			}
+		}
     }
 
     public void prePrepareInsertStatements(CDefinition def) throws CQLGenerationException{
@@ -497,7 +499,7 @@ public class ObjectMapper implements CObjectShardList {
 		this.statementTimeout = statementTimeout;
 	}
 
-    public void setCompaction(String strategy, Map<String,Object> options) throws CQLGenerationException {
+    public void setCompaction(String strategy, Map<String,Object> options) throws CQLGenerationException, RhombusException {
         CQLStatementIterator cql = cqlGenerator.makeCQLforCompaction(keyspaceDefinition, strategy, options);
         executeStatements(cql);
     }

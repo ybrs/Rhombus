@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.pardot.rhombus.RhombusException;
 import com.pardot.rhombus.cobject.BoundedCQLStatementIterator;
 import com.pardot.rhombus.cobject.CQLExecutor;
 import com.pardot.rhombus.cobject.CQLStatement;
@@ -57,14 +58,14 @@ public class StatementIteratorConsumer {
 		}
 	}
 
-	public void join() {
+	public void join() throws RhombusException {
 		logger.trace("Awaiting shutdownLatch with timeout {}ms", timeout);
 		try {
 			boolean complete = shutdownLatch.await(timeout, TimeUnit.MILLISECONDS);
 			if(!complete) {
-				logger.warn("Timout executing statements asynch");
 				Metrics.defaultRegistry().newMeter(StatementIteratorConsumer.class, "asyncTimeout", "asyncTimeout", TimeUnit.SECONDS).mark();
 				cancelFutures();
+				throw new RhombusException("Timout executing statements asynch");
 			}
 		} catch (InterruptedException e) {
 			logger.warn("Interrupted while executing statements asynch", e);
