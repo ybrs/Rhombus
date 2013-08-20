@@ -10,7 +10,7 @@
 
     <logger name="com.pardot.rhombus" level="INFO"/>
 
-    <root level="WARN">
+    <root level="TRACE">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>
