@@ -51,7 +51,7 @@ public class CQLExecutor {
         PreparedStatement ret = session.prepare(cql.getQuery());
         ret.setConsistencyLevel(consistencyLevel);
         if(cql.isCacheable()){
-            //preparedStatementCache.put(cql.getQuery(), ret);
+            preparedStatementCache.put(cql.getQuery(), ret);
         }
         return ret;
     }
