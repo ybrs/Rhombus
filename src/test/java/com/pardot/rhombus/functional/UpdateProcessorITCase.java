@@ -27,7 +27,7 @@ import static org.junit.Assert.assertNotNull;
  * User: robrighter
  * Date: 7/19/13
  */
-public class UpdateProcessorITCase {
+public class UpdateProcessorITCase extends RhombusFunctionalTest {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapperITCase.class);
 
@@ -152,13 +152,4 @@ public class UpdateProcessorITCase {
 		assertEquals(103,indexObjects.get(0).get("filtered"));
 	}
 
-
-	private ConnectionManager getConnectionManager() throws IOException {
-		//Get a connection manager based on the test properties
-		ConnectionManager cm = TestHelpers.getTestConnectionManager();
-		cm.setLogCql(true);
-		cm.buildCluster();
-		assertNotNull(cm);
-		return cm;
-	}
 }

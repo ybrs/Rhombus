@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
  * User: robrighter
  * Date: 7/25/13
  */
-public class AsyncSpeedITCase {
+public class AsyncSpeedITCase extends RhombusFunctionalTest {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapperITCase.class);
 
@@ -113,13 +113,4 @@ public class AsyncSpeedITCase {
 
 	}
 
-
-	private ConnectionManager getConnectionManager() throws IOException {
-		//Get a connection manager based on the test properties
-		ConnectionManager cm = TestHelpers.getTestConnectionManager();
-		cm.setLogCql(false);
-		cm.buildCluster();
-		assertNotNull(cm);
-		return cm;
-	}
 }

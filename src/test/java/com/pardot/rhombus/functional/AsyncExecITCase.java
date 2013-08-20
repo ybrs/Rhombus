@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import static com.google.common.util.concurrent.Uninterruptibles.awaitUninterruptibly;
 import static org.junit.Assert.assertNotNull;
 
-public class AsyncExecITCase {
+public class AsyncExecITCase extends RhombusFunctionalTest{
 
 	private static Logger logger = LoggerFactory.getLogger(AsyncExecITCase.class);
 
@@ -81,12 +81,4 @@ public class AsyncExecITCase {
 		awaitUninterruptibly(latch, 25, TimeUnit.SECONDS);
 	}
 
-	private ConnectionManager getConnectionManager() throws IOException {
-		//Get a connection manager based on the test properties
-		ConnectionManager cm = TestHelpers.getTestConnectionManager();
-		cm.setLogCql(false);
-		cm.buildCluster();
-		assertNotNull(cm);
-		return cm;
-	}
 }

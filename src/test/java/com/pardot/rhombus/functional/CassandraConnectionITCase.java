@@ -13,7 +13,7 @@ import com.pardot.rhombus.ConnectionManager;
 
 import java.io.IOException;
 
-public class CassandraConnectionITCase {
+public class CassandraConnectionITCase extends RhombusFunctionalTest {
 
 	@Test
 	public void testKeyspaceCreate() throws IOException {

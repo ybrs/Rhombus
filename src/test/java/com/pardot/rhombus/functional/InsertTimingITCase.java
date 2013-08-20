@@ -17,7 +17,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class InsertTimingITCase {
+public class InsertTimingITCase extends RhombusFunctionalTest {
 
 	private static Logger logger = LoggerFactory.getLogger(InsertTimingITCase.class);
 
@@ -75,12 +75,4 @@ public class InsertTimingITCase {
 		}
 	}
 
-	private ConnectionManager getConnectionManager() throws IOException {
-		//Get a connection manager based on the test properties
-		ConnectionManager cm = TestHelpers.getTestConnectionManager();
-		cm.setLogCql(false);
-		cm.buildCluster();
-		assertNotNull(cm);
-		return cm;
-	}
 }

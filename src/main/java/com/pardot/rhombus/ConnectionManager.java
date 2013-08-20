@@ -43,7 +43,11 @@ public class ConnectionManager {
 	/**
 	 * Build the cluster based on the CassandraConfiguration passed in the constructor
 	 */
-	public Cluster buildCluster() {
+    public Cluster buildCluster(){
+        return buildCluster(false);
+    }
+
+	public Cluster buildCluster(boolean withoutJMXReporting) {
 		Cluster.Builder builder = Cluster.builder();
 		for(String contactPoint : contactPoints) {
 			builder.addContactPoint(contactPoint);
@@ -60,7 +64,13 @@ public class ConnectionManager {
 			logger.debug("Setting native transport port to {}", this.nativeTransportPort);
 			builder.withPort(this.nativeTransportPort);
 		}
-		cluster = builder.build();
+        if(withoutJMXReporting){
+            cluster = builder.withoutJMXReporting().build();
+        }
+        else{
+            cluster = builder.build();
+        }
+
 		return cluster;
 	}
 

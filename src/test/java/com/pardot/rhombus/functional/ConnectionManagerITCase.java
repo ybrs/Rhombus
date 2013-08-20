@@ -21,7 +21,7 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class ConnectionManagerITCase {
+public class ConnectionManagerITCase extends RhombusFunctionalTest {
 
 	private static Logger logger = LoggerFactory.getLogger(ConnectionManagerITCase.class);
 
@@ -29,10 +29,7 @@ public class ConnectionManagerITCase {
 	public void testBuildKeyspace() throws Exception {
 		logger.debug("testBuildKeyspace");
 		// Set up a connection manager and build the cluster
-		ConnectionManager cm = TestHelpers.getTestConnectionManager();
-		cm.setLogCql(true);
-		cm.buildCluster();
-		assertNotNull(cm);
+		ConnectionManager cm = getConnectionManager();
 
 		//Build our keyspace definition object
 		CKeyspaceDefinition definition = JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class
@@ -62,10 +59,7 @@ public class ConnectionManagerITCase {
 	public void testBuildPiKeyspace() throws Exception {
 		logger.debug("testBuildKeyspace");
 		// Set up a connection manager and build the cluster
-		ConnectionManager cm = TestHelpers.getTestConnectionManager();
-		cm.setLogCql(true);
-		cm.buildCluster();
-		assertNotNull(cm);
+		ConnectionManager cm = getConnectionManager();
 
 		//Build our keyspace definition object
 		CKeyspaceDefinition definition = JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class
@@ -81,10 +75,7 @@ public class ConnectionManagerITCase {
 	public void testForceRebuild() throws Exception {
 		logger.debug("testForceRebuild");
 		// Set up a connection manager and build the cluster
-		ConnectionManager cm = TestHelpers.getTestConnectionManager();
-		cm.setLogCql(true);
-		cm.buildCluster();
-		assertNotNull(cm);
+		ConnectionManager cm = getConnectionManager();
 
 		//Build the keyspace forcing a rebuild in case anything has been left behind
 		CKeyspaceDefinition definition = JsonUtil.objectFromJsonResource(CKeyspaceDefinition.class

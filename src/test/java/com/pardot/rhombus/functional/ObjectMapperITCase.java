@@ -21,7 +21,7 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class ObjectMapperITCase {
+public class ObjectMapperITCase extends RhombusFunctionalTest {
 
 	private static Logger logger = LoggerFactory.getLogger(ObjectMapperITCase.class);
 
@@ -349,13 +349,4 @@ public class ObjectMapperITCase {
 		assertEquals(3, results.size());
 	}
 
-
-	private ConnectionManager getConnectionManager() throws IOException {
-		//Get a connection manager based on the test properties
-		ConnectionManager cm = TestHelpers.getTestConnectionManager();
-		cm.setLogCql(true);
-		cm.buildCluster();
-		assertNotNull(cm);
-		return cm;
-	}
 }

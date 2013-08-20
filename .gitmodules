@@ -1,0 +1,3 @@
+[submodule "deps/java-driver"]
+	path = deps/java-driver
+	url = git@github.com:Pardot/java-driver.git
