@@ -53,11 +53,11 @@ public class ConnectionManager {
 			builder.addContactPoint(contactPoint);
 		}
 		if(localDatacenter != null) {
-			logger.debug("Creating with DCAwareRoundRobinPolicy: {}", localDatacenter);
+			logger.info("Creating with DCAwareRoundRobinPolicy: {}", localDatacenter);
 			if(loadBalancingPolicy == null) {
 				loadBalancingPolicy = new DCAwareRoundRobinPolicy(localDatacenter);
 			}
-			//builder.withLoadBalancingPolicy(new TokenAwarePolicy(loadBalancingPolicy));
+			builder.withLoadBalancingPolicy(new TokenAwarePolicy(loadBalancingPolicy));
 			builder.withLoadBalancingPolicy(loadBalancingPolicy);
 		}
 		if(this.nativeTransportPort != null) {

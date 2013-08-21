@@ -6,7 +6,8 @@ import com.pardot.rhombus.ConnectionManager;
 import com.pardot.rhombus.Criteria;
 import com.pardot.rhombus.util.JsonUtil;
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +19,7 @@ import java.util.*;
  * Date: 4/5/13
  */
 public class TestHelpers {
+	private static Logger logger = LoggerFactory.getLogger(TestHelpers.class);
 
 	private static List<Map<String, Object>> testObjects;
 	private static CriteriaHolder criteriaHolder;
@@ -28,6 +30,7 @@ public class TestHelpers {
 		String nativeTransportPort = System.getProperty("cassandra.nativeTransportPort");
 		try {
 			Integer port = Integer.parseInt(nativeTransportPort);
+			logger.info("Found a native transport port {}", port);
 			cm.setNativeTransportPort(port);
 		} catch (Exception e) {
 			//Ignore

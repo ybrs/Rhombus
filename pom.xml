@@ -216,7 +216,8 @@
                     <jmxPort>7199</jmxPort>
                     <storagePort>7000</storagePort>
                     <yaml><![CDATA[start_native_transport: true
-native_transport_port: 9042]]>
+native_transport_port: 9042
+endpoint_snitch: GossipingPropertyFileSnitch]]>
                     </yaml>
                 </configuration>
                 <executions>
@@ -225,6 +226,29 @@ native_transport_port: 9042]]>
                             <goal>start</goal>
                             <goal>stop</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/cassandra/conf</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/test/resources/cassandra-config</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
