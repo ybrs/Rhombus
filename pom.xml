@@ -204,6 +204,13 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cassandra-maven-plugin</artifactId>
                 <version>1.2.1-1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.cassandra</groupId>
+                        <artifactId>cassandra-all</artifactId>
+                        <version>1.2.6</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <rpcPort>9160</rpcPort>
                     <jmxPort>7199</jmxPort>
