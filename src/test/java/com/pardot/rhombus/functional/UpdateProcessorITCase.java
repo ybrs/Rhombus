@@ -41,6 +41,7 @@ public class UpdateProcessorITCase extends RhombusFunctionalTest {
 		//Build our keyspace definition object
 		String json = TestHelpers.readFileToString(this.getClass(), "CKeyspaceTestData.js");
 		CKeyspaceDefinition definition = CKeyspaceDefinition.fromJsonString(json);
+		String keyspace = definition.getName();
 		assertNotNull(definition);
 
 		//Rebuild the keyspace and get the object mapper
@@ -69,7 +70,7 @@ public class UpdateProcessorITCase extends RhombusFunctionalTest {
 		List<CQLStatement> insertStatements = Lists.newArrayList();
 		for(CIndex i : def1.getIndexes().values()){
 			om.getCqlGenerator_ONLY_FOR_TESTING().addCQLStatmentsForIndexInsert(
-					def1.getName(),
+					keyspace,
 					true,
 					insertStatements,
 					def1,
@@ -84,7 +85,7 @@ public class UpdateProcessorITCase extends RhombusFunctionalTest {
 
 		//manually record those incorrect values in the update table
 		CQLStatement cql = om.getCqlGenerator_ONLY_FOR_TESTING().makeInsertUpdateIndexStatement(
-				def1.getName(),
+				keyspace,
 				def1,
 				key, def1.makeIndexValues(testObject));
 		om.getCqlExecutor().executeSync(cql);
