@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.pardot.rhombus.RhombusException;
 import com.pardot.rhombus.cobject.BoundedCQLStatementIterator;
 import com.pardot.rhombus.cobject.CQLExecutor;
@@ -29,7 +30,7 @@ import static com.google.common.util.concurrent.Uninterruptibles.awaitUninterrup
 public class StatementIteratorConsumer {
 
 	private static Logger logger = LoggerFactory.getLogger(StatementIteratorConsumer.class);
-	private static ExecutorService executorService = Executors.newFixedThreadPool(260);
+	private static ExecutorService executorService;
 
 	private final BoundedCQLStatementIterator statementIterator;
 	private CQLExecutor cqlExecutor;
@@ -38,7 +39,10 @@ public class StatementIteratorConsumer {
 	private final Set<Future> futures = Collections.synchronizedSet(new HashSet<Future>());
 
 	public StatementIteratorConsumer(BoundedCQLStatementIterator statementIterator, CQLExecutor cqlExecutor, long timeout) {
-		this.statementIterator = statementIterator;
+        ThreadFactoryBuilder tfb = new ThreadFactoryBuilder();
+        tfb.setNameFormat("statement-iterator-consumer-pool-%d");
+        executorService = Executors.newFixedThreadPool(260, tfb.build());
+        this.statementIterator = statementIterator;
 		this.cqlExecutor = cqlExecutor;
 		this.timeout = timeout;
 		this.shutdownLatch = new CountDownLatch((new Long(statementIterator.size())).intValue());
