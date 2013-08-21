@@ -1,5 +1,5 @@
 {
-    "name" : "pifunctional",
+    "name" : "functional",
     "replicationClass" : "NetworkTopologyStrategy",
     "replicationFactors" : {
         "SEATTLE" : 2,

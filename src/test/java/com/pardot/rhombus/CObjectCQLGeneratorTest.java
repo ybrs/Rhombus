@@ -81,40 +81,40 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals("Should generate CQL statements for the static table plus all indexes including the filtered index", 6, actual.size());
 			//static table
 			expected = CQLStatement.make(
-					"INSERT INTO \"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+					"INSERT INTO functional.\"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
 					Arrays.asList(uuid, 1, "This is data one", "This is data two", "This is data three", 222222, 5, 777).toArray()
 			);
 			assertEquals(expected, actual.get(0));
 			Object[] expectedValues = Arrays.asList(uuid, Long.valueOf(160),1, "This is data one", "This is data two", "This is data three", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-					"INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+					"INSERT INTO functional.\"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
 					expectedValues
 			);
 			assertEquals(expected, actual.get(1));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
+				"INSERT INTO functional.\"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 					Arrays.asList("testtype6671808f3f51bcc53ddc76d2419c9060","222222:5",Long.valueOf(160),"160:222222:5").toArray()
 			);
 			assertEquals(expected, actual.get(2));
 
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+				"INSERT INTO functional.\"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected,actual.get(3));
 
 
 			expected = CQLStatement.make(
-					"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
+					"INSERT INTO functional.\"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 					Arrays.asList("testtypef9bf3332bb4ec879849ec43c67776131","777:222222:5",Long.valueOf(160),"160:777:222222:5").toArray()
 			);
 			assertEquals(expected, actual.get(4));
 
 			expectedValues = Arrays.asList(uuid, Long.valueOf(1),1, "This is data one", "This is data two", "This is data three", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-					"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+					"INSERT INTO functional.\"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
 					expectedValues
 			);
 			assertEquals(expected,actual.get(5));
@@ -125,7 +125,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			actual = toList(result);
 			expectedValues = Arrays.asList(uuid, 1, "This is data one", "This is data two", "This is data three", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?) USING TTL 20;",
+				"INSERT INTO functional.\"testtype\" (id, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?) USING TTL 20;",
 				expectedValues
 			);
 			assertEquals(expected, actual.get(0));
@@ -140,39 +140,39 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			//static table
 			expectedValues = Arrays.asList(uuid, 1, "This is data one", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype\" (id, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?);",
+				"INSERT INTO functional.\"testtype\" (id, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected, actual.get(0));
 
 			expectedValues = Arrays.asList(uuid, Long.valueOf(160), 1, "This is data one", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?);",
+				"INSERT INTO functional.\"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected, actual.get(1));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
+				"INSERT INTO functional.\"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 				Arrays.asList("testtype6671808f3f51bcc53ddc76d2419c9060","222222:5",Long.valueOf(160),"160:222222:5").toArray()
 			);
 			assertEquals(expected, actual.get(2));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?);",
+				"INSERT INTO functional.\"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected,actual.get(3));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
+				"INSERT INTO functional.\"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 				Arrays.asList("testtypef9bf3332bb4ec879849ec43c67776131","777:222222:5",Long.valueOf(160),"160:777:222222:5").toArray()
 			);
 			assertEquals(expected, actual.get(4));
 
 			expectedValues = Arrays.asList(uuid, Long.valueOf(1), 1, "This is data one", 222222, 5, 777).toArray();
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?);",
+				"INSERT INTO functional.\"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, filtered, data1, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?);",
 				expectedValues
 			);
 			assertEquals(expected,actual.get(5));
@@ -203,13 +203,13 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals("Number of CQL statements should be correct",2,actual.size());
 			//static table
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype\" (id, data1, foreignid) VALUES (?, ?, ?);",
+				"INSERT INTO functional.\"testtype\" (id, data1, foreignid) VALUES (?, ?, ?);",
 				Arrays.asList(uuid, "this is a test", "777").toArray()
 			);
 			assertEquals(expected, actual.get(0));
 
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, data1, foreignid) VALUES (?, ?, ?, ?);",
+				"INSERT INTO functional.\"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, data1, foreignid) VALUES (?, ?, ?, ?);",
 				Arrays.asList(uuid, Long.valueOf(1), "this is a test", "777").toArray()
 			);
 			assertEquals(expected,actual.get(1));
@@ -407,7 +407,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			);
 			assertEquals(expected, result.next());
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+				"INSERT INTO functional.\"testtype6671808f3f51bcc53ddc76d2419c9060\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
 				Arrays.asList(
 					UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
 					Long.valueOf(160),
@@ -421,7 +421,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			);
 			assertEquals(expected, result.next());
 			expected = CQLStatement.make(
-				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
+				"INSERT INTO functional.\"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 				Arrays.asList(
 					"testtype6671808f3f51bcc53ddc76d2419c9060",
 					"222222:9",
@@ -430,7 +430,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			);
 			assertEquals(expected, result.next());
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+				"INSERT INTO functional.\"testtypef9bf3332bb4ec879849ec43c67776131\" (id, shardid, filtered, data1, data2, data3, instance, type, foreignid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
 				Arrays.asList(
 					UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
 					Long.valueOf(160),
@@ -444,7 +444,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			);
 			assertEquals(expected, result.next());
 			expected = CQLStatement.make(
-				"INSERT INTO \"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
+				"INSERT INTO functional.\"__shardindex\" (tablename, indexvalues, shardid, targetrowkey) VALUES (?, ?, ?, ?);",
 				Arrays.asList(
 					"testtypef9bf3332bb4ec879849ec43c67776131",
 					"777:222222:9",
@@ -453,7 +453,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			);
 			assertEquals(expected, result.next());
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, instance, type, foreignid) VALUES (?, ?, ?, ?, ?);",
+				"INSERT INTO functional.\"testtype7f9bb4e56d3cae5b11c553547cfe5897\" (id, shardid, instance, type, foreignid) VALUES (?, ?, ?, ?, ?);",
 				Arrays.asList(
 					UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
 					Long.valueOf(1),
@@ -465,7 +465,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			//verify that this last insert was on the uneffected index (which is why it does not have a matching __shardindex insert
 			assertEquals("testtype7f9bb4e56d3cae5b11c553547cfe5897",makeTableName(def,def.getIndexes().get("foreignid")));
 			expected = CQLStatement.make(
-				"INSERT INTO \"testtype\" (id, type) VALUES (?, ?);",
+				"INSERT INTO functional.\"testtype\" (id, type) VALUES (?, ?);",
 				Arrays.asList(
 					UUID.fromString("ada375b0-a2d9-11e2-99a3-3f36d3955e43"),
 					Integer.valueOf(9)).toArray()
@@ -473,7 +473,7 @@ public class CObjectCQLGeneratorTest  extends TestCase {
 			assertEquals(expected, result.next());
 			CQLStatement next = result.next();
 			expected = CQLStatement.make(
-					"INSERT INTO \"__index_updates\" (id, statictablename, instanceid, indexvalues) values (?, ?, ?, ?);",
+					"INSERT INTO functional.\"__index_updates\" (id, statictablename, instanceid, indexvalues) values (?, ?, ?, ?);",
 					Arrays.asList(
 							(UUID)next.getValues()[0],
 							"testtype",
