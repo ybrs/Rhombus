@@ -61,7 +61,7 @@ public class AsyncSpeedITCase extends RhombusFunctionalTest {
 		//int numberOfObjects = 100;
 		for(int i = 0; i < numberOfObjects; i++){
 			Map<String, Object> testObject = Maps.newTreeMap();
-			testObject.put("foreignid", Long.valueOf(i%100));
+			testObject.put("foreignid", Long.valueOf(33339999));
 			testObject.put("type", Integer.valueOf(i%5));
 			testObject.put("instance", Long.valueOf(i%10));
 			testObject.put("filtered", Integer.valueOf(1));
@@ -109,7 +109,19 @@ public class AsyncSpeedITCase extends RhombusFunctionalTest {
 		logger.info("Sync Time ms: " + syncTime);
 		logger.info("Async Time ms: " + asyncTime);
 
-		assertTrue((asyncTime*2) < syncTime);
+		//testObject.put("foreignid", Long.valueOf(33339999));
+		//Query it back out
+		//Make sure that we have the proper number of results
+		SortedMap<String, Object> indexValues = Maps.newTreeMap();
+		indexValues.put("foreignid", Long.valueOf(33339999));
+		Criteria criteria = new Criteria();
+		criteria.setIndexKeys(indexValues);
+		Thread.sleep(5000);
+		int count = om.list("testtype",criteria).size();
+		logger.info("======================");
+		logger.info("Retrieved count of " + count);
+		logger.info("======================");
+		assertEquals(numberOfObjects,count);
 
 	}
 
