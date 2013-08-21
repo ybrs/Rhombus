@@ -69,6 +69,7 @@ public class UpdateProcessorITCase extends RhombusFunctionalTest {
 		List<CQLStatement> insertStatements = Lists.newArrayList();
 		for(CIndex i : def1.getIndexes().values()){
 			om.getCqlGenerator_ONLY_FOR_TESTING().addCQLStatmentsForIndexInsert(
+					def1.getName(),
 					true,
 					insertStatements,
 					def1,
@@ -83,6 +84,7 @@ public class UpdateProcessorITCase extends RhombusFunctionalTest {
 
 		//manually record those incorrect values in the update table
 		CQLStatement cql = om.getCqlGenerator_ONLY_FOR_TESTING().makeInsertUpdateIndexStatement(
+				def1.getName(),
 				def1,
 				key, def1.makeIndexValues(testObject));
 		om.getCqlExecutor().executeSync(cql);
@@ -97,6 +99,7 @@ public class UpdateProcessorITCase extends RhombusFunctionalTest {
 		testObjectOriginal.put("data2", "This is data 2");
 		testObjectOriginal.put("data3", "This is data 3");
 		cql = om.getCqlGenerator_ONLY_FOR_TESTING().makeInsertUpdateIndexStatement(
+				definition.getName(),
 				def1,
 				key, def1.makeIndexValues(testObjectOriginal));
 		om.getCqlExecutor().executeSync(cql);

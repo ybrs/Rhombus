@@ -43,7 +43,7 @@ public class ObjectMapper implements CObjectShardList {
 		this.cqlExecutor = new CQLExecutor(session, logCql, keyspaceDefinition.getConsistencyLevel());
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
-		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getDefinitions(), this, consistencyHorizon);
+		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getName(), keyspaceDefinition.getDefinitions(), this, consistencyHorizon);
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class ObjectMapper implements CObjectShardList {
 
 	@Override
 	public List<Long> getShardIdList(CDefinition def, SortedMap<String, Object> indexValues, CObjectOrdering ordering, @Nullable UUID start, @Nullable UUID end) throws CQLGenerationException {
-		CQLStatement shardIdGet = CObjectCQLGenerator.makeCQLforGetShardIndexList(def, indexValues, ordering, start, end);
+		CQLStatement shardIdGet = CObjectCQLGenerator.makeCQLforGetShardIndexList(this.keyspaceDefinition.getName(), def, indexValues, ordering, start, end);
 		ResultSet resultSet = cqlExecutor.executeSync(shardIdGet);
 		List<Long> shardIdList = Lists.newArrayList();
 		for(Row row : resultSet) {
@@ -238,6 +238,7 @@ public class ObjectMapper implements CObjectShardList {
 
 	public void deleteObsoleteIndex(IndexUpdateRow row, CIndex index, Map<String,Object> indexValues){
 		CQLStatement cql = cqlGenerator.makeCQLforDeleteUUIDFromIndex(
+			this.keyspaceDefinition.getName(),
 			keyspaceDefinition.getDefinitions().get(row.getObjectName()),
 			index,
 			row.getInstanceId(),
@@ -268,7 +269,7 @@ public class ObjectMapper implements CObjectShardList {
 
 		//(2) Pass it all into the cql generator so it can create the right statements
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
-		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforUpdate(def,key,oldversion,values);
+		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforUpdate(keyspaceDefinition.getName(), def,key,oldversion,values);
 		executeStatements(statementIterator);
 		return key;
 	}
@@ -328,7 +329,7 @@ public class ObjectMapper implements CObjectShardList {
 			return null;
 		}
 		IndexUpdateRowKey nextInstanceKey = new IndexUpdateRowKey(resultSet.one());
-		CQLStatement cqlForRow = cqlGenerator.makeGetRowIndexUpdate(nextInstanceKey);
+		CQLStatement cqlForRow = cqlGenerator.makeGetRowIndexUpdate(keyspaceDefinition.getName(), nextInstanceKey);
 		resultSet = cqlExecutor.executeSync(cqlForRow);
 		List<Row> results = resultSet.all();
 		if(results.size() == 0 ){
