@@ -57,7 +57,7 @@ public class AsyncSpeedITCase extends RhombusFunctionalTest {
 		//do an insert on an object
 		//make some objects to insert
 		List<Map<String,Object>> toInserts = Lists.newArrayList();
-		int numberOfObjects = 2000;
+		int numberOfObjects = 400;
 		//int numberOfObjects = 100;
 		for(int i = 0; i < numberOfObjects; i++){
 			Map<String, Object> testObject = Maps.newTreeMap();
@@ -116,7 +116,7 @@ public class AsyncSpeedITCase extends RhombusFunctionalTest {
 		indexValues.put("foreignid", Long.valueOf(33339999));
 		Criteria criteria = new Criteria();
 		criteria.setIndexKeys(indexValues);
-		Thread.sleep(5000);
+		Thread.sleep(4000);
 		int count = om.list("testtype",criteria).size();
 		logger.info("======================");
 		logger.info("Retrieved count of " + count);
