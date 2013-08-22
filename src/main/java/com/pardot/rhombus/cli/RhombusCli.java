@@ -33,7 +33,7 @@ public class RhombusCli implements  RhombusCommand {
         Option keyspaceResource = OptionBuilder.withArgName( "filename" )
                 .hasArg()
                 .withDescription("Filename of json keyspace definition")
-                .create( "keyspaceResource" );
+                .create( "keyspaceresource" );
         ret.addOption(keyspaceFile);
         ret.addOption(keyspaceResource);
         return ret;
