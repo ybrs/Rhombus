@@ -57,7 +57,7 @@ public class AsyncSpeedITCase extends RhombusFunctionalTest {
 		//do an insert on an object
 		//make some objects to insert
 		List<Map<String,Object>> toInserts = Lists.newArrayList();
-		int numberOfObjects = 400;
+		int numberOfObjects = 4000;
 		//int numberOfObjects = 100;
 		for(int i = 0; i < numberOfObjects; i++){
 			Map<String, Object> testObject = Maps.newTreeMap();
