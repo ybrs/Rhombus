@@ -31,6 +31,7 @@ public class ConnectionManager {
 	private Cluster cluster;
 	private boolean logCql = false;
 	private Integer nativeTransportPort = null;
+	private Long batchTimeout = 10000L;
 	private Integer consistencyHorizon = null;
 	private LoadBalancingPolicy loadBalancingPolicy = null;
 
@@ -38,6 +39,9 @@ public class ConnectionManager {
 		this.contactPoints = configuration.getContactPoints();
 		this.localDatacenter = configuration.getLocalDatacenter();
 		this.consistencyHorizon = configuration.getConsistencyHorizion();
+		if(configuration.getBatchTimeout() != null) {
+			this.batchTimeout = configuration.getBatchTimeout();
+		}
 	}
 
 	/**
@@ -99,7 +103,7 @@ public class ConnectionManager {
 		if(objectMapper == null) {
 			logger.debug("Connecting to keyspace {}", defaultKeyspace.getName());
 			Session session = cluster.connect(defaultKeyspace.getName());
-			objectMapper = new ObjectMapper(session, defaultKeyspace, consistencyHorizon);
+			objectMapper = new ObjectMapper(session, defaultKeyspace, consistencyHorizon, batchTimeout);
 			objectMapper.setLogCql(logCql);
 			objectMappers.put(keyspace, objectMapper);
 		}
@@ -121,7 +125,7 @@ public class ConnectionManager {
 		//Get a session for the new keyspace
 		Session session = getSessionForNewKeyspace(keyspaceDefinition, forceRebuild);
 		//Use this session to create an object mapper and build the keyspace
-		ObjectMapper mapper = new ObjectMapper(session, keyspaceDefinition, consistencyHorizon);
+		ObjectMapper mapper = new ObjectMapper(session, keyspaceDefinition, consistencyHorizon, batchTimeout);
 		mapper.setLogCql(logCql);
 		mapper.buildKeyspace(forceRebuild);
 		mapper.prePrepareInsertStatements();

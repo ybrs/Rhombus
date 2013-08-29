@@ -21,8 +21,10 @@ public class CassandraConfiguration {
 	private Integer consistencyHorizion;
 
 	@JsonProperty
-	private String localDatacenter;
+	private Long batchTimeout;
 
+	@JsonProperty
+	private String localDatacenter;
 
 	public List<String> getContactPoints() {
 		return contactPoints;
@@ -46,5 +48,13 @@ public class CassandraConfiguration {
 
 	public void setConsistencyHorizion(Integer consistencyHorizion) {
 		this.consistencyHorizion = consistencyHorizion;
+	}
+
+	public Long getBatchTimeout() {
+		return batchTimeout;
+	}
+
+	public void setBatchTimeout(Long batchTimeout) {
+		this.batchTimeout = batchTimeout;
 	}
 }

@@ -37,13 +37,14 @@ public class ObjectMapper implements CObjectShardList {
 	private Session session;
 	private CKeyspaceDefinition keyspaceDefinition;
 	private CObjectCQLGenerator cqlGenerator;
-	private long statementTimeout = 5000;
+	private Long batchTimeout;
 
-	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition, Integer consistencyHorizon) {
+	public ObjectMapper(Session session, CKeyspaceDefinition keyspaceDefinition, Integer consistencyHorizon, Long batchTimeout) {
 		this.cqlExecutor = new CQLExecutor(session, logCql, keyspaceDefinition.getConsistencyLevel());
 		this.session = session;
 		this.keyspaceDefinition = keyspaceDefinition;
 		this.cqlGenerator = new CObjectCQLGenerator(keyspaceDefinition.getName(), keyspaceDefinition.getDefinitions(), this, consistencyHorizon);
+		this.batchTimeout = batchTimeout;
 	}
 
 	/**
@@ -124,7 +125,7 @@ public class ObjectMapper implements CObjectShardList {
 			long start = System.nanoTime();
 			List<StatementIteratorConsumer> consumers = Lists.newArrayList();
 			for(CQLStatementIterator statementIterator : statementIterators) {
-				StatementIteratorConsumer consumer = new StatementIteratorConsumer((BoundedCQLStatementIterator) statementIterator, cqlExecutor, statementTimeout);
+				StatementIteratorConsumer consumer = new StatementIteratorConsumer((BoundedCQLStatementIterator) statementIterator, cqlExecutor, batchTimeout);
 				consumer.start();
 				consumers.add(consumer);
 			}
@@ -490,14 +491,6 @@ public class ObjectMapper implements CObjectShardList {
 
 	public void setCacheBoundedQueries(boolean cacheBoundedQueries) {
 		this.cacheBoundedQueries = cacheBoundedQueries;
-	}
-
-	/**
-	 * Set max execution time for insert statements run in parallel
-	 * @param statementTimeout MS to wait before timing out multi insert
-	 */
-	public void setStatementTimeout(long statementTimeout) {
-		this.statementTimeout = statementTimeout;
 	}
 
     public void setCompaction(String strategy, Map<String,Object> options) throws CQLGenerationException, RhombusException {
