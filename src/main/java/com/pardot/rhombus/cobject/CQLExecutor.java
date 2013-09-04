@@ -74,6 +74,14 @@ public class CQLExecutor {
 		}
 	}
 
+	public ResultSet executeSync(Query cql){
+		if(logCql) {
+			logger.debug("Executing QueryBuilder Query: {}", cql.toString());
+		}
+		//just run a normal execute without a prepared statement
+		return session.execute(cql);
+	}
+
 	public ResultSetFuture executeAsync(CQLStatement cql){
 		if(logCql) {
 			logger.debug("Executing CQL: {}", cql.getQuery());

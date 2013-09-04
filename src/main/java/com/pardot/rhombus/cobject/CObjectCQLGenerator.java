@@ -1,5 +1,9 @@
 package com.pardot.rhombus.cobject;
 
+import com.datastax.driver.core.Query;
+import com.datastax.driver.core.querybuilder.Delete;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Using;
 import com.datastax.driver.core.utils.UUIDs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
@@ -734,8 +738,19 @@ public class CObjectCQLGenerator {
 			makeTableName(def,index),
 			//timestamp, //Add back when timestamps become preparable
 			whereCQL);
-	   //TODO: fix the issue with ignoring the timestamp this is very important for updates. Updates are broken until we can prepare the timestamp
 		return CQLStatement.make(query,values.toArray());
+	}
+
+	public static Query makeCQLforDeleteUUIDFromIndex_WorkaroundForUnpreparableTimestamp(String keyspace, CDefinition def, CIndex index, UUID uuid, Map<String,Object> indexValues, Long timestamp){
+		Query ret = QueryBuilder.delete()
+						.from(keyspace,makeIndexTableName(def,index))
+						.using(QueryBuilder.timestamp(timestamp))
+						.where(QueryBuilder.eq("id",uuid))
+						.and(QueryBuilder.eq("shardid", Long.valueOf(index.getShardingStrategy().getShardKey(uuid))));
+		for(String key : indexValues.keySet()){
+			((Delete.Where)ret).and(QueryBuilder.eq(key,indexValues.get(key)));
+		}
+		return ret;
 	}
 
 	protected static CQLStatement makeTableDrop(String keyspace, String tableName){

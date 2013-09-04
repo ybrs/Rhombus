@@ -238,7 +238,7 @@ public class ObjectMapper implements CObjectShardList {
 	}
 
 	public void deleteObsoleteIndex(IndexUpdateRow row, CIndex index, Map<String,Object> indexValues){
-		CQLStatement cql = cqlGenerator.makeCQLforDeleteUUIDFromIndex(
+		Query cql = cqlGenerator.makeCQLforDeleteUUIDFromIndex_WorkaroundForUnpreparableTimestamp(
 			this.keyspaceDefinition.getName(),
 			keyspaceDefinition.getDefinitions().get(row.getObjectName()),
 			index,
@@ -345,10 +345,12 @@ public class ObjectMapper implements CObjectShardList {
 			indexValueList.add(unpackIndexValuesFromJson(def,row.getString("indexvalues")));
 			ids.add(row.getUUID("id"));
 		}
+
+
 		return new IndexUpdateRow(
 			objectName,
 			results.get(0).getUUID("instanceid"),
-			UUIDs.unixTimestamp(results.get(0).getUUID("id")),
+			UUIDs.unixTimestamp(results.get(0).getUUID("id"))*1000,
 			indexValueList,
 			ids
 		);
