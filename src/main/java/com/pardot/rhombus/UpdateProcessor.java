@@ -61,12 +61,13 @@ public class UpdateProcessor {
 		for(UUID current : row.getIds()){
 			if(newer != null){
 				///do stuff
-				long difference = newer.timestamp() - current.timestamp();
+				Long difference = newer.timestamp() - current.timestamp();
 				if(difference < timeInNannos){
 					Map<String,Object> toadd = Maps.newHashMap();
 					toadd.put("rowkey", row.getRowKey());
 					toadd.put("new-item", row.getIndexValues().get(i));
 					toadd.put("old-item", row.getIndexValues().get(i-1));
+					toadd.put("difference", difference);
 					ret.add(toadd);
 				}
 			}
