@@ -4,6 +4,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.pardot.rhombus.cobject.*;
 
 import java.io.IOException;
@@ -38,6 +39,41 @@ public class UpdateProcessor {
 			processRow(row);
 			row = objectMapper.getNextUpdateIndexRow(row.getRowKey());
 		}
+	}
+
+	public List<Map<String,Object>> getUpdatesThatHappenedWithinTimeframe(Long timeInNanos) throws IOException {
+		List<Map<String,Object>> ret = Lists.newArrayList();
+		IndexUpdateRow row = objectMapper.getNextUpdateIndexRow(null);
+		while(row != null){
+			List<Map<String,Object>> toadd = findUpdatesWithinTimeframe(row,timeInNanos);
+			if(toadd.size() > 0){
+				ret.addAll(toadd);
+			}
+			row = objectMapper.getNextUpdateIndexRow(row.getRowKey());
+		}
+		return ret;
+	}
+
+	protected List<Map<String,Object>> findUpdatesWithinTimeframe(IndexUpdateRow row, Long timeInNannos){
+		List<Map<String,Object>> ret = Lists.newArrayList();
+		UUID newer = null;
+		int i = 0;
+		for(UUID current : row.getIds()){
+			if(newer != null){
+				///do stuff
+				long difference = newer.timestamp() - current.timestamp();
+				if(difference < timeInNannos){
+					Map<String,Object> toadd = Maps.newHashMap();
+					toadd.put("rowkey", row.getRowKey());
+					toadd.put("new-item", row.getIndexValues().get(i));
+					toadd.put("old-item", row.getIndexValues().get(i-1));
+					ret.add(toadd);
+				}
+			}
+			newer = current;
+			i++;
+		}
+		return ret;
 	}
 
 	protected void processRow(IndexUpdateRow row){

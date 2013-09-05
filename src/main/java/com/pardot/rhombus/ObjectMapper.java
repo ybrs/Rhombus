@@ -341,9 +341,9 @@ public class ObjectMapper implements CObjectShardList {
 
 		List<SortedMap<String,Object>> indexValueList = Lists.newArrayList();
 		List<UUID> ids = Lists.newArrayList();
-		for(Row row : results){
-			indexValueList.add(unpackIndexValuesFromJson(def,row.getString("indexvalues")));
-			ids.add(row.getUUID("id"));
+		for(Row update : results){
+			indexValueList.add(unpackIndexValuesFromJson(def,update.getString("indexvalues")));
+			ids.add(update.getUUID("id"));
 		}
 
 

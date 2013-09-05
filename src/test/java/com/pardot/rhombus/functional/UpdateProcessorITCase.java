@@ -156,4 +156,78 @@ public class UpdateProcessorITCase extends RhombusFunctionalTest {
 		assertEquals(103,indexObjects.get(0).get("filtered"));
 	}
 
+
+
+
+	@Test
+	public void testGetUpdatesThatHappenedWithinTimeframe() throws Exception {
+		logger.debug("Starting testObjectMapper");
+
+		//Build the connection manager
+		ConnectionManager cm = getConnectionManager();
+
+		//Build our keyspace definition object
+		String json = TestHelpers.readFileToString(this.getClass(), "CKeyspaceTestData.js");
+		CKeyspaceDefinition definition = CKeyspaceDefinition.fromJsonString(json);
+		String keyspace = definition.getName();
+		assertNotNull(definition);
+
+		//Rebuild the keyspace and get the object mapper
+		cm.buildKeyspace(definition, true);
+		cm.setDefaultKeyspace(definition);
+		ObjectMapper om = cm.getObjectMapper();
+		CDefinition def1 = om.getKeyspaceDefinition_ONLY_FOR_TESTING().getDefinitions().get("testtype");
+		//do an insert on an object
+		Map<String, Object> testObject = Maps.newTreeMap();
+		testObject.put("foreignid", Long.valueOf(100));
+		testObject.put("type", Integer.valueOf(101));
+		testObject.put("instance", Long.valueOf(102));
+		testObject.put("filtered", Integer.valueOf(103));
+		testObject.put("data1", "This is data 1");
+		testObject.put("data2", "This is data 2");
+		testObject.put("data3", "This is data 3");
+
+		UUID key = om.insert("testtype", testObject);
+
+		Map<String, Object> updateObj = Maps.newTreeMap();
+		updateObj.put("foreignid", Long.valueOf(1));
+		om.update("testtype",key, updateObj);
+
+		updateObj = Maps.newTreeMap();
+		updateObj.put("foreignid", Long.valueOf(2));
+		om.update("testtype",key, updateObj);
+
+		updateObj = Maps.newTreeMap();
+		updateObj.put("foreignid", Long.valueOf(3));
+		om.update("testtype",key, updateObj);
+
+		updateObj = Maps.newTreeMap();
+		updateObj.put("foreignid", Long.valueOf(4));
+		om.update("testtype",key, updateObj);
+
+		updateObj = Maps.newTreeMap();
+		updateObj.put("foreignid", Long.valueOf(5));
+		om.update("testtype",key, updateObj);
+
+		Thread.sleep(2000);
+
+		updateObj = Maps.newTreeMap();
+		updateObj.put("foreignid", Long.valueOf(6));
+		om.update("testtype",key, updateObj);
+
+		Thread.sleep(2000);
+
+
+
+		UpdateProcessor up = new UpdateProcessor(om);
+		//Test that we only see 4 happening within 50 milliseconds of each other
+		assertEquals(4, up.getUpdatesThatHappenedWithinTimeframe(500000L).size()); //50 milliseconds
+
+		//Test that we can see all 5 diffs when we search for those happening within 3 seconds of each other
+		assertEquals(5, up.getUpdatesThatHappenedWithinTimeframe(300000L * 1000).size()); //3 seconds
+
+
+
+	}
+
 }
