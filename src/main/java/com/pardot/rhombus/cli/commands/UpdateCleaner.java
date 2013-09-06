@@ -36,11 +36,11 @@ public class UpdateCleaner extends RcliWithCassandraConfig{
 		System.out.println(" Difference | Type | Instance | New Values | Old Values");
 		System.out.println("--------------------------------------------------------");
 		for(Map<String,Object> item : results){
-			String difference = ((Long)item.get("difference")).toString();
+			String difference = item.get("difference").toString();
 			String objName = ((IndexUpdateRowKey)item.get("rowkey")).getObjectName();
 			String instanceId = ((IndexUpdateRowKey)item.get("rowkey")).getInstanceId().toString();
-			String newValue = (String)item.get("new-item");
-			String oldValue = (String)item.get("old-item");
+			String newValue = item.get("new-item").toString();
+			String oldValue = item.get("old-item").toString();
 
 			System.out.println(String.format("%s  %s  %s  %s  %s",
 					difference,
@@ -59,14 +59,21 @@ public class UpdateCleaner extends RcliWithCassandraConfig{
 			String strategy = cl.getOptionValue("strategy");
 			UpdateProcessor up = new UpdateProcessor(getConnectionManager().getObjectMapper());
 
+			boolean didwork = false;
 			if(cl.hasOption("listUpdates")){
 				String timestr = cl.getOptionValue("listUpdates");
 				long time = Long.parseLong(timestr);
 				displayListResults(up.getUpdatesThatHappenedWithinTimeframe(time));
+				didwork = true;
 			}
 
 			if(cl.hasOption("p")){
 				up.process();
+				didwork = true;
+			}
+
+			if(!didwork){
+				displayHelpMessageAndExit();
 			}
 
 		}

@@ -221,10 +221,10 @@ public class UpdateProcessorITCase extends RhombusFunctionalTest {
 
 		UpdateProcessor up = new UpdateProcessor(om);
 		//Test that we only see 4 happening within 50 milliseconds of each other
-		assertEquals(4, up.getUpdatesThatHappenedWithinTimeframe(500000L).size()); //50 milliseconds
+		assertEquals(4, up.getUpdatesThatHappenedWithinTimeframe(900000L).size()); //90 milliseconds
 
 		//Test that we can see all 5 diffs when we search for those happening within 3 seconds of each other
-		assertEquals(5, up.getUpdatesThatHappenedWithinTimeframe(300000L * 1000).size()); //3 seconds
+		assertEquals(5, up.getUpdatesThatHappenedWithinTimeframe(900000L * 1000).size()); //9 seconds
 
 
 
