@@ -37,7 +37,7 @@ public class JsonUtilTest extends JsonUtil{
         CField field = new CField("test", "varchar");
         Date jsonValue = new Date(1376079901000L);
         String expected = "Fri Aug 09 16:25:01 EDT 2013";
-
+        
         Object result = JsonUtil.typedObjectFromValueAndField(jsonValue, field);
         assertEquals(expected, result.toString());
     }

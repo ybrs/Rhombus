@@ -58,6 +58,16 @@
     </developers>
 
     <dependencies>
+
+
+        <!-- for parameter parsing -->
+        <dependency>
+          <groupId>com.beust</groupId>
+          <artifactId>jcommander</artifactId>
+          <version>1.30</version>
+        </dependency>
+
+        
         <!-- Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
