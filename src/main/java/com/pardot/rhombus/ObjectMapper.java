@@ -270,7 +270,7 @@ public class ObjectMapper implements CObjectShardList {
 
 		//(2) Pass it all into the cql generator so it can create the right statements
 		CDefinition def = keyspaceDefinition.getDefinitions().get(objectType);
-		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforUpdate(keyspaceDefinition.getName(), def,key,oldversion,values);
+		CQLStatementIterator statementIterator = cqlGenerator.makeCQLforUpdate(keyspaceDefinition.getName(), def, key, oldversion, values);
 		executeStatements(statementIterator);
 		return key;
 	}

@@ -377,8 +377,8 @@ public class CObjectCQLGenerator {
 	public static CQLStatementIterator makeCQLforUpdate(String keyspace, CDefinition def, UUID key, Map<String,Object> oldValues, Map<String, Object> newValues) throws CQLGenerationException {
 		List<CQLStatement> ret = Lists.newArrayList();
 		//(1) Detect if there are any changed index values in values
-		List<CIndex> effectedIndexes =  getEffectedIndexes(def,oldValues,newValues);
-		List<CIndex> uneffectedIndexes =  getUneffectedIndexes(def,oldValues,newValues);
+		List<CIndex> effectedIndexes = getEffectedIndexes(def, oldValues, newValues);
+		List<CIndex> uneffectedIndexes = getUneffectedIndexes(def, oldValues, newValues);
 
 		//(2) Delete from any indexes that are no longer applicable
 		for(CIndex i : effectedIndexes){
